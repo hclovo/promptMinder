@@ -64,7 +64,16 @@ module.exports = {
   			lg: 'var(--radius)',
   			md: 'calc(var(--radius) - 2px)',
   			sm: 'calc(var(--radius) - 4px)'
-  		}
+  		},
+  		keyframes: {
+  			grid: {
+  				'0%': { transform: 'translateY(0)' },
+  				'100%': { transform: 'translateY(-100%)' },
+  			},
+  		},
+  		animation: {
+  			'grid': 'grid 20s linear infinite',
+  		},
   	}
   },
   plugins: [require("tailwindcss-animate")],

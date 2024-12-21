@@ -2,10 +2,10 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Copy, Share2 } from "lucide-react"
+import { Copy, Share2, Trash2 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 
-export default function PromptList({ prompts }) {
+export default function PromptList({ prompts, onDelete }) {
   const { toast } = useToast();
 
   const handleCopy = async (content) => {
@@ -132,6 +132,17 @@ export default function PromptList({ prompts }) {
                   className="hover:bg-secondary/80"
                 >
                   <Share2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    onDelete(prompt.id);
+                  }}
+                  className="hover:bg-secondary/80 text-destructive hover:text-destructive"
+                >
+                  <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 </Button>
               </div>
             </CardFooter>

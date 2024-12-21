@@ -6,6 +6,15 @@ import { Spinner } from '@/app/components/ui/Spinner';
 import TagFilter from '@/app/components/prompt/TagFilter';
 import { Button } from "@/components/ui/button"
 import { Search, PlusCircle } from "lucide-react"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { toast } from "react-hot-toast";
 
 async function getPrompts() {
   const res = await fetch('/api/prompts',{
@@ -20,11 +29,26 @@ async function getPrompts() {
   return res.json();
 }
 
+async function deletePrompt(id) {
+  const res = await fetch(`/api/prompts/${id}`, {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+  if (!res.ok) {
+    throw new Error('Failed to delete prompt');
+  }
+  return res.json();
+}
+
 export default function PromptsPage() {
   const [prompts, setPrompts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedTags, setSelectedTags] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [promptToDelete, setPromptToDelete] = useState(null);
 
   useEffect(() => {
     const fetchPrompts = async () => {
@@ -46,6 +70,30 @@ export default function PromptsPage() {
 
     fetchPrompts();
   }, []);
+
+  const handleDelete = async (id) => {
+    setPromptToDelete(id);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    try {
+      await deletePrompt(promptToDelete);
+      setPrompts(prompts.filter(prompt => prompt.id !== promptToDelete));
+      setDeleteDialogOpen(false);
+      toast({
+        description: "提示词已删除",
+        duration: 2000,
+      });
+    } catch (error) {
+      console.error('Error deleting prompt:', error);
+      toast({
+        variant: "destructive",
+        description: "删除失败，请重试",
+        duration: 2000,
+      });
+    }
+  };
 
   const filteredPrompts = prompts.filter(prompt => {
     const matchesTags = selectedTags.length === 0 || 
@@ -96,10 +144,35 @@ export default function PromptsPage() {
           </div>
         ) : (
           <div className="mt-8">
-            <PromptList prompts={filteredPrompts} />
+            <PromptList prompts={filteredPrompts} onDelete={handleDelete} />
           </div>
         )}
       </div>
+
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>确认删除</DialogTitle>
+            <DialogDescription>
+              你确定要删除这个提示词吗？此操作无法撤销。
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setDeleteDialogOpen(false)}
+            >
+              取消
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={confirmDelete}
+            >
+              删除
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 } 
