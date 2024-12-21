@@ -1,14 +1,23 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import Select from 'react-select';
-import CreatableSelect from 'react-select/creatable';
+import dynamic from 'next/dynamic';
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent } from "@/components/ui/card"
 import Image from 'next/image';
+import { motion } from "framer-motion";
+import { Loader2 } from "lucide-react";
+
+const Select = dynamic(() => import('react-select'), {
+  ssr: false
+});
+
+const CreatableSelect = dynamic(() => import('react-select/creatable'), {
+  ssr: false
+});
 
 export default function NewPrompt() {
   const [prompt, setPrompt] = useState({
@@ -16,21 +25,30 @@ export default function NewPrompt() {
     content: '',
     description: '',
     tags: '',
-    version: '',
+    version: '1.0.0',
     cover_img: '',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [tagOptions, setTagOptions] = useState([]);
   const router = useRouter();
+  const [errors, setErrors] = useState({});
+  const [isDragging, setIsDragging] = useState(false);
 
   useEffect(() => {
     fetch('/api/tags')
       .then((response) => response.json())
       .then((data) => {
-        setTagOptions(data.map(tag => ({ value: tag.name, label: tag.name })));
+        const mappedTags = data.map(tag => ({ value: tag.name, label: tag.name }));
+        setTagOptions(mappedTags);
+        if (mappedTags.length > 0 && !prompt.tags) {
+          setPrompt(prev => ({
+            ...prev,
+            tags: mappedTags[0].value
+          }));
+        }
       })
       .catch((error) => console.error('Error fetching tags:', error));
-  }, []);
+  }, [prompt.tags]);
 
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];
@@ -51,8 +69,17 @@ export default function NewPrompt() {
     }
   };
 
+  const validateForm = () => {
+    const newErrors = {};
+    if (!prompt.title.trim()) newErrors.title = '请输入标题';
+    if (!prompt.content.trim()) newErrors.content = '请输入提示词内容';
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!validateForm()) return;
     setIsSubmitting(true);
 
     try {
@@ -114,86 +141,199 @@ export default function NewPrompt() {
     }
   };
 
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
+  const handleDrop = async (e) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith('image/')) {
+      await handleImageUpload({ target: { files: [file] } });
+    }
+  };
+
   return (
-    <div className="container mx-auto p-6">
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="container mx-auto p-6"
+    >
       <h1 className="text-3xl font-bold mb-6">创建新提示词</h1>
       <Card>
         <CardContent className="pt-6">
           <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="title">标题</Label>
+            <motion.div 
+              className="space-y-2"
+              whileHover={{ scale: 1.01 }}
+              transition={{ duration: 0.2 }}
+            >
+              <Label htmlFor="title" className="text-base">
+                标题
+                <span className="text-red-500 ml-1">*</span>
+              </Label>
               <Input
                 id="title"
                 value={prompt.title}
                 onChange={(e) => setPrompt({ ...prompt, title: e.target.value })}
+                placeholder="为你的提示词起个醒目的标题"
+                className={errors.title ? 'border-red-500' : ''}
                 required
               />
-            </div>
+              {errors.title && (
+                <span className="text-red-500 text-sm">{errors.title}</span>
+              )}
+            </motion.div>
 
-            <div className="space-y-2">
-              <Label htmlFor="content">内容</Label>
+            <motion.div 
+              className="space-y-2"
+              whileHover={{ scale: 1.01 }}
+              transition={{ duration: 0.2 }}
+            >
+              <Label htmlFor="content" className="text-base">
+                提示词内容
+                <span className="text-red-500 ml-1">*</span>
+              </Label>
               <Textarea
                 id="content"
                 value={prompt.content}
                 onChange={(e) => setPrompt({ ...prompt, content: e.target.value })}
-                className="min-h-[128px]"
+                placeholder="在这里输入你的提示词内容，可以包含具体的指令、上下文要求等"
+                className={`min-h-[128px] ${errors.content ? 'border-red-500' : ''}`}
                 required
               />
-            </div>
+              {errors.content && (
+                <span className="text-red-500 text-sm">{errors.content}</span>
+              )}
+            </motion.div>
 
-            <div className="space-y-2">
-              <Label htmlFor="description">描述</Label>
+            <motion.div 
+              className="space-y-2"
+              whileHover={{ scale: 1.01 }}
+              transition={{ duration: 0.2 }}
+            >
+              <Label htmlFor="description" className="text-base">描述</Label>
               <Textarea
                 id="description"
                 value={prompt.description}
                 onChange={(e) => setPrompt({ ...prompt, description: e.target.value })}
+                placeholder="简要描述这个提示词的用途和使用场景"
+                className="min-h-[80px]"
               />
-            </div>
+            </motion.div>
 
-            <div className="space-y-2">
-              <Label htmlFor="tags">标签</Label>
+            <motion.div 
+              className="space-y-2"
+              whileHover={{ scale: 1.01 }}
+              transition={{ duration: 0.2 }}
+            >
+              <Label htmlFor="tags" className="text-base">标签</Label>
               <CreatableSelect
+                key="tags-select"
                 id="tags"
                 isMulti
-                value={prompt.tags?prompt.tags.split(',').map(tag => ({ value: tag, label: tag })):[]}
+                value={prompt.tags ? prompt.tags.split(',').map(tag => ({ value: tag, label: tag })) : []}
                 onChange={(selected) => {
                   const tags = selected ? selected.map(option => option.value).join(',') : '';
                   setPrompt({ ...prompt, tags });
                 }}
                 options={tagOptions}
+                placeholder="选择或创建新标签"
                 className="basic-multi-select"
                 classNamePrefix="select"
                 {...tagSelectProps}
+                instanceId="tags-select"
               />
-            </div>
+            </motion.div>
 
-            <div className="space-y-2">
-              <Label htmlFor="version">版本</Label>
+            <motion.div 
+              className="space-y-2"
+              whileHover={{ scale: 1.01 }}
+              transition={{ duration: 0.2 }}
+            >
+              <Label htmlFor="version" className="text-base">版本</Label>
               <Input
                 id="version"
                 value={prompt.version}
                 onChange={(e) => setPrompt({ ...prompt, version: e.target.value })}
+                placeholder="例如: 1.0.0"
               />
-            </div>
+            </motion.div>
 
-            <div className="space-y-2">
-              <Label htmlFor="cover_img">封面图片</Label>
-              <div className="flex items-center gap-4">
-                {prompt.cover_img && (
-                  <Image src={prompt.cover_img} alt="封面预览" className="w-20 h-20 object-cover rounded" width={80} height={80} />
-                )}
-                <Input
-                  id="cover_img"
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                />
+            <motion.div 
+              className="space-y-2"
+              whileHover={{ scale: 1.01 }}
+              transition={{ duration: 0.2 }}
+            >
+              <Label htmlFor="cover_img" className="text-base">封面图片</Label>
+              <div 
+                className={`border-2 border-dashed rounded-lg p-4 transition-colors ${
+                  isDragging ? 'border-primary bg-primary/10' : 'border-gray-300'
+                }`}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+              >
+                <div className="flex items-center gap-4">
+                  {prompt.cover_img ? (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <Image 
+                        src={prompt.cover_img} 
+                        alt="封面预览" 
+                        className="w-20 h-20 object-cover rounded" 
+                        width={80} 
+                        height={80} 
+                      />
+                    </motion.div>
+                  ) : (
+                    <div className="w-20 h-20 bg-gray-100 rounded flex items-center justify-center">
+                      <span className="text-gray-400">预览</span>
+                    </div>
+                  )}
+                  <div className="flex-1">
+                    <Input
+                      id="cover_img"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      className="cursor-pointer"
+                    />
+                    <p className="text-sm text-gray-500 mt-2">
+                      支持拖放上传，建议尺寸 800x600
+                    </p>
+                  </div>
+                </div>
               </div>
-            </div>
+            </motion.div>
 
-            <div className="flex gap-4">
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? '创建中...' : '创建'}
+            <motion.div 
+              className="flex gap-4"
+              whileHover={{ scale: 1.01 }}
+              transition={{ duration: 0.2 }}
+            >
+              <Button 
+                type="submit" 
+                disabled={isSubmitting}
+                className="relative"
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    创建中...
+                  </>
+                ) : '创建'}
               </Button>
               <Button
                 type="button"
@@ -202,10 +342,10 @@ export default function NewPrompt() {
               >
                 取消
               </Button>
-            </div>
+            </motion.div>
           </form>
         </CardContent>
       </Card>
-    </div>
+    </motion.div>
   );
 } 

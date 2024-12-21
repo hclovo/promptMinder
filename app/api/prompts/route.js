@@ -30,20 +30,32 @@ export async function GET(request) {
 
 export async function POST(request) {
   const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
-  const { userId } = await auth()
+  const { userId } = await auth();
 
-  const data = await request.json();
-  // 使用authToken作为user_id
-  data.user_id = userId;
+  try {
+    const data = await request.json();
+    const promptData = {
+      id: crypto.randomUUID(),
+      ...data,
+      user_id: userId,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      is_public: false
+    };
 
-  const { data: newPrompt, error } = await supabase
-    .from('prompts')
-    .insert([data])
-    .select();
+    const { data: newPrompt, error } = await supabase
+      .from('prompts')
+      .insert([promptData])
+      .select();
 
-  if (error) {
+    if (error) {
+      console.error('Supabase error:', error);
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    return NextResponse.json(newPrompt[0]);
+  } catch (error) {
+    console.error('Server error:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
-
-  return NextResponse.json(newPrompt[0]);
 } 

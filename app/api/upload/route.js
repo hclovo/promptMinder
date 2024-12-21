@@ -24,7 +24,7 @@ export async function POST(request) {
     
     // 上传到 Supabase Storage
     const { data, error } = await supabase.storage
-      .from('prompt-manager')
+      .from('cover')
       .upload(fileName, file);
 
     if (error) {
@@ -33,7 +33,7 @@ export async function POST(request) {
 
     // 获取文件的公共URL
     const { data: { publicUrl } } = supabase.storage
-      .from('prompt-manager')
+      .from('cover')
       .getPublicUrl(fileName);
     
     return NextResponse.json({ url: publicUrl });
