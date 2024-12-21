@@ -1,6 +1,6 @@
 'use client';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { use } from 'react';
 import { Spinner } from '@/app/components/ui/Spinner';
 import Image from 'next/image';
@@ -21,6 +21,66 @@ import {
 } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
 import { Settings2 } from "lucide-react"
+import { Skeleton } from "@/components/ui/skeleton"
+
+const TypewriterText = ({ text }) => {
+  return (
+    <span className="typing-effect">
+      {text}
+    </span>
+  );
+};
+
+const PromptSkeleton = () => {
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[calc(100vh-6rem)]">
+      <div className="h-full flex flex-col">
+        <Card className="mb-4">
+          <CardContent className="p-0">
+            <Skeleton className="h-[150px] w-full rounded-lg" />
+          </CardContent>
+        </Card>
+
+        <Card className="flex-1">
+          <CardContent className="p-4 sm:p-6">
+            <div className="space-y-4">
+              <Skeleton className="h-8 w-2/3" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-4/5" />
+              <div className="flex gap-2">
+                <Skeleton className="h-6 w-20" />
+                <Skeleton className="h-6 w-20" />
+              </div>
+            </div>
+            <div className="mt-6">
+              <Skeleton className="h-[300px] w-full" />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="h-full">
+        <Card className="h-full">
+          <CardHeader>
+            <div className="flex justify-between items-center">
+              <Skeleton className="h-8 w-32" />
+              <Skeleton className="h-8 w-8" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <Skeleton className="h-[400px] w-full" />
+              <div className="flex gap-2">
+                <Skeleton className="h-[50px] flex-1" />
+                <Skeleton className="h-[50px] w-[50px]" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+};
 
 export default function PromptDetail({ params }) {
   const router = useRouter();
@@ -41,6 +101,15 @@ export default function PromptDetail({ params }) {
   const [isEditing, setIsEditing] = useState(false);
   const [editedContent, setEditedContent] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  const messagesEndRef = useRef(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   useEffect(() => {
     if (id) {
@@ -114,6 +183,14 @@ export default function PromptDetail({ params }) {
     
     setMessages(prev => [...prev, newMessage]);
     setInputMessage('');
+
+    // 添加一个空的 AI 响应消息
+    const aiMessage = {
+      role: 'assistant',
+      content: '',
+      timestamp: new Date().toISOString()
+    };
+    setMessages(prev => [...prev, aiMessage]);
     
     try {
       const response = await fetch('/api/chat', {
@@ -137,23 +214,40 @@ export default function PromptDetail({ params }) {
         throw new Error('AI 服务请求失败');
       }
 
-      const data = await response.json();
-      const aiResponse = {
-        role: 'assistant',
-        content: data.choices[0].message.content,
-        timestamp: new Date().toISOString()
-      };
-      
-      setMessages(prev => [...prev, aiResponse]);
+      // 创建一个新的 TextDecoder 来解码流数据
+      const decoder = new TextDecoder();
+      const reader = response.body.getReader();
+      let accumulatedContent = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        // 解码新的内容块
+        const chunk = decoder.decode(value, { stream: true });
+        accumulatedContent += chunk;
+
+        // 更新消息内容
+        setMessages(prev => {
+          const newMessages = [...prev];
+          const lastMessage = newMessages[newMessages.length - 1];
+          if (lastMessage.role === 'assistant') {
+            lastMessage.content = accumulatedContent;
+          }
+          return newMessages;
+        });
+      }
     } catch (error) {
       console.error('Error:', error);
       // 添加错误消息到聊天
-      const errorMessage = {
-        role: 'assistant',
-        content: '抱歉，处理您的请求时发生错误。请检查您的 API Key 和网络连接。',
-        timestamp: new Date().toISOString()
-      };
-      setMessages(prev => [...prev, errorMessage]);
+      setMessages(prev => {
+        const newMessages = [...prev];
+        const lastMessage = newMessages[newMessages.length - 1];
+        if (lastMessage.role === 'assistant') {
+          lastMessage.content = '抱歉，处理您的请求时发生错误。请检查您的 API Key 和网络连接。';
+        }
+        return newMessages;
+      });
     } finally {
       setIsLoading(false);
     }
@@ -198,8 +292,18 @@ export default function PromptDetail({ params }) {
 
   if (!prompt) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <Spinner />
+      <div className="container mx-auto p-4 sm:p-6 max-w-7xl">
+        <div className="flex items-center space-x-2 mb-4">
+          <Button
+            variant="ghost"
+            className="text-muted-foreground hover:bg-secondary"
+            onClick={() => router.push('/prompts')}
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            返回提示词列表
+          </Button>
+        </div>
+        <PromptSkeleton />
       </div>
     );
   }
@@ -488,7 +592,7 @@ export default function PromptDetail({ params }) {
               )}
             </CardHeader>
             <CardContent className="flex-1 flex flex-col p-0">
-              <ScrollArea className="flex-1 w-full">
+              <ScrollArea className="flex-1 w-full h-[500px]">
                 <div className="space-y-4 p-4">
                   {messages.map((message, index) => (
                     <div
@@ -504,13 +608,20 @@ export default function PromptDetail({ params }) {
                             : 'bg-muted'
                         }`}
                       >
-                        <p className="text-sm">{message.content}</p>
+                        <p className="text-sm">
+                          {message.role === 'assistant' && message === messages[messages.length - 1] ? (
+                            <TypewriterText text={message.content} />
+                          ) : (
+                            message.content
+                          )}
+                        </p>
                         <span className="text-xs opacity-70 mt-1 block">
                           {new Date(message.timestamp).toLocaleTimeString()}
                         </span>
                       </div>
                     </div>
                   ))}
+                  <div ref={messagesEndRef} />
                 </div>
               </ScrollArea>
               
@@ -518,7 +629,7 @@ export default function PromptDetail({ params }) {
                 <Textarea
                   value={inputMessage}
                   onChange={(e) => setInputMessage(e.target.value)}
-                  placeholder="输入���息..."
+                  placeholder="输入消息..."
                   className="min-h-[60px]"
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' && !e.shiftKey) {

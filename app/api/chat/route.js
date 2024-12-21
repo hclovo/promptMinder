@@ -30,10 +30,35 @@ export async function POST(request) {
       model: model,
       messages: aiMessages,
       temperature: temperature,
-      stream: false
+      stream: true
     });
 
-    return NextResponse.json(completion);
+    // 创建一个新的 ReadableStream
+    const stream = new ReadableStream({
+      async start(controller) {
+        try {
+          for await (const chunk of completion) {
+            // 获取当前块的内容
+            const content = chunk.choices[0]?.delta?.content || '';
+            // 将内容编码为 UTF-8
+            const bytes = new TextEncoder().encode(content);
+            // 将内容推送到流中
+            controller.enqueue(bytes);
+          }
+          controller.close();
+        } catch (error) {
+          controller.error(error);
+        }
+      },
+    });
+
+    // 返回流式响应
+    return new Response(stream, {
+      headers: {
+        'Content-Type': 'text/plain; charset=utf-8',
+        'Transfer-Encoding': 'chunked',
+      },
+    });
   } catch (error) {
     return NextResponse.json(
       { error: error.message || '处理请求时发生错误' },

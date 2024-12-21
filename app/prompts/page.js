@@ -6,6 +6,7 @@ import { Spinner } from '@/app/components/ui/Spinner';
 import TagFilter from '@/app/components/prompt/TagFilter';
 import { Button } from "@/components/ui/button"
 import { Search, PlusCircle } from "lucide-react"
+import { Skeleton } from "@/components/ui/skeleton"
 import {
   Dialog,
   DialogContent,
@@ -15,6 +16,34 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { toast } from "react-hot-toast";
+
+const PromptCardSkeleton = () => {
+  return (
+    <div className="group relative rounded-lg border p-6 hover:shadow-md transition-all bg-card">
+      <div className="flex gap-4">
+        <Skeleton className="h-[100px] w-[100px] rounded-lg flex-shrink-0" />
+        <div className="flex-1 space-y-4">
+          <Skeleton className="h-6 w-2/3" />
+          <Skeleton className="h-4 w-full" />
+          <div className="flex gap-2">
+            <Skeleton className="h-6 w-16" />
+            <Skeleton className="h-6 w-16" />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const PromptListSkeleton = () => {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {[...Array(6)].map((_, index) => (
+        <PromptCardSkeleton key={index} />
+      ))}
+    </div>
+  );
+};
 
 async function getPrompts() {
   const res = await fetch('/api/prompts',{
@@ -130,17 +159,25 @@ export default function PromptsPage() {
               新建提示词
             </Button>
           </div>
-          <TagFilter 
-            allTags={allTags}
-            selectedTags={selectedTags}
-            onTagSelect={setSelectedTags}
-            className="pb-4 touch-manipulation"
-          />
+          {isLoading ? (
+            <div className="flex gap-2">
+              {[...Array(3)].map((_, index) => (
+                <Skeleton key={index} className="h-8 w-20" />
+              ))}
+            </div>
+          ) : (
+            <TagFilter 
+              allTags={allTags}
+              selectedTags={selectedTags}
+              onTagSelect={setSelectedTags}
+              className="pb-4 touch-manipulation"
+            />
+          )}
         </div>
 
         {isLoading ? (
-          <div className="flex justify-center items-center h-64">
-            <Spinner className="w-8 h-8" />
+          <div className="mt-8">
+            <PromptListSkeleton />
           </div>
         ) : (
           <div className="mt-8">

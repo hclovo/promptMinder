@@ -51,7 +51,7 @@ export default function Navbar() {
             </Link>
             
             <NavigationMenu className="hidden sm:ml-6 sm:flex">
-              <NavigationMenuList className="space-x-4">
+              <NavigationMenuList className="space-x-8">
                 <NavigationMenuItem>
                   <Link href="/prompts" legacyBehavior passHref>
                     <NavigationMenuLink
@@ -82,14 +82,14 @@ export default function Navbar() {
                   </Link>
                 </NavigationMenuItem>
 
-                <NavigationMenuItem>
+                {/* <NavigationMenuItem>
                   <Link href="https://github.com/liujuntao123/prompt-manager" target="_blank" legacyBehavior passHref>
                     <NavigationMenuLink className="text-muted-foreground flex items-center gap-1">
                       <Github className="h-4 w-4" />
                       GitHub
                     </NavigationMenuLink>
                   </Link>
-                </NavigationMenuItem>
+                </NavigationMenuItem> */}
               </NavigationMenuList>
             </NavigationMenu>
 
