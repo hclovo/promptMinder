@@ -10,6 +10,8 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent } from "@/components/ui/card"
 import Image from 'next/image';
 import CreatableSelect from 'react-select/creatable';
+import { motion } from "framer-motion";
+import { toast } from "sonner";
 
 export default function EditPrompt({ params }) {
   const router = useRouter();
@@ -50,9 +52,11 @@ export default function EditPrompt({ params }) {
       });
 
       if (response.ok) {
+        toast.success('提示词更新成功！');
         router.push(`/prompts/${id}`);
       }
     } catch (error) {
+      toast.error('更新失败，请重试');
       console.error('Error updating prompt:', error);
     } finally {
       setIsSubmitting(false);
@@ -80,124 +84,181 @@ export default function EditPrompt({ params }) {
 
   if (!prompt) {
     return (
-      <div className="flex justify-center items-center h-full">
-        <Spinner />
+      <div className="flex justify-center items-center min-h-[70vh]">
+        <Spinner className="w-8 h-8" />
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-6">编辑提示词</h1>
-      <Card>
-        <CardContent className="pt-6">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="title">标题</Label>
-              <Input
-                id="title"
-                value={prompt.title}
-                onChange={(e) => setPrompt({ ...prompt, title: e.target.value })}
-                required
-              />
-            </div>
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="container max-w-3xl mx-auto p-6"
+    >
+      <div className="flex items-center gap-4 mb-8">
+        <button 
+          onClick={() => router.back()}
+          className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+        >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
+        </button>
+        <h1 className="text-3xl font-bold">编辑提示词</h1>
+      </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="content">内容</Label>
-              <Textarea
-                id="content"
-                value={prompt.content}
-                onChange={(e) => setPrompt({ ...prompt, content: e.target.value })}
-                className="min-h-[128px]"
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="description">描述</Label>
-              <Textarea
-                id="description"
-                value={prompt.description}
-                onChange={(e) => setPrompt({ ...prompt, description: e.target.value })}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="tags">标签</Label>
-              <CreatableSelect
-                id="tags"
-                isMulti
-                value={prompt.tags?.split(',').map(tag => ({ value: tag, label: tag }))||[]}
-                onChange={(selected) => {
-                  const tags = selected ? selected.map(option => option.value).join(',') : '';
-                  setPrompt({ ...prompt, tags });
-                }}
-                options={tagOptions}
-                className="basic-multi-select"
-                classNamePrefix="select"
-                isCreatable={true}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault();
-                    e.stopPropagation();
-                  }
-                }}
-                onCreateOption={async (inputValue) => {
-                  try {
-                    const response = await fetch('/api/tags', {
-                      method: 'POST',
-                      headers: {
-                        'Content-Type': 'application/json',
-                      },
-                      body: JSON.stringify({ name: inputValue }),
-                    });
-                    
-                    if (response.ok) {
-                      const newOption = { value: inputValue, label: inputValue };
-                      setTagOptions([...tagOptions, newOption]);
-                      
-                      const newTags = prompt.tags ? `${prompt.tags},${inputValue}` : inputValue;
-                      setPrompt({ ...prompt, tags: newTags });
-                    }
-                  } catch (error) {
-                    console.error('Error creating new tag:', error);
-                  }
-                }}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="version">版本</Label>
-              <Input
-                id="version"
-                value={prompt.version}
-                onChange={(e) => setPrompt({ ...prompt, version: e.target.value })}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="cover_img">封面图片</Label>
-              <div className="flex items-center gap-4">
-                {prompt.cover_img && (
-                  <Image src={prompt.cover_img} alt="封面预览" className="w-20 h-20 object-cover rounded" width={80} height={80}/>
-                )}
+      <Card className="shadow-lg">
+        <CardContent className="p-6">
+          <form onSubmit={handleSubmit} className="space-y-8">
+            <motion.div 
+              className="space-y-6"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.2 }}
+            >
+              <div className="space-y-2">
+                <Label htmlFor="title" className="text-lg font-medium">标题</Label>
                 <Input
-                  id="cover_img"
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageUpload}
+                  id="title"
+                  value={prompt.title}
+                  onChange={(e) => setPrompt({ ...prompt, title: e.target.value })}
+                  className="h-12"
+                  placeholder="输入提示词标题"
+                  required
                 />
               </div>
-            </div>
 
-            <div className="flex gap-4">
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? '保存中...' : '保存'}
+              <div className="space-y-2">
+                <Label htmlFor="content" className="text-lg font-medium">内容</Label>
+                <Textarea
+                  id="content"
+                  value={prompt.content}
+                  onChange={(e) => setPrompt({ ...prompt, content: e.target.value })}
+                  className="min-h-[200px] resize-y"
+                  placeholder="输入提示词内容"
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="description" className="text-lg font-medium">描述</Label>
+                <Textarea
+                  id="description"
+                  value={prompt.description}
+                  onChange={(e) => setPrompt({ ...prompt, description: e.target.value })}
+                  className="min-h-[120px] resize-y"
+                  placeholder="添加描述信息"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="tags" className="text-lg font-medium">标签</Label>
+                <CreatableSelect
+                  id="tags"
+                  isMulti
+                  value={prompt.tags?.split(',').map(tag => ({ value: tag, label: tag }))||[]}
+                  onChange={(selected) => {
+                    const tags = selected ? selected.map(option => option.value).join(',') : '';
+                    setPrompt({ ...prompt, tags });
+                  }}
+                  options={tagOptions}
+                  className="basic-multi-select"
+                  classNamePrefix="select"
+                  placeholder="选择或创建标签"
+                  styles={{
+                    control: (base) => ({
+                      ...base,
+                      minHeight: '2.5rem',
+                    })
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      e.stopPropagation();
+                    }
+                  }}
+                  onCreateOption={async (inputValue) => {
+                    try {
+                      const response = await fetch('/api/tags', {
+                        method: 'POST',
+                        headers: {
+                          'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ name: inputValue }),
+                      });
+                      
+                      if (response.ok) {
+                        const newOption = { value: inputValue, label: inputValue };
+                        setTagOptions([...tagOptions, newOption]);
+                        
+                        const newTags = prompt.tags ? `${prompt.tags},${inputValue}` : inputValue;
+                        setPrompt({ ...prompt, tags: newTags });
+                      }
+                    } catch (error) {
+                      console.error('Error creating new tag:', error);
+                    }
+                  }}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="version" className="text-lg font-medium">版本</Label>
+                <Input
+                  id="version"
+                  value={prompt.version}
+                  onChange={(e) => setPrompt({ ...prompt, version: e.target.value })}
+                  className="h-12"
+                  placeholder="输入版本号"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="cover_img" className="text-lg font-medium">封面图片</Label>
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                  {prompt.cover_img && (
+                    <div className="relative group">
+                      <Image 
+                        src={prompt.cover_img} 
+                        alt="封面预览" 
+                        className="w-32 h-32 object-cover rounded-lg transition-transform hover:scale-105"
+                        width={128}
+                        height={128}
+                      />
+                      <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all rounded-lg" />
+                    </div>
+                  )}
+                  <div className="flex-1 w-full">
+                    <Input
+                      id="cover_img"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      className="h-12"
+                    />
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+
+            <div className="flex gap-4 pt-4">
+              <Button 
+                type="submit" 
+                disabled={isSubmitting}
+                className="w-32 h-12"
+              >
+                {isSubmitting ? (
+                  <div className="flex items-center gap-2">
+                    <Spinner className="w-4 h-4" />
+                    <span>保存中...</span>
+                  </div>
+                ) : '保存'}
               </Button>
               <Button
                 type="button"
                 variant="secondary"
                 onClick={() => router.back()}
+                className="w-32 h-12"
               >
                 取消
               </Button>
@@ -205,6 +266,6 @@ export default function EditPrompt({ params }) {
           </form>
         </CardContent>
       </Card>
-    </div>
+    </motion.div>
   );
 } 
