@@ -2,8 +2,12 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
+import { useAuth } from "@clerk/nextjs";
+import { TypeAnimation } from 'react-type-animation';
 
 export function HeroSection() {
+  const { isSignedIn } = useAuth();
+
   return (
     <section className="relative overflow-hidden bg-white pt-20 pb-20">
       {/* 背景装饰 */}
@@ -21,13 +25,28 @@ export function HeroSection() {
           <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600">
             让AI提示词管理更简单
           </h1>
-          <p className="text-lg md:text-xl text-gray-600 mb-8">
-            专业的提示词管理平台，为AI从业者、内容创作者打造
+          <p className="text-xl md:text-2xl text-gray-600 mb-2">
+            专业的提示词管理平台，为
+            <TypeAnimation
+              sequence={[
+                'AI从业者',
+                3000,
+                '内容创作者',
+                3000,
+              ]}
+              wrapper="span"
+              speed={50}
+              className="text-blue-600 font-medium"
+              repeat={Infinity}
+            />
+            打造
+          </p>
+          <p className="text-sm md:text-base text-gray-600 mb-8">
             支持版本控制、团队协作、智能分类等功能
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
-              href="/sign-up"
+              href={isSignedIn ? "/prompts" : "/sign-up"}
               className="px-8 py-4 bg-black text-white rounded-lg font-medium hover:bg-gray-800 transition-all"
             >
               免费开始使用

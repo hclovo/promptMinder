@@ -1,5 +1,6 @@
 'use client';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
@@ -10,7 +11,7 @@ import {
   NavigationMenuList,
 } from "@/components/ui/navigation-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Menu, Github, FolderPlus, Library, LogOut } from "lucide-react"
+import { Menu, FolderPlus, Library, LogOut } from "lucide-react"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { ClerkProvider, SignInButton, SignedIn, SignedOut, UserButton } from '@clerk/nextjs'
 
@@ -45,6 +46,7 @@ export default function Navbar() {
         <div className="flex justify-between h-16">
           <div className="flex">
             <Link href="/" className="flex items-center group">
+              <Image src="/logo2.png" alt="PromptMinder" width={60} height={60} />
               <span className="text-xl font-bold bg-gradient-to-r from-primary/90 to-primary bg-clip-text text-transparent hover:from-primary hover:to-primary/90 transition-all duration-300 tracking-tight">
                 Prompt Minder
               </span>
@@ -82,14 +84,6 @@ export default function Navbar() {
                   </Link>
                 </NavigationMenuItem>
 
-                {/* <NavigationMenuItem>
-                  <Link href="https://github.com/liujuntao123/prompt-manager" target="_blank" legacyBehavior passHref>
-                    <NavigationMenuLink className="text-muted-foreground flex items-center gap-1">
-                      <Github className="h-4 w-4" />
-                      GitHub
-                    </NavigationMenuLink>
-                  </Link>
-                </NavigationMenuItem> */}
               </NavigationMenuList>
             </NavigationMenu>
 
@@ -123,14 +117,6 @@ export default function Navbar() {
                     >
                       <FolderPlus className="h-4 w-4" />
                       新建
-                    </Link>
-                    <Link
-                      href="https://github.com/yourusername/yourrepo"
-                      target="_blank"
-                      className="text-muted-foreground flex items-center gap-2"
-                    >
-                      <Github className="h-4 w-4" />
-                      GitHub
                     </Link>
                   </div>
                 </SheetContent>
