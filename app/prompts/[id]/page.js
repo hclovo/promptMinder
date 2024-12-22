@@ -314,7 +314,7 @@ export default function PromptDetail({ params }) {
           {prompt.cover_img && (
             <Card className="mb-6 bg-gradient-to-b from-background to-secondary/20 border-none hidden md:block">
               <CardContent className="p-0">
-                <div className="rounded-lg overflow-hidden h-[200px] relative">
+                <div className="rounded-lg overflow-hidden h-[160px] relative">
                   <Image 
                     src={prompt.cover_img} 
                     alt={prompt.title}
@@ -508,7 +508,7 @@ export default function PromptDetail({ params }) {
           <DialogHeader>
             <DialogTitle>确认删除</DialogTitle>
           </DialogHeader>
-          <p className="text-muted-foreground">确定要删除这个提示词吗？此操作无法撤销。</p>
+          <p className="text-muted-foreground">确定要删除这个提示词吗？此操作无法撤��。</p>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowDeleteConfirm(false)}>
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

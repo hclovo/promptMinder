@@ -30,7 +30,7 @@ export async function POST(request, { params }) {
   const { userId } = await auth()
   const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
 
-  const { title, content, description, is_public, tags, image_url ,version} = await request.json();
+  const { title, content, description, is_public, tags, image_url, version } = await request.json();
 
   const { data: prompt, error } = await supabase
     .from('prompts')
@@ -43,7 +43,6 @@ export async function POST(request, { params }) {
     return NextResponse.json({ error: error ? error.message : 'Prompt not found' }, { status: 500 });
   }
 
-
   const updateData = {
     updated_at: new Date().toISOString(),
     user_id: userId
@@ -53,8 +52,8 @@ export async function POST(request, { params }) {
   if (description !== undefined) updateData.description = description;
   if (is_public !== undefined) updateData.is_public = is_public;
   if (tags !== undefined) updateData.tags = tags;
-  if (image_url !== undefined) updateData.image_url = image_url;
-  if(version !== undefined) updateData.version = version;
+  if (image_url !== undefined) updateData.cover_img = image_url;
+  if (version !== undefined) updateData.version = version;
 
   const { error: updateError } = await supabase
     .from('prompts')

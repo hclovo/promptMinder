@@ -59,7 +59,10 @@ export default function EditPrompt({ params }) {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(prompt),
+        body: JSON.stringify({
+          ...prompt,
+          image_url: prompt.cover_img
+        }),
       });
 
       if (response.ok) {
