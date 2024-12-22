@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 const features = [
   {
     title: "智能分类管理",
-    description: "通过标签、文件夹等多种方式组织提示词，快速检索所需内容",
+    description: "通过标签、项目等多种方式组织提示词，快速检索所需内容",
     icon: "🗂️",
   },
   {
@@ -20,7 +20,7 @@ const features = [
   },
   {
     title: "AI模型支持",
-    description: "支持 GPT-4、Claude 等多种模型，提供实时测试环境",
+    description: "兼容任何 OpenAI 接口模型，提供实时测试环境",
     icon: "🤖",
   },
   {
@@ -30,7 +30,7 @@ const features = [
   },
   {
     title: "API集成",
-    description: "提供完整的API接口，轻松集成到现有系统",
+    description: "提供完整的API接口，敬请期待",
     icon: "🔌",
   },
 ];

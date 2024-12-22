@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Copy, Share2, Trash2 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 
-export default function PromptList({ prompts, onDelete }) {
+export default function PromptList({ prompts, onDelete, onShare }) {
   const { toast } = useToast();
 
   const handleCopy = async (content) => {
@@ -36,11 +36,34 @@ export default function PromptList({ prompts, onDelete }) {
       }
 
       const shareUrl = `${window.location.origin}/share/${id}`;
-      await navigator.clipboard.writeText(shareUrl);
-      toast({
-        description: "分享链接已复制到剪贴板",
-        duration: 2000,
-      });
+      
+      try {
+        await navigator.clipboard.writeText(shareUrl);
+        toast({
+          description: "分享链接已复制到剪贴板",
+          duration: 2000,
+        });
+      } catch (clipboardErr) {
+        const textarea = document.createElement('textarea');
+        textarea.value = shareUrl;
+        document.body.appendChild(textarea);
+        textarea.select();
+        try {
+          document.execCommand('copy');
+          toast({
+            description: "分享链接已复制到剪贴板",
+            duration: 2000,
+          });
+        } catch (fallbackErr) {
+          toast({
+            variant: "destructive",
+            description: "复制失败，请手动复制链接",
+            duration: 2000,
+          });
+        } finally {
+          document.body.removeChild(textarea);
+        }
+      }
     } catch (err) {
       console.error('分享失败:', err);
       toast({
@@ -122,6 +145,7 @@ export default function PromptList({ prompts, onDelete }) {
                   size="icon"
                   onClick={(e) => {
                     e.preventDefault();
+                    e.stopPropagation();
                     handleShare(prompt.id);
                   }}
                   className="h-8 w-8"

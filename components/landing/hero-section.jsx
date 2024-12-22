@@ -51,12 +51,12 @@ export function HeroSection() {
             >
               免费开始使用
             </Link>
-            <Link
+            {/* <Link
               href="/pricing"
               className="px-8 py-4 border border-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-all"
             >
               查看价格方案
-            </Link>
+            </Link> */}
           </div>
         </motion.div>
       </div>

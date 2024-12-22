@@ -44,15 +44,15 @@ export default function Navbar() {
     <nav className="border-b">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
-          <div className="flex">
-            <Link href="/" className="flex items-center group">
-              <Image src="/logo2.png" alt="PromptMinder" width={60} height={60} />
-              <span className="text-xl font-bold bg-gradient-to-r from-primary/90 to-primary bg-clip-text text-transparent hover:from-primary hover:to-primary/90 transition-all duration-300 tracking-tight">
-                Prompt Minder
-              </span>
-            </Link>
-            
-            <NavigationMenu className="hidden sm:ml-6 sm:flex">
+          <Link href="/" className="flex items-center group">
+            <Image src="/logo2.png" alt="PromptMinder" width={60} height={60} />
+            <span className="hidden sm:block text-xl font-bold bg-gradient-to-r from-primary/90 to-primary bg-clip-text text-transparent hover:from-primary hover:to-primary/90 transition-all duration-300">
+              PromptMinder
+            </span>
+          </Link>
+
+          <div className="flex items-center">
+            <NavigationMenu className="hidden sm:flex">
               <NavigationMenuList className="space-x-8">
                 <NavigationMenuItem>
                   <Link href="/prompts" legacyBehavior passHref>
@@ -122,15 +122,15 @@ export default function Navbar() {
                 </SheetContent>
               </Sheet>
             </div>
-          </div>
 
-          <div className="flex items-center">
-          <SignedOut>
-              <SignInButton />
-            </SignedOut>
-            <SignedIn>
-              <UserButton />
-            </SignedIn>
+            <div className="flex items-center ml-8">
+              <SignedOut>
+                <SignInButton />
+              </SignedOut>
+              <SignedIn>
+                <UserButton />
+              </SignedIn>
+            </div>
           </div>
         </div>
       </div>

@@ -6,6 +6,7 @@ import { FeatureSection } from "@/components/landing/feature-section";
 import { PricingSection } from "@/components/landing/pricing-section";
 import { TestimonialSection } from "@/components/landing/testimonial-section";
 import { FAQSection } from "@/components/landing/faq-section";
+import { CTASection } from "@/components/landing/cta-section";
 
 export const metadata = {
   title: "Prompt Minder - 专业的AI提示词管理平台",
@@ -28,6 +29,7 @@ export default function Home() {
         {/* <PricingSection /> */}
         <TestimonialSection />
         <FAQSection />
+        <CTASection />
       </main>
     </>
   );

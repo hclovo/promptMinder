@@ -5,13 +5,13 @@ import Image from "next/image";
 
 const testimonials = [
   {
-    content: "这是一个非常简单的方式来迭代和调整提示词。",
+    content: "这是一个非常简单的方式来迭代和管理提示词。",
     author: "IndieAI",
     title: "AI 独立开发者",
     avatar: `https://api.dicebear.com/7.x/bottts/svg?seed=123`,
   },
   {
-    content: "Prompt Minder 真的很棒。",
+    content: "Prompt Minder 真的很棒，简洁但不简单。",
     author: "小锐",
     title: "提示词工程师",
     avatar: `https://api.dicebear.com/7.x/pixel-art/svg?seed=456`,

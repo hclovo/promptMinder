@@ -15,7 +15,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { toast } from "react-hot-toast";
+import { useToast } from "@/hooks/use-toast"
 
 const PromptCardSkeleton = () => {
   return (
@@ -78,6 +78,7 @@ export default function PromptsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [promptToDelete, setPromptToDelete] = useState(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     const fetchPrompts = async () => {
@@ -134,6 +135,37 @@ export default function PromptsPage() {
 
   const allTags = [...new Set(prompts.flatMap(prompt => prompt.tags))];
 
+  const handleShare = async (id) => {
+    const shareUrl = `${window.location.origin}/share/${id}`;
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      toast({
+        description: "链接已复制到剪贴板",
+        duration: 2000,
+      });
+    } catch (clipboardErr) {
+      const textarea = document.createElement('textarea');
+      textarea.value = shareUrl;
+      document.body.appendChild(textarea);
+      textarea.select();
+      try {
+        document.execCommand('copy');
+        toast({
+          description: "链接已复制到剪贴板",
+          duration: 2000,
+        });
+      } catch (fallbackErr) {
+        toast({
+          variant: "destructive",
+          description: "复制失败，请手动复制链接",
+          duration: 2000,
+        });
+      } finally {
+        document.body.removeChild(textarea);
+      }
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-background/80">
       <div className="container px-4 py-4 sm:py-16 mx-auto max-w-7xl">
@@ -181,7 +213,11 @@ export default function PromptsPage() {
           </div>
         ) : (
           <div className="mt-8">
-            <PromptList prompts={filteredPrompts} onDelete={handleDelete} />
+            <PromptList 
+              prompts={filteredPrompts} 
+              onDelete={handleDelete} 
+              onShare={handleShare}
+            />
           </div>
         )}
       </div>
