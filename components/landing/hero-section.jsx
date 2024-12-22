@@ -9,7 +9,7 @@ export function HeroSection() {
   const { isSignedIn } = useAuth();
 
   return (
-    <section className="relative overflow-hidden bg-white pt-20 pb-20">
+    <section className="relative overflow-hidden bg-white pt-24 pb-24">
       {/* 背景装饰 */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px]">
         <div className="absolute inset-0 bg-gradient-radial from-blue-100 via-purple-50 to-transparent blur-[100px] opacity-50" />

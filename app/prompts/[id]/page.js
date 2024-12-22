@@ -22,6 +22,12 @@ import {
 import { Input } from "@/components/ui/input"
 import { Settings2 } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
+import ReactMarkdown from 'react-markdown';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { oneDark } from 'react-syntax-highlighter/dist/cjs/styles/prism';
+import { Check, Copy } from "lucide-react"
+
+const STORAGE_KEY = 'chat_settings';
 
 const TypewriterText = ({ text }) => {
   return (
@@ -93,7 +99,13 @@ export default function PromptDetail({ params }) {
   const [inputMessage, setInputMessage] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
-  const [apiKey, setApiKey] = useState('');
+  const [apiKey, setApiKey] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const savedSettings = localStorage.getItem(STORAGE_KEY);
+      return savedSettings ? JSON.parse(savedSettings).apiKey : '';
+    }
+    return '';
+  });
   const [selectedModel, setSelectedModel] = useState('glm-4-flash');
   const [isLoading, setIsLoading] = useState(false);
   const [useCustomKey, setUseCustomKey] = useState(false);
@@ -102,6 +114,21 @@ export default function PromptDetail({ params }) {
   const [editedContent, setEditedContent] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const messagesEndRef = useRef(null);
+  const [copiedMessageId, setCopiedMessageId] = useState(null);
+  const [customModel, setCustomModel] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const savedSettings = localStorage.getItem(STORAGE_KEY);
+      return savedSettings ? JSON.parse(savedSettings).model : 'glm-4-flash';
+    }
+    return 'glm-4-flash';
+  });
+  const [baseUrl, setBaseUrl] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const savedSettings = localStorage.getItem(STORAGE_KEY);
+      return savedSettings ? JSON.parse(savedSettings).baseUrl : 'https://open.bigmodel.cn/api/paas/v4';
+    }
+    return 'https://open.bigmodel.cn/api/paas/v4';
+  });
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -149,7 +176,7 @@ export default function PromptDetail({ params }) {
 
   const handleShare = async () => {
     try {
-      // 首先调用 API 将提示词设为公开
+      // 先调用 API 将提示词设为公开
       const response = await fetch(`/api/prompts/share/${id}`, {
         method: 'POST',
       });
@@ -204,7 +231,8 @@ export default function PromptDetail({ params }) {
             content: msg.content
           })),
           apiKey: useCustomKey ? apiKey : undefined,
-          model: selectedModel,
+          model: useCustomKey ? customModel : selectedModel,
+          baseUrl: useCustomKey ? baseUrl : undefined,
           systemPrompt: prompt.content,
           temperature: temperature
         })
@@ -290,6 +318,49 @@ export default function PromptDetail({ params }) {
     }
   };
 
+  const handleCopyMessage = async (content, index) => {
+    try {
+      await navigator.clipboard.writeText(content);
+      setCopiedMessageId(index);
+    } catch (err) {
+      console.error('Failed to copy text:', err);
+    }
+  };
+
+  const saveSettings = (settings) => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
+  };
+
+  const handleApiKeyChange = (e) => {
+    const newApiKey = e.target.value;
+    setApiKey(newApiKey);
+    saveSettings({
+      apiKey: newApiKey,
+      model: customModel,
+      baseUrl: baseUrl
+    });
+  };
+
+  const handleModelChange = (e) => {
+    const newModel = e.target.value;
+    setCustomModel(newModel);
+    saveSettings({
+      apiKey: apiKey,
+      model: newModel,
+      baseUrl: baseUrl
+    });
+  };
+
+  const handleBaseUrlChange = (e) => {
+    const newBaseUrl = e.target.value;
+    setBaseUrl(newBaseUrl);
+    saveSettings({
+      apiKey: apiKey,
+      model: customModel,
+      baseUrl: newBaseUrl
+    });
+  };
+
   if (!prompt) {
     return (
       <div className="container mx-auto p-4 sm:p-6 max-w-7xl">
@@ -321,8 +392,8 @@ export default function PromptDetail({ params }) {
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[800px]">
-        <div className="h-full flex flex-col">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="h-[calc(100vh-12rem)] flex flex-col">
           {prompt.cover_img && (
             <Card className="mb-6 bg-gradient-to-b from-background to-secondary/20 border-none">
               <CardContent className="p-0">
@@ -481,7 +552,7 @@ export default function PromptDetail({ params }) {
                   </div>
                 </CardHeader>
                 <CardContent className="flex-1 p-0 overflow-hidden">
-                  <ScrollArea className="h-[500px] w-full">
+                  <ScrollArea className="h-full w-full">
                     <div className="rounded-lg bg-secondary/30 p-4 min-h-full">
                       {isEditing ? (
                         <div className="h-[500px]">
@@ -510,7 +581,7 @@ export default function PromptDetail({ params }) {
           </Card>
         </div>
 
-        <div className="h-full flex flex-col">
+        <div className="h-[calc(100vh-12rem)]">
           <Card className="h-full flex flex-col">
             <CardHeader>
               <div className="flex justify-between items-center">
@@ -536,7 +607,7 @@ export default function PromptDetail({ params }) {
                 <div className="mt-4 space-y-4 p-4 bg-secondary/10 rounded-lg">
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
-                      <label className="text-sm font-medium">API Key</label>
+                      <label className="text-sm font-medium">API Key (兼容OpenAI)</label>
                       <Button
                         variant="ghost"
                         size="sm"
@@ -547,29 +618,48 @@ export default function PromptDetail({ params }) {
                       </Button>
                     </div>
                     {useCustomKey && (
-                      <Input
-                        type="password"
-                        value={apiKey}
-                        onChange={(e) => setApiKey(e.target.value)}
-                        placeholder="输入您的 API Key"
-                        className="font-mono"
-                      />
+                      <>
+                        <Input
+                          type="password"
+                          value={apiKey}
+                          onChange={handleApiKeyChange}
+                          placeholder="输入您的 API Key"
+                          className="font-mono"
+                        />
+                        <p className="text-xs text-muted-foreground">Model</p>
+                        <Input
+                          type="text"
+                          value={customModel}
+                          onChange={handleModelChange}
+                          placeholder="输入模型名称 (例如: gpt-3.5-turbo)"
+                          className="font-mono mt-2"
+                        />
+                        <p className="text-xs text-muted-foreground">BaseURL</p>
+                        <Input
+                          type="text"
+                          value={baseUrl}
+                          onChange={handleBaseUrlChange}
+                          placeholder="BaseURL 默认: https://open.bigmodel.cn/api/paas/v4"
+                          className="font-mono mt-2"
+                        />
+                      </>
                     )}
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">选择模型</label>
-                    <Select value={selectedModel} onValueChange={setSelectedModel}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="glm-4-flash">GLM-4-Flash (免费)</SelectItem>
-                        <SelectItem value="glm-4">GLM-4</SelectItem>
-                        <SelectItem value="glm-3-turbo">GLM-3-Turbo</SelectItem>
-                        <SelectItem value="chatglm_turbo">ChatGLM Turbo</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+                  
+                  {!useCustomKey && (
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">选择模型</label>
+                      <Select value={selectedModel} onValueChange={setSelectedModel}>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="glm-4-flash">GLM-4-Flash (免费)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+                  
                   <div className="space-y-2">
                     <label className="text-sm font-medium">回答随机性 (Temperature)</label>
                     <div className="flex items-center gap-2">
@@ -591,8 +681,8 @@ export default function PromptDetail({ params }) {
                 </div>
               )}
             </CardHeader>
-            <CardContent className="flex-1 flex flex-col p-0">
-              <ScrollArea className="flex-1 w-full h-[500px]">
+            <CardContent className="flex-1 flex flex-col p-0 min-h-0">
+              <ScrollArea className="flex-1">
                 <div className="space-y-4 p-4">
                   {messages.map((message, index) => (
                     <div
@@ -605,16 +695,57 @@ export default function PromptDetail({ params }) {
                         className={`max-w-[80%] rounded-lg p-3 ${
                           message.role === 'user'
                             ? 'bg-primary text-primary-foreground'
-                            : 'bg-muted'
+                            : 'bg-white text-black'
                         }`}
                       >
-                        <p className="text-sm">
-                          {message.role === 'assistant' && message === messages[messages.length - 1] ? (
-                            <TypewriterText text={message.content} />
-                          ) : (
-                            message.content
+                        <div className="flex justify-between items-start mb-2">
+                          <div className="text-xs text-gray-500">
+                            {message.role === 'user' ?  '' : prompt.title}
+                          </div>
+                          {message.role === 'assistant' && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-6 w-6 text-gray-500 hover:text-gray-700"
+                              onClick={() => handleCopyMessage(message.content, index)}
+                            >
+                              {copiedMessageId === index ? (
+                                <Check className="h-3 w-3" />
+                              ) : (
+                                <Copy className="h-3 w-3" />
+                              )}
+                            </Button>
                           )}
-                        </p>
+                        </div>
+                        {message.role === 'assistant' ? (
+                          <div className="text-sm prose prose-invert prose-p:my-0 prose-pre:my-0 prose-pre:bg-secondary/50 max-w-none prose-headings:text-black prose-p:text-black prose-strong:text-black prose-ul:text-black prose-ol:text-black">
+                            <ReactMarkdown
+                              components={{
+                                code({node, inline, className, children, ...props}) {
+                                  const match = /language-(\w+)/.exec(className || '');
+                                  return !inline && match ? (
+                                    <SyntaxHighlighter
+                                      style={oneDark}
+                                      language={match[1]}
+                                      PreTag="div"
+                                      {...props}
+                                    >
+                                      {String(children).replace(/\n$/, '')}
+                                    </SyntaxHighlighter>
+                                  ) : (
+                                    <code className={className} {...props}>
+                                      {children}
+                                    </code>
+                                  )
+                                }
+                              }}
+                            >
+                              {message.content}
+                            </ReactMarkdown>
+                          </div>
+                        ) : (
+                          <p className="text-sm">{message.content}</p>
+                        )}
                         <span className="text-xs opacity-70 mt-1 block">
                           {new Date(message.timestamp).toLocaleTimeString()}
                         </span>
@@ -625,7 +756,7 @@ export default function PromptDetail({ params }) {
                 </div>
               </ScrollArea>
               
-              <div className="mt-4 flex gap-2 p-4">
+              <div className="shrink-0 mt-4 flex gap-2 p-4 border-t">
                 <Textarea
                   value={inputMessage}
                   onChange={(e) => setInputMessage(e.target.value)}
