@@ -207,7 +207,7 @@ export default function NewPrompt() {
                 value={prompt.content}
                 onChange={(e) => setPrompt({ ...prompt, content: e.target.value })}
                 placeholder="在这里输入你的提示词内容，可以包含具体的指令、上下文要求等"
-                className={`min-h-[128px] ${errors.content ? 'border-red-500' : ''}`}
+                className={`min-h-[200px] ${errors.content ? 'border-red-500' : ''}`}
                 required
               />
               {errors.content && (
@@ -226,7 +226,7 @@ export default function NewPrompt() {
                 value={prompt.description}
                 onChange={(e) => setPrompt({ ...prompt, description: e.target.value })}
                 placeholder="简要描述这个提示词的用途和使用场景"
-                className="min-h-[80px]"
+                className="min-h-[60px]"
               />
             </motion.div>
 

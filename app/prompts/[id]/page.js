@@ -488,7 +488,7 @@ export default function PromptDetail({ params }) {
                           <Textarea
                             value={editedContent}
                             onChange={(e) => setEditedContent(e.target.value)}
-                            className="w-full h-full text-base leading-relaxed whitespace-pre-wrap font-mono text-primary"
+                            className="w-full h-full text-base leading-relaxed whitespace-pre-wrap text-primary"
                             placeholder="输入提示词内容..."
                             style={{ 
                               height: '100%',
@@ -498,7 +498,7 @@ export default function PromptDetail({ params }) {
                           />
                         </div>
                       ) : (
-                        <p className="text-base leading-relaxed whitespace-pre-wrap font-mono text-primary">
+                        <p className="text-base leading-relaxed whitespace-pre-wrap text-primary">
                           {prompt.content}
                         </p>
                       )}

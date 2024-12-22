@@ -135,7 +135,7 @@ export default function EditPrompt({ params }) {
                   id="content"
                   value={prompt.content}
                   onChange={(e) => setPrompt({ ...prompt, content: e.target.value })}
-                  className="min-h-[200px] resize-y"
+                  className="min-h-[250px] resize-y"
                   placeholder="输入提示词内容"
                   required
                 />
@@ -147,7 +147,7 @@ export default function EditPrompt({ params }) {
                   id="description"
                   value={prompt.description}
                   onChange={(e) => setPrompt({ ...prompt, description: e.target.value })}
-                  className="min-h-[120px] resize-y"
+                  className="min-h-[80px] resize-y"
                   placeholder="添加描述信息"
                 />
               </div>

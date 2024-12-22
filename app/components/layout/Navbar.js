@@ -46,7 +46,7 @@ export default function Navbar() {
           <div className="flex">
             <Link href="/" className="flex items-center group">
               <span className="text-xl font-bold bg-gradient-to-r from-primary/90 to-primary bg-clip-text text-transparent hover:from-primary hover:to-primary/90 transition-all duration-300 tracking-tight">
-                Prompt Manager
+                Prompt Minder
               </span>
             </Link>
             
