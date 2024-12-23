@@ -371,7 +371,7 @@ export default function PromptDetail({ params }) {
             <CardContent className="p-6 sm:p-8 flex flex-col h-full">
               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-6 mb-8">
                 <div className="space-y-4">
-                  <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-primary to-primary-foreground bg-clip-text text-transparent">
+                  <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-primary to-primary-foreground [-webkit-background-clip:text] [background-clip:text] text-transparent">
                     {prompt.title}
                   </h1>
                   <p className="text-sm text-muted-foreground leading-relaxed">

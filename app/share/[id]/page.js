@@ -66,7 +66,7 @@ export default function SharePromptDetail({ params }) {
 
           <CardContent className="p-8">
             {!prompt.cover_img && (
-              <h1 className="text-4xl sm:text-5xl font-bold mb-6 bg-gradient-to-r from-primary to-primary-foreground bg-clip-text text-transparent drop-shadow-sm">
+              <h1 className="text-4xl sm:text-5xl font-bold mb-6 bg-gradient-to-r from-primary to-primary-foreground [-webkit-background-clip:text] [background-clip:text] text-transparent drop-shadow-sm">
                 {prompt.title}
               </h1>
             )}

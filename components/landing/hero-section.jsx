@@ -22,7 +22,7 @@ export function HeroSection() {
           transition={{ duration: 0.8 }}
           className="text-center max-w-3xl mx-auto"
         >
-          <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600">
+          <h1 className="text-4xl md:text-6xl font-bold mb-6 [-webkit-background-clip:text] [background-clip:text] text-transparent bg-gradient-to-r from-gray-900 to-gray-600">
             让AI提示词管理更简单
           </h1>
           <p className="text-xl md:text-2xl text-gray-600 mb-2">

@@ -14,7 +14,7 @@ export default function RootLayout({ children }) {
   const pathname = usePathname();
   
   // 定义不需要显示 header 和 footer 的页面路径
-  const noHeaderFooterPages = ['/sign-in', '/sign-up'];
+  const noHeaderFooterPages = ['/sign-in', '/sign-up','/','/'];
   const shouldShowHeaderFooter = !noHeaderFooterPages.includes(pathname);
 
   return (
