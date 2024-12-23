@@ -1,7 +1,6 @@
-# PromptManager
+# PromptMind
 
-一个简洁、美观、实用的提示词管理网站。
-
+一个专注于提示词的管理平台，让AI提示词管理更简单
 
 ## 特性
 
@@ -17,7 +16,7 @@
 - Next.js 14
 - Tailwind CSS
 - Lucide
-- Shadcn/UI
+- Shadcn UI
 - 数据库：Supabase
 - 用户认证：Clerk
 

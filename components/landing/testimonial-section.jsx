@@ -42,7 +42,7 @@ export function TestimonialSection() {
               className="bg-white rounded-2xl p-8 shadow-[0_1px_3px_0_rgba(0,0,0,0.1)] hover:shadow-[0_2px_4px_0_rgba(0,0,0,0.1)] transition-shadow"
             >
               <div className="min-h-[160px] flex flex-col">
-                <p className="text-gray-600 text-lg italic mb-8">
+                <p className="text-gray-600 text-lg italic mb-4">
                   &ldquo;{testimonial.content}&rdquo;
                 </p>
                 <div className="mt-auto flex items-center gap-3">
