@@ -26,6 +26,7 @@ export default function EditPrompt({ params }) {
   const unwrappedParams = use(params);
   const id = unwrappedParams.id;
   const [prompt, setPrompt] = useState(null);
+  const [originalVersion, setOriginalVersion] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [tagOptions, setTagOptions] = useState([]);
   const [selectedFile, setSelectedFile] = useState(null);
@@ -37,7 +38,10 @@ export default function EditPrompt({ params }) {
     if (id) {
       fetch(`/api/prompts/${id}`)
         .then((response) => response.json())
-        .then((data) => setPrompt(data))
+        .then((data) => {
+          setPrompt(data);
+          setOriginalVersion(data.version);
+        })
         .catch((error) => console.error('Error fetching prompt:', error));
     }
 
@@ -54,20 +58,35 @@ export default function EditPrompt({ params }) {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch(`/api/prompts/${id}`, {
-        method: 'POST',
+      const isNewVersion = originalVersion !== prompt.version;
+      const endpoint = isNewVersion ? '/api/prompts' : `/api/prompts/${id}`;
+      const method = 'POST';
+
+      const submitData = {
+        ...prompt,
+        cover_img: prompt.cover_img
+      };
+      if (isNewVersion) {
+        delete submitData.id;
+        delete submitData.created_at;
+        delete submitData.updated_at;
+      }
+
+      const response = await fetch(endpoint, {
+        method: method,
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          ...prompt,
-          image_url: prompt.cover_img
-        }),
+        body: JSON.stringify(submitData),
       });
 
       if (response.ok) {
-        toast.success('提示词更新成功！');
-        router.push(`/prompts/${id}`);
+        const data = await response.json();
+        toast.success(isNewVersion ? '新版本创建成功！' : '提示词更新成功！');
+        router.push(`/prompts/${isNewVersion ? data.id : id}`);
+      } else {
+        const errorData = await response.json();
+        toast.error(errorData.error || '更新失败，请重试');
       }
     } catch (error) {
       toast.error('更新失败，请重试');

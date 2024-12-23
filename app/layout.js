@@ -6,6 +6,7 @@ import { ClerkProvider } from '@clerk/nextjs';
 import Navbar from "./components/layout/Navbar";
 import Footer from "./components/layout/Footer";
 import { usePathname } from 'next/navigation';
+import { Toaster } from "@/components/ui/toaster"
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -27,6 +28,7 @@ export default function RootLayout({ children }) {
             </main>
             {shouldShowHeaderFooter && <Footer />}
           </div>
+          <Toaster />
         </body>
       </html>
     </ClerkProvider>

@@ -27,6 +27,7 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark } from 'react-syntax-highlighter/dist/cjs/styles/prism';
 import { Check, Copy } from "lucide-react"
 import ChatTest from '@/app/components/chat/ChatTest';
+import { useToast } from "@/hooks/use-toast"
 
 const STORAGE_KEY = 'chat_settings';
 
@@ -130,6 +131,9 @@ export default function PromptDetail({ params }) {
     }
     return 'https://open.bigmodel.cn/api/paas/v4';
   });
+  const [versions, setVersions] = useState([]);
+  const [selectedVersion, setSelectedVersion] = useState(null);
+  const { toast } = useToast();
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -141,10 +145,23 @@ export default function PromptDetail({ params }) {
 
   useEffect(() => {
     if (id) {
-      // Fetch the prompt data from your API or data source
+      // 获取当前提示词
       fetch(`/api/prompts/${id}`)
         .then((response) => response.json())
-        .then((data) => setPrompt({...data, cover_img: data.cover_img ? data.cover_img : null,tags: data.tags ? data.tags.split(',') : []}))
+        .then((data) => {
+          setPrompt({...data, cover_img: data.cover_img ? data.cover_img : null, tags: data.tags ? data.tags.split(',') : []});
+          setSelectedVersion(data.version);
+          
+          // 获取所有相同标题的版本
+          fetch(`/api/prompts?title=${encodeURIComponent(data.title)}`)
+            .then((response) => response.json())
+            .then((versionsData) => {
+              // 过滤出相同标题的版本
+              const sameTitle = versionsData.filter(v => v.title === data.title);
+              setVersions(sameTitle.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)));
+            })
+            .catch((error) => console.error('Error fetching versions:', error));
+        })
         .catch((error) => console.error('Error fetching prompt:', error));
     }
   }, [id]);
@@ -153,9 +170,18 @@ export default function PromptDetail({ params }) {
     try {
       await navigator.clipboard.writeText(prompt.content);
       setCopySuccess(true);
+      toast({
+        title: "复制成功",
+        description: "提示词内容已复制到剪贴板",
+      });
       setTimeout(() => setCopySuccess(false), 2000);
     } catch (err) {
       console.error('Failed to copy text:', err);
+      toast({
+        title: "复制失败",
+        description: "请重试",
+        variant: "destructive",
+      });
     }
   };
 
@@ -177,7 +203,6 @@ export default function PromptDetail({ params }) {
 
   const handleShare = async () => {
     try {
-      // 先调用 API 将提示词设为公开
       const response = await fetch(`/api/prompts/share/${id}`, {
         method: 'POST',
       });
@@ -186,15 +211,21 @@ export default function PromptDetail({ params }) {
         throw new Error('分享失败');
       }
 
-      // 成功后复制分享链接
       const shareUrl = `${window.location.origin}/share/${id}`;
       await navigator.clipboard.writeText(shareUrl);
       setShareSuccess(true);
+      toast({
+        title: "分享成功",
+        description: "分享链接已复制到剪贴板",
+      });
       setTimeout(() => setShareSuccess(false), 2000);
     } catch (err) {
       console.error('Failed to share prompt:', err);
-      // 可以添加错误提示
-      alert('分享失败，请稍后重试');
+      toast({
+        title: "分享��败",
+        description: "请稍后重试",
+        variant: "destructive",
+      });
     }
   };
 
@@ -278,6 +309,13 @@ export default function PromptDetail({ params }) {
     });
   };
 
+  const handleVersionChange = (version) => {
+    const selectedPrompt = versions.find(v => v.version === version);
+    if (selectedPrompt) {
+      router.push(`/prompts/${selectedPrompt.id}`);
+    }
+  };
+
   if (!prompt) {
     return (
       <div className="container mx-auto p-4 sm:p-6 max-w-7xl">
@@ -288,7 +326,7 @@ export default function PromptDetail({ params }) {
             onClick={() => router.push('/prompts')}
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
-            返回提示词列表
+            返回提示词��表
           </Button>
         </div>
         <PromptSkeleton />
@@ -340,17 +378,44 @@ export default function PromptDetail({ params }) {
                     {prompt.description}
                   </p>
                   <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
-                    <div className="flex items-center">
-                      <svg className="w-4 h-4 mr-2 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                      </svg>
-                      {new Date(prompt.created_at).toLocaleDateString()}
-                    </div>
-                    <div className="flex items-center">
-                      <svg className="w-4 h-4 mr-2 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                      </svg>
-                      Version {prompt.version}
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <div className="flex items-center gap-1">
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        {new Date(prompt.created_at).toLocaleDateString()}
+                      </div>
+                      <span>•</span>
+                      <div className="flex items-center gap-1">
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                        </svg>
+                        {versions.length > 1 ? (
+                          <Select
+                            value={selectedVersion}
+                            onValueChange={handleVersionChange}
+                          >
+                            <SelectTrigger className="h-5 text-xs border-none bg-transparent hover:bg-secondary/50 transition-colors">
+                              <SelectValue placeholder="选择版本">
+                                v{selectedVersion}
+                              </SelectValue>
+                            </SelectTrigger>
+                            <SelectContent>
+                              {versions.map((version) => (
+                                <SelectItem 
+                                  key={version.id} 
+                                  value={version.version}
+                                  className="text-xs"
+                                >
+                                  v{version.version} ({new Date(version.created_at).toLocaleDateString()})
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        ) : (
+                          <span>v{prompt.version}</span>
+                        )}
+                      </div>
                     </div>
                     {prompt.tags?.length > 0 && prompt.tags.map((tag) => (
                       <Badge 
@@ -508,7 +573,7 @@ export default function PromptDetail({ params }) {
           <DialogHeader>
             <DialogTitle>确认删除</DialogTitle>
           </DialogHeader>
-          <p className="text-muted-foreground">确定要删除这个提示词吗？此操作无法撤��。</p>
+          <p className="text-muted-foreground">确定要删除这个提示词吗？此操作无法撤。</p>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowDeleteConfirm(false)}>
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

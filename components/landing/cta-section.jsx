@@ -2,10 +2,13 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
+import { useAuth } from "@clerk/nextjs";
 
 export function CTASection() {
+  const { isSignedIn } = useAuth();
+  
   return (
-    <section className="py-20 bg-gray-50">
+    <section className="py-20 bg-white">
       <div className="container mx-auto px-4">
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
@@ -21,17 +24,11 @@ export function CTASection() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
-              href="/sign-up"
-              className="inline-flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-lg text-white bg-black hover:bg-blue-700 transition-colors"
+              href={isSignedIn ? "/prompts" : "/sign-up"}
+              className="inline-flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-lg text-white bg-black hover:bg-gray-800 transition-colors"
             >
-              免费注册
+              {isSignedIn ? "进入控制台" : "免费注册"}
             </Link>
-            {/* <Link
-              href="/prompts"
-              className="inline-flex items-center justify-center px-8 py-3 border border-gray-300 text-base font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition-colors"
-            >
-              查看示例
-            </Link> */}
           </div>
         </motion.div>
       </div>
