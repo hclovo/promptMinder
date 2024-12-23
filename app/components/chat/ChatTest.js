@@ -44,10 +44,10 @@ export default function ChatTest({ prompt }) {
     }
     return 'glm-4-flash';
   });
-  const [baseUrl, setBaseUrl] = useState(() => {
+  const [baseURL, setBaseURL] = useState(() => {
     if (typeof window !== 'undefined') {
       const savedSettings = localStorage.getItem(STORAGE_KEY);
-      return savedSettings ? JSON.parse(savedSettings).baseUrl : 'https://open.bigmodel.cn/api/paas/v4';
+      return savedSettings ? JSON.parse(savedSettings).baseURL : 'https://open.bigmodel.cn/api/paas/v4';
     }
     return 'https://open.bigmodel.cn/api/paas/v4';
   });
@@ -93,14 +93,15 @@ export default function ChatTest({ prompt }) {
           })),
           apiKey: useCustomKey ? apiKey : undefined,
           model: useCustomKey ? customModel : selectedModel,
-          baseUrl: useCustomKey ? baseUrl : undefined,
+          baseURL: useCustomKey ? baseURL : undefined,
           systemPrompt: prompt.content,
           temperature: temperature
         })
       });
 
       if (!response.ok) {
-        throw new Error('AI 服务请求失败');
+        const errorData = await response.json();
+        throw new Error(errorData.message || '请求失败，请检查 API Key 是否正确');
       }
 
       const decoder = new TextDecoder();
@@ -129,7 +130,7 @@ export default function ChatTest({ prompt }) {
         const newMessages = [...prev];
         const lastMessage = newMessages[newMessages.length - 1];
         if (lastMessage.role === 'assistant') {
-          lastMessage.content = '抱歉，处理您的请求时发生错误。请检查您的 API Key 和网络连接。';
+          lastMessage.content = `错误：${error.message || '请求失败，请检查 API Key 是否正确以及网络连接是否正常'}`;
         }
         return newMessages;
       });
@@ -157,7 +158,7 @@ export default function ChatTest({ prompt }) {
     saveSettings({
       apiKey: newApiKey,
       model: customModel,
-      baseUrl: baseUrl
+      baseURL: baseURL
     });
   };
 
@@ -167,17 +168,17 @@ export default function ChatTest({ prompt }) {
     saveSettings({
       apiKey: apiKey,
       model: newModel,
-      baseUrl: baseUrl
+      baseURL: baseURL
     });
   };
 
-  const handleBaseUrlChange = (e) => {
-    const newBaseUrl = e.target.value;
-    setBaseUrl(newBaseUrl);
+  const handleBaseURLChange = (e) => {
+    const newBaseURL = e.target.value;
+    setBaseURL(newBaseURL);
     saveSettings({
       apiKey: apiKey,
       model: customModel,
-      baseUrl: newBaseUrl
+      baseURL: newBaseURL
     });
   };
 
@@ -221,7 +222,7 @@ export default function ChatTest({ prompt }) {
               {useCustomKey && (
                 <>
                   <Input
-                    type="password"
+                    type="text"
                     value={apiKey}
                     onChange={handleApiKeyChange}
                     placeholder="输入您的 API Key"
@@ -238,8 +239,8 @@ export default function ChatTest({ prompt }) {
                   <p className="text-xs text-muted-foreground">BaseURL</p>
                   <Input
                     type="text"
-                    value={baseUrl}
-                    onChange={handleBaseUrlChange}
+                    value={baseURL}
+                    onChange={handleBaseURLChange}
                     placeholder="BaseURL 默认: https://open.bigmodel.cn/api/paas/v4"
                     className="font-mono mt-2"
                   />

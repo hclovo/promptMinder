@@ -6,7 +6,14 @@ const DEFAULT_API_KEY = process.env.ZHIPU_API_KEY;
 export async function POST(request) {
   try {
     const body = await request.json();
-    const { messages, apiKey, model = 'glm-4-flash', systemPrompt, temperature = 0.5 } = body;
+    const { 
+      messages, 
+      apiKey, 
+      model = 'glm-4-flash', 
+      systemPrompt, 
+      temperature = 0.5,
+      baseURL = 'https://open.bigmodel.cn/api/paas/v4'
+    } = body;
 
     const finalApiKey = apiKey || DEFAULT_API_KEY;
     
@@ -14,10 +21,10 @@ export async function POST(request) {
       throw new Error('未提供 API Key');
     }
 
-    // 创建 OpenAI 客户端实例，配置智谱 AI 的基础 URL
+    // 创建 OpenAI 客户端实例，使用传入的 baseURL
     const openai = new OpenAI({
       apiKey: finalApiKey,
-      baseURL: 'https://open.bigmodel.cn/api/paas/v4',
+      baseURL: baseURL,
     });
     // 准备发送给 AI 的消息
     const aiMessages = [
