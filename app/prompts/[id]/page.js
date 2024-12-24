@@ -453,7 +453,16 @@ export default function PromptDetail({ params }) {
                   </Button>
 
                   <Button
-                    onClick={() => router.push(`/prompts/${id}/edit`)}
+                    onClick={() => {
+                      router.push(`/prompts/${id}/edit`, {
+                        state: {
+                          prompt: {
+                            ...prompt,
+                            tags: prompt.tags.join(',')
+                          }
+                        }
+                      });
+                    }}
                     variant="default"
                     className="relative overflow-hidden group w-10 h-10 p-0"
                     title="编辑"

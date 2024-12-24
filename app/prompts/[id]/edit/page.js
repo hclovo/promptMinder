@@ -1,5 +1,5 @@
 'use client';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { use } from 'react';
 import { Spinner } from '@/app/components/ui/Spinner';
@@ -25,7 +25,15 @@ export default function EditPrompt({ params }) {
   const router = useRouter();
   const unwrappedParams = use(params);
   const id = unwrappedParams.id;
-  const [prompt, setPrompt] = useState(null);
+  const [prompt, setPrompt] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const state = window.history.state;
+      if (state?.usr?.state?.prompt) {
+        return state.usr.state.prompt;
+      }
+    }
+    return null;
+  });
   const [originalVersion, setOriginalVersion] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [tagOptions, setTagOptions] = useState([]);
@@ -35,7 +43,7 @@ export default function EditPrompt({ params }) {
   const [showOptimizeModal, setShowOptimizeModal] = useState(false);
 
   useEffect(() => {
-    if (id) {
+    if (id && !prompt) {
       fetch(`/api/prompts/${id}`)
         .then((response) => response.json())
         .then((data) => {
@@ -43,6 +51,8 @@ export default function EditPrompt({ params }) {
           setOriginalVersion(data.version);
         })
         .catch((error) => console.error('Error fetching prompt:', error));
+    } else if (prompt) {
+      setOriginalVersion(prompt.version);
     }
 
     fetch('/api/tags')
@@ -51,7 +61,7 @@ export default function EditPrompt({ params }) {
         setTagOptions(data.map(tag => ({ value: tag.name, label: tag.name })));
       })
       .catch((error) => console.error('Error fetching tags:', error));
-  }, [id]);
+  }, [id, prompt]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -382,7 +392,7 @@ export default function EditPrompt({ params }) {
       <Modal isOpen={showOptimizeModal} onClose={() => setShowOptimizeModal(false)}>
         <ModalContent className="max-w-3xl max-h-[80vh]">
           <ModalHeader>
-            <ModalTitle>优化结果预览</ModalTitle>
+            <ModalTitle>优���结果预览</ModalTitle>
           </ModalHeader>
           <div className="relative min-h-[200px] max-h-[50vh] overflow-y-auto">
             <Textarea

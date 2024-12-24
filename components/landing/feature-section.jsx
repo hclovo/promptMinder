@@ -20,7 +20,7 @@ const features = [
   },
   {
     title: "AI模型支持",
-    description: "兼容任何 OpenAI 接口模型，提供实时测试环境",
+    description: "支持任何兼容 OpenAI 接口模型，提供实时测试环境",
     icon: "🤖",
   },
   {
@@ -29,8 +29,8 @@ const features = [
     icon: "🔒",
   },
   {
-    title: "API集成",
-    description: "提供完整的API接口，敬请期待",
+    title: "提示词优化",
+    description: "提供提示词优化服务，一键生成高质量提示词",
     icon: "🔌",
   },
 ];
