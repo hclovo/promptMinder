@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import PromptList from '@/app/components/prompt/PromptList';
 import { Input } from "@/components/ui/input"
 import { Spinner } from '@/app/components/ui/Spinner';
@@ -16,6 +16,19 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { useToast } from "@/hooks/use-toast"
+
+// 自定义 debounce 函数
+function debounce(func, wait) {
+  let timeout;
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+}
 
 const PromptCardSkeleton = () => {
   return (
@@ -79,6 +92,13 @@ export default function PromptsPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [promptToDelete, setPromptToDelete] = useState(null);
   const { toast } = useToast();
+
+  const debouncedSearch = useCallback((value) => {
+    const timeoutId = setTimeout(() => {
+      setSearchQuery(value);
+    }, 300);
+    return () => clearTimeout(timeoutId);
+  }, []);
 
   useEffect(() => {
     const fetchPrompts = async () => {
@@ -174,8 +194,7 @@ export default function PromptsPage() {
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-5 w-5" />
                 <Input
                   type="search"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={(e) => debouncedSearch(e.target.value)}
                   placeholder="搜索提示词..."
                   className="w-full h-12 pl-10 transition-all border rounded-lg focus:ring-2 focus:ring-primary/50"
                 />

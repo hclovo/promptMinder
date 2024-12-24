@@ -397,7 +397,7 @@ export default function NewPrompt() {
                         className="cursor-pointer"
                       />
                       <p className="text-sm text-gray-500 mt-2">
-                        支持拖放上传，建议尺寸 800x600
+                        支持拖放上传
                       </p>
                     </div>
                   </div>
