@@ -46,7 +46,7 @@ export default function SharePromptDetail({ params }) {
       <div className="mx-auto p-4 sm:p-6 max-w-4xl">
         <Card className="border-none shadow-2xl backdrop-blur-sm bg-background/80">
           {prompt.cover_img && (
-            <div className="relative h-[300px] rounded-t-xl overflow-hidden">
+            <div className="relative h-[200px] rounded-t-xl overflow-hidden">
               <Image 
                 src={prompt.cover_img} 
                 alt={prompt.title}

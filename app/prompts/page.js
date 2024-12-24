@@ -137,12 +137,14 @@ export default function PromptsPage() {
 
   const handleShare = async (id) => {
     const shareUrl = `${window.location.origin}/share/${id}`;
+    
+    toast({
+      description: "链接已复制到剪贴板",
+      duration: 2000,
+    });
+
     try {
       await navigator.clipboard.writeText(shareUrl);
-      toast({
-        description: "链接已复制到剪贴板",
-        duration: 2000,
-      });
     } catch (clipboardErr) {
       const textarea = document.createElement('textarea');
       textarea.value = shareUrl;
@@ -150,10 +152,6 @@ export default function PromptsPage() {
       textarea.select();
       try {
         document.execCommand('copy');
-        toast({
-          description: "链接已复制到剪贴板",
-          duration: 2000,
-        });
       } catch (fallbackErr) {
         toast({
           variant: "destructive",

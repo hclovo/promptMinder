@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Textarea } from "@/components/ui/textarea"
-import { Settings2, Send, Check, Copy } from "lucide-react"
+import { Settings2, Send, Check, Copy, HelpCircle } from "lucide-react"
 import {
   Select,
   SelectContent,
@@ -16,6 +16,12 @@ import { Input } from "@/components/ui/input"
 import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark } from 'react-syntax-highlighter/dist/cjs/styles/prism';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 
 const STORAGE_KEY = 'chat_settings';
 
@@ -34,7 +40,9 @@ export default function ChatTest({ prompt }) {
   const [selectedModel, setSelectedModel] = useState('glm-4-flash');
   const [isLoading, setIsLoading] = useState(false);
   const [useCustomKey, setUseCustomKey] = useState(false);
-  const [temperature, setTemperature] = useState(0.5);
+  const [temperature, setTemperature] = useState(0.7);
+  const [maxTokens, setMaxTokens] = useState(2000);
+  const [topP, setTopP] = useState(0.7);
   const messagesEndRef = useRef(null);
   const [copiedMessageId, setCopiedMessageId] = useState(null);
   const [customModel, setCustomModel] = useState(() => {
@@ -95,7 +103,9 @@ export default function ChatTest({ prompt }) {
           model: useCustomKey ? customModel : selectedModel,
           baseURL: useCustomKey ? baseURL : undefined,
           systemPrompt: prompt.content,
-          temperature: temperature
+          temperature: temperature,
+          max_tokens: maxTokens,
+          top_p: topP
         })
       });
 
@@ -263,21 +273,83 @@ export default function ChatTest({ prompt }) {
             )}
             
             <div className="space-y-2">
-              <label className="text-sm font-medium">回答随机性 (Temperature)</label>
-              <div className="flex items-center gap-2">
-                <input
-                  type="range"
-                  min="0"
-                  max="1"
-                  step="0.1"
-                  value={temperature}
-                  onChange={(e) => setTemperature(parseFloat(e.target.value))}
-                  className="w-full"
-                />
-                <span className="text-sm w-12">{temperature}</span>
+              <label className="text-sm font-medium">模型参数</label>
+              <div className="grid grid-cols-3 gap-2">
+                <div>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="flex items-center gap-1 text-xs text-muted-foreground mb-1 cursor-help">
+                          Temperature
+                          <HelpCircle className="h-3 w-3" />
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>控制输出的随机性和创造性。值越高，回答越具有创造性但可能不太准确；值越低，回答越保守和确定。</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                  <Input
+                    type="number"
+                    min="0"
+                    max="1"
+                    step="0.1"
+                    value={temperature}
+                    onChange={(e) => setTemperature(Number(e.target.value))}
+                    className="h-8"
+                  />
+                </div>
+                <div>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="flex items-center gap-1 text-xs text-muted-foreground mb-1 cursor-help">
+                          Max Tokens
+                          <HelpCircle className="h-3 w-3" />
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>限制模型回答的最大长度。一个token大约等于0.75个中文字或1.5个英文字母。</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                  <Input
+                    type="number"
+                    min="1"
+                    max="20000"
+                    step="10"
+                    value={maxTokens}
+                    onChange={(e) => setMaxTokens(Number(e.target.value))}
+                    className="h-8"
+                  />
+                </div>
+                <div>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className="flex items-center gap-1 text-xs text-muted-foreground mb-1 cursor-help">
+                          Top P
+                          <HelpCircle className="h-3 w-3" />
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>控制词汇选择的多样性。值越高，选择范围越广；值越低，选择越保守。与Temperature配合使用效果更好。</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                  <Input
+                    type="number"
+                    min="0"
+                    max="1"
+                    step="0.1"
+                    value={topP}
+                    onChange={(e) => setTopP(Number(e.target.value))}
+                    className="h-8"
+                  />
+                </div>
               </div>
-              <p className="text-xs text-muted-foreground">
-                较低的值会产生更确定的回答，较高的值会产生更有创意的回答
+              <p className="text-xs text-muted-foreground mt-1">
+                调整这些参数可以控制AI回答的长度和创造性
               </p>
             </div>
           </div>

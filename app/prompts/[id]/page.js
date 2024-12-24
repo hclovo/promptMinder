@@ -222,7 +222,7 @@ export default function PromptDetail({ params }) {
     } catch (err) {
       console.error('Failed to share prompt:', err);
       toast({
-        title: "分享��败",
+        title: "分享失败",
         description: "请稍后重试",
         variant: "destructive",
       });
@@ -326,7 +326,7 @@ export default function PromptDetail({ params }) {
             onClick={() => router.push('/prompts')}
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
-            返回提示词��表
+            返回提示词列表
           </Button>
         </div>
         <PromptSkeleton />
@@ -537,21 +537,20 @@ export default function PromptDetail({ params }) {
                   <ScrollArea className="h-full w-full">
                     <div className="rounded-lg bg-secondary/30 p-4 min-h-full">
                       {isEditing ? (
-                        <div className="h-[500px]">
+                        <div className="min-h-[500px]">
                           <Textarea
                             value={editedContent}
                             onChange={(e) => setEditedContent(e.target.value)}
-                            className="w-full h-full text-base leading-relaxed whitespace-pre-wrap text-primary"
+                            className="w-full h-full min-h-[500px] text-base leading-relaxed whitespace-pre-wrap text-primary"
                             placeholder="输入提示词内容..."
                             style={{ 
-                              height: '100%',
-                              maxHeight: '100%',
+                              resize: 'vertical',
                               overflowY: 'auto'
                             }}
                           />
                         </div>
                       ) : (
-                        <p className="text-base leading-relaxed whitespace-pre-wrap text-primary">
+                        <p className="text-base leading-relaxed whitespace-pre-wrap text-primary min-h-[500px]">
                           {prompt.content}
                         </p>
                       )}

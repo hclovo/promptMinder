@@ -11,7 +11,9 @@ export async function POST(request) {
       apiKey, 
       model = 'glm-4-flash', 
       systemPrompt, 
-      temperature = 0.5,
+      temperature = 0.7,
+      max_tokens = 2000,
+      top_p = 0.7,
       baseURL = 'https://open.bigmodel.cn/api/paas/v4'
     } = body;
 
@@ -37,6 +39,8 @@ export async function POST(request) {
       model: model,
       messages: aiMessages,
       temperature: temperature,
+      max_tokens: max_tokens,
+      top_p: top_p,
       stream: true
     });
 
