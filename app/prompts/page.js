@@ -43,26 +43,41 @@ function debounce(func, wait) {
 
 const PromptCardSkeleton = () => {
   return (
-    <div className="group relative rounded-lg border p-6 hover:shadow-md transition-all bg-card">
-      <div className="flex gap-4">
-        <Skeleton className="h-[100px] w-[100px] rounded-lg flex-shrink-0" />
-        <div className="flex-1 space-y-4">
-          <Skeleton className="h-6 w-2/3" />
-          <Skeleton className="h-4 w-full" />
-          <div className="flex gap-2">
-            <Skeleton className="h-6 w-16" />
-            <Skeleton className="h-6 w-16" />
+    <Card className="group relative p-4 hover:shadow-md transition-all bg-card">
+      <div className="space-y-3">
+        <div className="flex justify-between items-start">
+          <div className="space-y-2">
+            <Skeleton className="h-6 w-[180px]" />
+            <Skeleton className="h-4 w-[240px]" />
           </div>
+          <Skeleton className="h-8 w-24 rounded-lg" />
+        </div>
+
+        <div className="flex flex-wrap gap-2">
+          <Skeleton className="h-5 w-16 rounded-full" />
+          <Skeleton className="h-5 w-20 rounded-full" />
+          <Skeleton className="h-5 w-14 rounded-full" />
+        </div>
+
+        <div className="flex items-center gap-2">
+          <Skeleton className="h-4 w-4" />
+          <Skeleton className="h-4 w-32" />
         </div>
       </div>
-    </div>
+    </Card>
   );
 };
 
 const PromptListSkeleton = () => {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      {[...Array(6)].map((_, index) => (
+    <div className="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <Card className="group relative border p-4 hover:shadow-md transition-all bg-card cursor-pointer border-dashed h-[156px] flex items-center justify-center">
+        <div className="flex flex-col items-center gap-2">
+          <Skeleton className="h-8 w-8 rounded-full" />
+          <Skeleton className="h-4 w-16" />
+        </div>
+      </Card>
+      {[...Array(5)].map((_, index) => (
         <PromptCardSkeleton key={index} />
       ))}
     </div>

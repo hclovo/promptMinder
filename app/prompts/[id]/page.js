@@ -43,13 +43,7 @@ const PromptSkeleton = () => {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[calc(100vh-6rem)]">
       <div className="h-full flex flex-col">
-        <Card className="mb-4">
-          <CardContent className="p-0">
-            <Skeleton className="h-[150px] w-full rounded-lg" />
-          </CardContent>
-        </Card>
-
-        <Card className="flex-1">
+        <Card className="border-none shadow-lg bg-gradient-to-br from-background to-secondary/10 flex-1">
           <CardContent className="p-4 sm:p-6">
             <div className="space-y-4">
               <Skeleton className="h-8 w-2/3" />
@@ -149,7 +143,7 @@ export default function PromptDetail({ params }) {
       fetch(`/api/prompts/${id}`)
         .then((response) => response.json())
         .then((data) => {
-          setPrompt({...data, cover_img: data.cover_img ? data.cover_img : null, tags: data.tags ? data.tags.split(',') : []});
+          setPrompt({...data, tags: data.tags ? data.tags.split(',') : []});
           setSelectedVersion(data.version);
           
           // 获取所有相同标题的版本
@@ -349,24 +343,6 @@ export default function PromptDetail({ params }) {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="h-[calc(100vh-12rem)] flex flex-col">
-          {prompt.cover_img && (
-            <Card className="mb-6 bg-gradient-to-b from-background to-secondary/20 border-none hidden md:block">
-              <CardContent className="p-0">
-                <div className="rounded-lg overflow-hidden h-[160px] relative">
-                  <Image 
-                    src={prompt.cover_img} 
-                    alt={prompt.title}
-                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                    width={1200}
-                    height={800}
-                    priority
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-background/60 to-transparent" />
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
           <Card className="border-none shadow-lg bg-gradient-to-br from-background to-secondary/10 flex-1 overflow-hidden flex flex-col">
             <CardContent className="p-6 sm:p-8 flex flex-col h-full">
               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-6 mb-8">

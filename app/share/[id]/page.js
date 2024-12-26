@@ -1,11 +1,9 @@
 'use client';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import { use } from 'react';
+import { useEffect, useState, use } from 'react';
 import { Spinner } from '@/app/components/ui/Spinner';
-import Image from 'next/image';
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 
 export default function SharePromptDetail({ params }) {
@@ -18,7 +16,7 @@ export default function SharePromptDetail({ params }) {
     if (id) {
       fetch(`/api/share/${id}`)
         .then((response) => response.json())
-        .then((data) => setPrompt({...data, cover_img: data.cover_img ? data.cover_img : null, tags: data.tags ? data.tags.split(',') : []}))
+        .then((data) => setPrompt({...data, tags: data.tags ? data.tags.split(',') : []}))
         .catch((error) => console.error('Error fetching prompt:', error));
     }
   }, [id]);
@@ -45,31 +43,10 @@ export default function SharePromptDetail({ params }) {
     <div className="bg-gradient-to-b from-background to-secondary/5 py-12">
       <div className="mx-auto p-4 sm:p-6 max-w-4xl">
         <Card className="border-none shadow-2xl backdrop-blur-sm bg-background/80">
-          {prompt.cover_img && (
-            <div className="relative h-[200px] rounded-t-xl overflow-hidden">
-              <Image 
-                src={prompt.cover_img} 
-                alt={prompt.title}
-                className="w-full h-full object-cover"
-                width={1200}
-                height={800}
-                priority
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/40 to-transparent" />
-              <div className="absolute bottom-0 left-0 right-0 p-8">
-                <h1 className="text-4xl sm:text-5xl font-bold text-white drop-shadow-xl">
-                  {prompt.title}
-                </h1>
-              </div>
-            </div>
-          )}
-
           <CardContent className="p-8">
-            {!prompt.cover_img && (
-              <h1 className="text-4xl sm:text-5xl font-bold mb-6 bg-gradient-to-r from-primary to-primary-foreground [-webkit-background-clip:text] [background-clip:text] text-transparent drop-shadow-sm">
-                {prompt.title}
-              </h1>
-            )}
+            <h1 className="text-4xl sm:text-5xl font-bold mb-6 bg-gradient-to-r from-primary to-primary-foreground [-webkit-background-clip:text] [background-clip:text] text-transparent drop-shadow-sm">
+              {prompt.title}
+            </h1>
             
             <div className="space-y-8">
               <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground border-b border-border/50 pb-6">

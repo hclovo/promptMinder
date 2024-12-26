@@ -37,7 +37,6 @@ export default function EditPrompt({ params }) {
   const [originalVersion, setOriginalVersion] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [tagOptions, setTagOptions] = useState([]);
-  const [selectedFile, setSelectedFile] = useState(null);
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [optimizedContent, setOptimizedContent] = useState('');
   const [showOptimizeModal, setShowOptimizeModal] = useState(false);
@@ -73,8 +72,7 @@ export default function EditPrompt({ params }) {
       const method = 'POST';
 
       const submitData = {
-        ...prompt,
-        cover_img: prompt.cover_img
+        ...prompt
       };
       if (isNewVersion) {
         delete submitData.id;
@@ -103,25 +101,6 @@ export default function EditPrompt({ params }) {
       console.error('Error updating prompt:', error);
     } finally {
       setIsSubmitting(false);
-    }
-  };
-
-  const handleImageUpload = async (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const formData = new FormData();
-      formData.append('image', file);
-
-      try {
-        const response = await fetch('/api/upload', {
-          method: 'POST',
-          body: formData,
-        });
-        const data = await response.json();
-        setPrompt({ ...prompt, cover_img: data.url });
-      } catch (error) {
-        console.error('Error uploading image:', error);
-      }
     }
   };
 
@@ -164,7 +143,7 @@ export default function EditPrompt({ params }) {
               setOptimizedContent(tempContent);
             }
           } catch (e) {
-            console.error('解析响应数据出错:', e);
+            console.error('解析响应数���出错:', e);
           }
         }
       }
@@ -242,7 +221,7 @@ export default function EditPrompt({ params }) {
                       value={prompt.content}
                       onChange={(e) => setPrompt({ ...prompt, content: e.target.value })}
                       className="min-h-[250px] resize-y pr-12"
-                      placeholder="输入提示词内容"
+                      placeholder="输入提示��内容"
                       required
                     />
                     <Button
@@ -333,33 +312,6 @@ export default function EditPrompt({ params }) {
                     placeholder="输入版本号"
                   />
                 </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="cover_img" className="text-lg font-medium">封面图片</Label>
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                    {prompt.cover_img && (
-                      <div className="relative group">
-                        <Image 
-                          src={prompt.cover_img} 
-                          alt="封面预览" 
-                          className="w-32 h-32 object-cover rounded-lg transition-transform hover:scale-105"
-                          width={128}
-                          height={128}
-                        />
-                        <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all rounded-lg" />
-                      </div>
-                    )}
-                    <div className="flex-1 w-full">
-                      <Input
-                        id="cover_img"
-                        type="file"
-                        accept="image/*"
-                        onChange={handleImageUpload}
-                        className="h-12"
-                      />
-                    </div>
-                  </div>
-                </div>
               </motion.div>
 
               <div className="flex gap-4 pt-4">
@@ -392,7 +344,7 @@ export default function EditPrompt({ params }) {
       <Modal isOpen={showOptimizeModal} onClose={() => setShowOptimizeModal(false)}>
         <ModalContent className="max-w-3xl max-h-[80vh]">
           <ModalHeader>
-            <ModalTitle>优���结果预览</ModalTitle>
+            <ModalTitle>优化结果预览</ModalTitle>
           </ModalHeader>
           <div className="relative min-h-[200px] max-h-[50vh] overflow-y-auto">
             <Textarea
