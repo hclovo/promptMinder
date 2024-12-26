@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input"
 import { Spinner } from '@/app/components/ui/Spinner';
 import TagFilter from '@/app/components/prompt/TagFilter';
 import { Button } from "@/components/ui/button"
-import { Search, PlusCircle, ChevronDown, Copy, Share2, Trash2 } from "lucide-react"
+import { Search, PlusCircle, ChevronDown, Copy, Share2, Trash2, Clock } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
   Dialog,
@@ -100,27 +100,11 @@ const NewPromptCard = ({ onClick }) => {
   return (
     <Card 
       onClick={onClick}
-      className="group relative rounded-lg border p-6 hover:shadow-md transition-all bg-card cursor-pointer border-dashed"
+      className="group relative border p-4 hover:shadow-md transition-all bg-card cursor-pointer border-dashed h-[156px] flex items-center justify-center"
     >
-      <div className="flex gap-4">
-        <div className="h-[100px] w-[100px] rounded-lg flex-shrink-0 overflow-hidden bg-primary/10 flex items-center justify-center">
-          <PlusCircle className="h-8 w-8 text-primary" />
-        </div>
-        <div className="flex-1 space-y-4">
-          <div className="space-y-1">
-            <h3 className="text-lg font-semibold line-clamp-1 hover:text-primary transition-colors">
-              新建提示词
-            </h3>
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <div className="flex items-center gap-1">
-                创建一个新的 AI 提示词模板
-              </div>
-            </div>
-          </div>
-          <p className="text-sm text-muted-foreground line-clamp-2">
-            可以是翻译、文案写作、代码编写等 AI 相关的提示词
-          </p>
-        </div>
+      <div className="flex flex-col items-center gap-2 text-muted-foreground">
+        <PlusCircle className="h-8 w-8" />
+        <span className="text-sm">新建提示词</span>
       </div>
     </Card>
   );
@@ -135,6 +119,9 @@ export default function PromptsPage() {
   const [promptToDelete, setPromptToDelete] = useState(null);
   const [selectedVersions, setSelectedVersions] = useState(null);
   const [showNewPromptDialog, setShowNewPromptDialog] = useState(false);
+  const [showOptimizeModal, setShowOptimizeModal] = useState(false);
+  const [optimizedContent, setOptimizedContent] = useState('');
+  const [isOptimizing, setIsOptimizing] = useState(false);
   const [newPrompt, setNewPrompt] = useState({
     title: '',
     content: '',
@@ -367,6 +354,62 @@ export default function PromptsPage() {
     return null;
   };
 
+  const handleOptimize = async () => {
+    if (!newPrompt.content.trim()) return;
+    setIsOptimizing(true);
+    setOptimizedContent('');
+    setShowOptimizeModal(true);
+    
+    try {
+      const response = await fetch('/api/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ text: newPrompt.content }),
+      });
+      
+      if (!response.ok) throw new Error('优化失败');
+      
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let tempContent = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        
+        const chunk = decoder.decode(value);
+        const lines = chunk.split('\n').filter(line => line.trim());
+        
+        for (const line of lines) {
+          try {
+            const jsonStr = line.replace(/^data: /, '').trim();
+            if (!jsonStr || jsonStr === '[DONE]') continue;
+            
+            const data = JSON.parse(jsonStr);
+            if (data.choices?.[0]?.delta?.content) {
+              tempContent += data.choices[0].delta.content;
+              setOptimizedContent(tempContent);
+            }
+          } catch (e) {
+            console.error('解析响应数据出错:', e);
+          }
+        }
+      }
+
+    } catch (error) {
+      console.error('优化错误:', error);
+      toast({
+        variant: "destructive",
+        description: "优化失败，请重试",
+        duration: 2000,
+      });
+    } finally {
+      setIsOptimizing(false);
+    }
+  };
+
   return (
     <div className="min-h-[80vh] bg-gradient-to-b from-background to-background/80">
       <div className="container px-4 py-4 sm:py-16 mx-auto max-w-7xl">
@@ -408,12 +451,11 @@ export default function PromptsPage() {
             <div className="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <NewPromptCard onClick={() => setShowNewPromptDialog(true)} />
               {Object.entries(groupedPrompts).map(([title, versions]) => {
-                // 使用最新版本作为显示
                 const latestPrompt = versions[0];
                 return (
                   <Card 
                     key={title}
-                    className="group relative rounded-lg border p-6 hover:shadow-md transition-all bg-card cursor-pointer"
+                    className="group relative rounded-lg border p-4 hover:shadow-md transition-all bg-card cursor-pointer"
                     onClick={(e) => {
                       e.preventDefault();
                       if (versions.length > 1) {
@@ -423,83 +465,80 @@ export default function PromptsPage() {
                       }
                     }}
                   >
-                    <div className="flex gap-4">
-                      <div className="h-[100px] w-[100px] rounded-lg flex-shrink-0 overflow-hidden">
-                        <Image 
-                          src={latestPrompt.cover_img}
-                          alt={title}
-                          width={100}
-                          height={100}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                      <div className="flex-1 space-y-4">
-                        <div className="space-y-1">
-                          <h3 className="text-lg font-semibold line-clamp-1">
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h3 className="text-lg font-semibold line-clamp-1 mb-2">
                             {title}
                           </h3>
-                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                            <div className="flex items-center gap-1">
-                              最新 v{latestPrompt.version}
-                            </div>
-                            {versions.length > 1 && (
-                              <>
-                                <span>•</span>
-                                <span>{versions.length} 个版本</span>
-                              </>
-                            )}
+                          {latestPrompt.description && (
+                            <p className="text-sm text-muted-foreground line-clamp-1">
+                              {latestPrompt.description}
+                            </p>
+                          )}
+                        </div>
+
+                        <div className="opacity-0 group-hover:opacity-100 transition-all duration-200 bg-background/80 backdrop-blur-sm rounded-lg p-1">
+                          <div className="flex items-center gap-1">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleCopy(latestPrompt.content);
+                              }}
+                              className="h-8 w-8"
+                            >
+                              <Copy className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleShare(latestPrompt.id);
+                              }}
+                              className="h-8 w-8"
+                            >
+                              <Share2 className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDelete(latestPrompt.id);
+                              }}
+                              className="h-8 w-8 text-destructive hover:text-destructive"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
                           </div>
                         </div>
-                        <p className="text-sm text-muted-foreground line-clamp-2">
-                          {latestPrompt.description}
-                        </p>
-                        <div className="flex flex-wrap gap-2">
-                          {latestPrompt.tags.map((tag) => (
-                            <span 
-                              key={tag}
-                              className="bg-secondary/80 text-secondary-foreground text-xs px-2.5 py-0.5 rounded-full"
-                            >
-                              #{tag}
-                            </span>
-                          ))}
-                        </div>
                       </div>
-                    </div>
-                    <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-200 bg-background/80 backdrop-blur-sm rounded-lg p-1">
-                      <div className="flex items-center gap-1">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleCopy(latestPrompt.content);
-                          }}
-                          className="h-8 w-8"
-                        >
-                          <Copy className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleShare(latestPrompt.id);
-                          }}
-                          className="h-8 w-8"
-                        >
-                          <Share2 className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDelete(latestPrompt.id);
-                          }}
-                          className="h-8 w-8 text-destructive hover:text-destructive"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+
+                      <div className="flex flex-wrap gap-2">
+                        {latestPrompt.tags.map((tag) => (
+                          <span 
+                            key={tag}
+                            className="bg-secondary/80 text-secondary-foreground text-xs px-2.5 py-0.5 rounded-full"
+                          >
+                            #{tag}
+                          </span>
+                        ))}
+                      </div>
+
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground pt-1">
+                        <div className="flex items-center gap-1">
+                          <Clock className="h-3 w-3" />
+                          {new Date(latestPrompt.updated_at).toLocaleString()}
+                        </div>
+                        {versions.length > 1 && (
+                          <>
+                            <span>•</span>
+                            <span>{versions.length} 个版本</span>
+                          </>
+                        )}
                       </div>
                     </div>
                   </Card>
@@ -569,7 +608,7 @@ export default function PromptsPage() {
       <Dialog open={showNewPromptDialog} onOpenChange={setShowNewPromptDialog}>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>新建提示词</DialogTitle>
+            <DialogTitle>新增提示词</DialogTitle>
           </DialogHeader>
           <div className="space-y-6 py-4">
             <div className="space-y-2">
@@ -589,13 +628,29 @@ export default function PromptsPage() {
                 提示词内容
                 <span className="text-red-500 ml-1">*</span>
               </Label>
-              <Textarea
-                id="content"
-                value={newPrompt.content}
-                onChange={(e) => setNewPrompt({ ...newPrompt, content: e.target.value })}
-                placeholder="在这里输入你的提示词内容，可以包含具体的指令、上下文要求等"
-                className="min-h-[200px]"
-              />
+              <div className="relative">
+                <Textarea
+                  id="content"
+                  value={newPrompt.content}
+                  onChange={(e) => setNewPrompt({ ...newPrompt, content: e.target.value })}
+                  placeholder="在这里输入你的提示词内容，可以包含具体的指令、上下文要求等"
+                  className="min-h-[200px] pr-10"
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-2 top-2 hover:bg-accent hover:text-accent-foreground"
+                  onClick={handleOptimize}
+                  disabled={!newPrompt.content.trim() || isOptimizing}
+                >
+                  {isOptimizing ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Wand2 className="h-4 w-4" />
+                  )}
+                </Button>
+              </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="description">描述</Label>
@@ -713,41 +768,59 @@ export default function PromptsPage() {
               </p>
             </div>
           </div>
-          <DialogFooter className="flex-col sm:flex-row gap-2 sm:gap-0">
-            <div className="flex-1 flex justify-start">
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={() => {
-                  setShowNewPromptDialog(false);
-                  window.location.href = '/prompts/new';
-                }}
-                className="text-muted-foreground hover:text-primary flex items-center gap-2"
-              >
-                <Wand2 className="h-4 w-4" />
-                高级模式
-                <span className="text-xs text-muted-foreground">(图片上传、提示词优化等)</span>
-              </Button>
-            </div>
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                onClick={() => setShowNewPromptDialog(false)}
-              >
-                取消
-              </Button>
-              <Button
-                onClick={handleCreatePrompt}
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    创建中...
-                  </>
-                ) : '创建'}
-              </Button>
-            </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowNewPromptDialog(false)}
+            >
+              取消
+            </Button>
+            <Button
+              onClick={handleCreatePrompt}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  创建中...
+                </>
+              ) : '创建'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* 优化结果对话框 */}
+      <Dialog open={showOptimizeModal} onOpenChange={setShowOptimizeModal}>
+        <DialogContent className="max-w-3xl max-h-[90vh]">
+          <DialogHeader>
+            <DialogTitle>优化结果预览</DialogTitle>
+          </DialogHeader>
+          <div className="relative min-h-[200px] max-h-[50vh] overflow-y-auto">
+            <Textarea
+              value={optimizedContent}
+              onChange={(e) => setOptimizedContent(e.target.value)}
+              className="min-h-[200px] w-full"
+              placeholder="正在生成优化内容..."
+            />
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowOptimizeModal(false)}
+              className="mr-2"
+            >
+              取消
+            </Button>
+            <Button
+              onClick={() => {
+                setNewPrompt({ ...newPrompt, content: optimizedContent });
+                setShowOptimizeModal(false);
+              }}
+              disabled={!optimizedContent.trim()}
+            >
+              应用优化结果
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
