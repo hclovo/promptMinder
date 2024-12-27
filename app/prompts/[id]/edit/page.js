@@ -50,7 +50,7 @@ export default function EditPrompt({ params }) {
           setOriginalVersion(data.version);
         })
         .catch((error) => console.error('Error fetching prompt:', error));
-    } else if (prompt) {
+    } else if (prompt && originalVersion === null) {
       setOriginalVersion(prompt.version);
     }
 
@@ -60,7 +60,7 @@ export default function EditPrompt({ params }) {
         setTagOptions(data.map(tag => ({ value: tag.name, label: tag.name })));
       })
       .catch((error) => console.error('Error fetching tags:', error));
-  }, [id, prompt]);
+  }, [id, prompt, originalVersion]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -143,7 +143,7 @@ export default function EditPrompt({ params }) {
               setOptimizedContent(tempContent);
             }
           } catch (e) {
-            console.error('解析响应数���出错:', e);
+            console.error('解析响应数出错:', e);
           }
         }
       }
@@ -221,7 +221,7 @@ export default function EditPrompt({ params }) {
                       value={prompt.content}
                       onChange={(e) => setPrompt({ ...prompt, content: e.target.value })}
                       className="min-h-[250px] resize-y pr-12"
-                      placeholder="输入提示��内容"
+                      placeholder="输入提示词内容"
                       required
                     />
                     <Button

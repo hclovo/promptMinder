@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent } from "@/components/ui/card"
-import Image from 'next/image';
 import { motion } from "framer-motion";
 import { Loader2, Wand2 } from "lucide-react";
 import {
@@ -33,13 +32,11 @@ export default function NewPrompt() {
     description: '',
     tags: '',
     version: '1.0.0',
-    cover_img: '',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [tagOptions, setTagOptions] = useState([]);
   const router = useRouter();
   const [errors, setErrors] = useState({});
-  const [isDragging, setIsDragging] = useState(false);
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [optimizedContent, setOptimizedContent] = useState('');
   const [showOptimizeModal, setShowOptimizeModal] = useState(false);
@@ -59,25 +56,6 @@ export default function NewPrompt() {
       })
       .catch((error) => console.error('Error fetching tags:', error));
   }, [prompt.tags]);
-
-  const handleImageUpload = async (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const formData = new FormData();
-      formData.append('image', file);
-
-      try {
-        const response = await fetch('/api/upload', {
-          method: 'POST',
-          body: formData,
-        });
-        const data = await response.json();
-        setPrompt({ ...prompt, cover_img: data.url });
-      } catch (error) {
-        console.error('Error uploading image:', error);
-      }
-    }
-  };
 
   const validateForm = () => {
     const newErrors = {};
@@ -148,25 +126,6 @@ export default function NewPrompt() {
       } catch (error) {
         console.error('Error creating new tag:', error);
       }
-    }
-  };
-
-  const handleDragOver = (e) => {
-    e.preventDefault();
-    setIsDragging(true);
-  };
-
-  const handleDragLeave = (e) => {
-    e.preventDefault();
-    setIsDragging(false);
-  };
-
-  const handleDrop = async (e) => {
-    e.preventDefault();
-    setIsDragging(false);
-    const file = e.dataTransfer.files[0];
-    if (file && file.type.startsWith('image/')) {
-      await handleImageUpload({ target: { files: [file] } });
     }
   };
 
@@ -254,7 +213,7 @@ export default function NewPrompt() {
                   id="title"
                   value={prompt.title}
                   onChange={(e) => setPrompt({ ...prompt, title: e.target.value })}
-                  placeholder="为你的提示词起个醒目的标题"
+                  placeholder="为你的提示词起个醒目的���题"
                   className={errors.title ? 'border-red-500' : ''}
                   required
                 />
@@ -352,56 +311,6 @@ export default function NewPrompt() {
                   onChange={(e) => setPrompt({ ...prompt, version: e.target.value })}
                   placeholder="例如: 1.0.0"
                 />
-              </motion.div>
-
-              <motion.div 
-                className="space-y-2"
-                whileHover={{ scale: 1.01 }}
-                transition={{ duration: 0.2 }}
-              >
-                <Label htmlFor="cover_img" className="text-base">封面图片</Label>
-                <div 
-                  className={`border-2 border-dashed rounded-lg p-4 transition-colors ${
-                    isDragging ? 'border-primary bg-primary/10' : 'border-gray-300'
-                  }`}
-                  onDragOver={handleDragOver}
-                  onDragLeave={handleDragLeave}
-                  onDrop={handleDrop}
-                >
-                  <div className="flex items-center gap-4">
-                    {prompt.cover_img ? (
-                      <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ duration: 0.3 }}
-                      >
-                        <Image 
-                          src={prompt.cover_img} 
-                          alt="封面预览" 
-                          className="w-20 h-20 object-cover rounded" 
-                          width={80} 
-                          height={80} 
-                        />
-                      </motion.div>
-                    ) : (
-                      <div className="w-20 h-20 bg-gray-100 rounded flex items-center justify-center">
-                        <span className="text-gray-400">预览</span>
-                      </div>
-                    )}
-                    <div className="flex-1">
-                      <Input
-                        id="cover_img"
-                        type="file"
-                        accept="image/*"
-                        onChange={handleImageUpload}
-                        className="cursor-pointer"
-                      />
-                      <p className="text-sm text-gray-500 mt-2">
-                        支持拖放上传
-                      </p>
-                    </div>
-                  </div>
-                </div>
               </motion.div>
 
               <motion.div 
