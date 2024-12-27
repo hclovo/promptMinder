@@ -26,7 +26,7 @@ export default function RootLayout({ children }) {
             <main className="flex-1">
               {children}
             </main>
-            {shouldShowHeaderFooter && <Footer />}
+            {/* {shouldShowHeaderFooter && <Footer />} */}
           </div>
           <Toaster />
         </body>

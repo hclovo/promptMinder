@@ -213,7 +213,7 @@ export default function NewPrompt() {
                   id="title"
                   value={prompt.title}
                   onChange={(e) => setPrompt({ ...prompt, title: e.target.value })}
-                  placeholder="为你的提示词起个醒目的���题"
+                  placeholder="为你的提示词起个醒目的标题"
                   className={errors.title ? 'border-red-500' : ''}
                   required
                 />
