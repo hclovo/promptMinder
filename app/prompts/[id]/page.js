@@ -347,7 +347,7 @@ export default function PromptDetail({ params }) {
             <CardContent className="p-6 sm:p-8 flex flex-col h-full">
               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-6 mb-8">
                 <div className="space-y-4">
-                  <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-primary to-primary-foreground [-webkit-background-clip:text] [background-clip:text] text-transparent">
+                  <h1 className="text-3xl sm:text-4xl font-bold">
                     {prompt.title}
                   </h1>
                   <p className="text-sm text-muted-foreground leading-relaxed">
@@ -418,17 +418,6 @@ export default function PromptDetail({ params }) {
                   </Button>
 
                   <Button
-                    onClick={handleCopy}
-                    variant={copySuccess ? "success" : "secondary"}
-                    className="relative overflow-hidden group w-10 h-10 p-0"
-                    title="复制"
-                  >
-                    <svg className={`w-4 h-4 transition-transform duration-300 ${copySuccess ? "rotate-0" : "rotate-0"}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-12a2 2 0 00-2-2h-2M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2" />
-                    </svg>
-                  </Button>
-
-                  <Button
                     onClick={() => {
                       router.push(`/prompts/${id}/edit`, {
                         state: {
@@ -472,6 +461,18 @@ export default function PromptDetail({ params }) {
                     提示词内容
                   </CardTitle>
                   <div className="flex gap-2">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={handleCopy}
+                      className="transition-all duration-200"
+                    >
+                      {copySuccess ? (
+                        <Check className="w-4 h-4 text-green-500" />
+                      ) : (
+                        <Copy className="w-4 h-4" />
+                      )}
+                    </Button>
                     {isEditing ? (
                       <>
                         <Button

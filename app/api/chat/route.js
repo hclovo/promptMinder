@@ -51,6 +51,12 @@ export async function POST(request) {
           for await (const chunk of completion) {
             // 获取当前块的内容
             const content = chunk.choices[0]?.delta?.content || '';
+            // 打印数据块信息
+            console.log('收到数据块:', {
+              content: content,
+              timestamp: new Date().toISOString(),
+              chunkInfo: chunk
+            });
             // 将内容编码为 UTF-8
             const bytes = new TextEncoder().encode(content);
             // 将内容推送到流中
@@ -58,6 +64,7 @@ export async function POST(request) {
           }
           controller.close();
         } catch (error) {
+          console.error('流处理错误:', error);
           controller.error(error);
         }
       },

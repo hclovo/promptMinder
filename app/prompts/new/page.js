@@ -311,6 +311,7 @@ export default function NewPrompt() {
                   onChange={(e) => setPrompt({ ...prompt, version: e.target.value })}
                   placeholder="例如: 1.0.0"
                 />
+                <p className="text-sm text-muted-foreground">建议使用语义化版本号，例如：1.0.0</p>
               </motion.div>
 
               <motion.div 
