@@ -18,7 +18,13 @@ export default function RootLayout({ children }) {
   const shouldShowHeaderFooter = !noHeaderFooterPages.includes(pathname);
 
   return (
-    <ClerkProvider>
+    <ClerkProvider
+      appearance={{
+        layout: {
+          unsafe_disableDevelopmentModeWarnings: true,
+        },
+      }}
+    >
       <html lang="zh">
         <body className={inter.className}>
           <div className="min-h-screen flex flex-col">
