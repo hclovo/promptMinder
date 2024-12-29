@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input"
 import { Spinner } from '@/app/components/ui/Spinner';
 import TagFilter from '@/app/components/prompt/TagFilter';
 import { Button } from "@/components/ui/button"
-import { Search, PlusCircle, ChevronDown, Copy, Share2, Trash2, Clock } from "lucide-react"
+import { Search, PlusCircle, ChevronDown, Copy, Share2, Trash2, Clock, Tags } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
   Dialog,
@@ -448,12 +448,20 @@ export default function PromptsPage() {
                 />
               </div>
               {!isLoading && (
-                <TagFilter 
-                  allTags={allTags}
-                  selectedTags={selectedTags}
-                  onTagSelect={setSelectedTags}
-                  className="touch-manipulation w-full md:w-auto"
-                />
+                <>
+                  <TagFilter 
+                    allTags={allTags}
+                    selectedTags={selectedTags}
+                    onTagSelect={setSelectedTags}
+                    className="touch-manipulation w-full md:w-auto"
+                  />
+                  <Link href="/tags" className="w-full md:w-auto">
+                    <Button variant="outline" className="w-full">
+                      <Tags className="mr-2 h-4 w-4" />
+                      标签管理
+                    </Button>
+                  </Link>
+                </>
               )}
             </div>
           </div>

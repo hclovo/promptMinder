@@ -7,6 +7,7 @@
 - 支持提示词版本管理，版本回溯
 - 完全开源，可以自行部署和修改
 - 提示词标签化、版本化管理
+- 支持自定义标签
 - 移动端适配
 - AI 提示词生成
 
@@ -72,7 +73,10 @@
     -- 创建 tags 表
     CREATE TABLE tags (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-        name TEXT NOT NULL
+        name TEXT NOT NULL,
+        user_id TEXT,  -- 使用TEXT类型来匹配Clerk的user_id
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(name, user_id)
     );
     ```
 
@@ -86,4 +90,4 @@ clerk 是一个用户认证平台，可以用来管理用户认证和权限。
 Canny 是一个用户反馈平台，可以用来收集用户反馈和建议。
 
 1. 注册 Canny 账号并创建项目
-2. 将项目URL填入 footer 页面中
+2. 将 Canny URL 填入 footer 页面中

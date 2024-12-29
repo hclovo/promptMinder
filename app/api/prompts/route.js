@@ -40,7 +40,7 @@ export async function POST(request) {
       user_id: userId,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
-      is_public: false
+      is_public: true
     };
 
     const { data: newPrompt, error } = await supabase
