@@ -1,4 +1,4 @@
-# PromptMind
+# PromptMinder
 
 一个专业的提示词的管理平台，让AI提示词管理更简单
 

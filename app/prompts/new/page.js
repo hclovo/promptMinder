@@ -275,10 +275,8 @@ export default function NewPrompt() {
                 />
               </motion.div>
 
-              <motion.div 
+              <div 
                 className="space-y-2"
-                whileHover={{ scale: 1.01 }}
-                transition={{ duration: 0.2 }}
               >
                 <Label htmlFor="tags" className="text-base">标签</Label>
                 <CreatableSelect
@@ -297,7 +295,7 @@ export default function NewPrompt() {
                   {...tagSelectProps}
                   instanceId="tags-select"
                 />
-              </motion.div>
+              </div>
 
               <motion.div 
                 className="space-y-2"
