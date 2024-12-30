@@ -141,7 +141,7 @@ export default function PromptsPage() {
     title: '',
     content: '',
     description: '',
-    tags: '',
+    tags: 'Text',
     version: '1.0.0',
     cover_img: '',
   });
@@ -309,7 +309,7 @@ export default function PromptsPage() {
         title: '',
         content: '',
         description: '',
-        tags: '',
+        tags: 'General',
         version: '1.0.0',
         cover_img: '',
       });
