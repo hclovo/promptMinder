@@ -64,7 +64,7 @@ export default function TermsOfService() {
         <section>
           <h2 className="text-2xl font-semibold mb-4">6. 免责声明</h2>
           <p className="text-gray-700">
-            服务按"现状"提供，我们：
+            服务按&ldquo;现状&rdquo;提供，我们：
           </p>
           <ul className="list-disc ml-6 mt-2 text-gray-700">
             <li>不保证服务不会中断或无错误</li>
