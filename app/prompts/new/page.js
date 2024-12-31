@@ -30,7 +30,7 @@ export default function NewPrompt() {
     title: '',
     content: '',
     description: '',
-    tags: '',
+    tags: 'Text',
     version: '1.0.0',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
