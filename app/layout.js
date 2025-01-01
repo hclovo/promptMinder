@@ -8,6 +8,7 @@ import { usePathname } from 'next/navigation';
 import { light } from '@clerk/themes';
 import { zhCN } from '@clerk/localizations';
 import { Toaster } from "@/components/ui/toaster"
+import { Analytics } from "@vercel/analytics/next"
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -60,6 +61,7 @@ export default function RootLayout({ children }) {
             {/* {shouldShowHeaderFooter && <Footer />} */}
           </div>
           <Toaster />
+          <Analytics />
         </body>
       </html>
     </ClerkProvider>
