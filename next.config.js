@@ -15,10 +15,17 @@ const nextConfig = {
   },
   images: {
     domains: ['api.dicebear.com', 'source.unsplash.com', 'emqozkcwoekqiibyempf.supabase.co'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '*.supabase.co',
+        pathname: '/storage/v1/object/public/**',
+      },
+    ],
     dangerouslyAllowSVG: true,
     contentDispositionType: 'attachment',
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
 };
 
-module.exports = nextConfig; 
+module.exports = nextConfig;
