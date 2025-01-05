@@ -1,7 +1,7 @@
 'use client';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, use } from 'react';
-import { Spinner } from '@/app/components/ui/Spinner';
+import { Spinner } from '@/components/ui/Spinner';
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"

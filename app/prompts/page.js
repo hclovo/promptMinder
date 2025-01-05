@@ -1,9 +1,9 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
-import PromptList from '@/app/components/prompt/PromptList';
+import PromptList from '@/components/prompt/PromptList';
 import { Input } from "@/components/ui/input"
-import { Spinner } from '@/app/components/ui/Spinner';
-import TagFilter from '@/app/components/prompt/TagFilter';
+import { Spinner } from '@/components/ui/Spinner';
+import TagFilter from '@/components/prompt/TagFilter';
 import { Button } from "@/components/ui/button"
 import { Search, PlusCircle, ChevronDown, Copy, Share2, Trash2, Clock, Tags } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"

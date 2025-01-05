@@ -3,7 +3,7 @@
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { ClerkProvider } from '@clerk/nextjs';
-import Navbar from "./components/layout/Navbar";
+import Navbar from "../components/layout/Navbar";
 import { usePathname } from 'next/navigation';
 import { light } from '@clerk/themes';
 import { zhCN } from '@clerk/localizations';

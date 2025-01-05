@@ -2,7 +2,7 @@
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { use } from 'react';
-import { Spinner } from '@/app/components/ui/Spinner';
+import { Spinner } from '@/components/ui/Spinner';
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"

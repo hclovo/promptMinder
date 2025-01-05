@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Metadata } from "next";
 import { Header } from "@/components/landing/header";
-import Footer from "@/app/components/layout/Footer";
+import Footer from "@/components/layout/Footer";
 import { HeroSection } from "@/components/landing/hero-section";
 import { FeatureSection } from "@/components/landing/feature-section";
 import { PricingSection } from "@/components/landing/pricing-section";

@@ -2,7 +2,7 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, useRef } from 'react';
 import { use } from 'react';
-import { Spinner } from '@/app/components/ui/Spinner';
+import { Spinner } from '@/components/ui/Spinner';
 import Image from 'next/image';
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -26,7 +26,7 @@ import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark } from 'react-syntax-highlighter/dist/cjs/styles/prism';
 import { Check, Copy } from "lucide-react"
-import ChatTest from '@/app/components/chat/ChatTest';
+import ChatTest from '@/components/chat/ChatTest';
 import { useToast } from "@/hooks/use-toast"
 
 const STORAGE_KEY = 'chat_settings';
