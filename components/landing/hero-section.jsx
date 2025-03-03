@@ -26,7 +26,7 @@ export function HeroSection() {
             让AI提示词管理更简单
           </h1>
           <p className="text-xl md:text-2xl text-gray-600 mb-2">
-            专业的提示词管理平台，为
+            开源的提示词管理平台，为
             <TypeAnimation
               sequence={[
                 'AI从业者',
