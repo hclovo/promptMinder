@@ -2,7 +2,7 @@
 
 一个专业的提示词的管理平台，让AI提示词管理更简单
 
-![主页](/main-page.png)
+![主页](./public/main-page.png)
 
 ## 特性
 
