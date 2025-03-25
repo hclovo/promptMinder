@@ -4,7 +4,7 @@
 
 [![Deployed on Zeabur](https://zeabur.com/deployed-on-zeabur-dark.svg)](https://zeabur.com/referral?referralCode=aircrushin&utm_source=aircrushin&utm_campaign=oss)
 
-![主页](/main-page.png)
+![主页](/public/main-page.png)
 
 ## 特性
 
