@@ -2,6 +2,8 @@
 
 一个专业的提示词的管理平台，让AI提示词管理更简单
 
+[![Deployed on Zeabur](https://zeabur.com/deployed-on-zeabur-dark.svg)](https://zeabur.com/referral?referralCode=aircrushin&utm_source=aircrushin&utm_campaign=oss)
+
 ![主页](/main-page.png)
 
 ## 特性
