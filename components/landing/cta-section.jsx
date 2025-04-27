@@ -4,8 +4,15 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import { useAuth } from "@clerk/nextjs";
 
-export function CTASection() {
+export function CTASection({ t }) {
   const { isSignedIn } = useAuth();
+  
+  const translations = t || {
+    title: 'Ready to get started?',
+    description: 'Join Prompt Minder now and start your AI prompt management journey',
+    buttonLoggedIn: 'Go to Console',
+    buttonLoggedOut: 'Sign Up for Free'
+  };
   
   return (
     <section className="py-20 bg-white">
@@ -17,17 +24,17 @@ export function CTASection() {
           className="max-w-4xl mx-auto text-center"
         >
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
-            准备好开始使用了吗？
+            {translations.title}
           </h2>
           <p className="text-xl text-gray-600 mb-8">
-            立即加入 Prompt Minder，开启您的 AI 提示词管理之旅
+            {translations.description}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
               href={isSignedIn ? "/prompts" : "/sign-up"}
               className="inline-flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-lg text-white bg-black hover:bg-gray-800 transition-colors"
             >
-              {isSignedIn ? "进入控制台" : "免费注册"}
+              {isSignedIn ? translations.buttonLoggedIn : translations.buttonLoggedOut}
             </Link>
           </div>
         </motion.div>

@@ -7,6 +7,7 @@ import { Modal, ModalContent, ModalHeader, ModalTitle, ModalFooter } from '@/com
 import { Trash2, Pencil, ArrowLeft } from 'lucide-react';
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const TagsSkeleton = () => {
   return (
@@ -43,6 +44,7 @@ const TagsSkeleton = () => {
 
 export default function TagsPage() {
   const router = useRouter();
+  const { language, t } = useLanguage();
   const [tags, setTags] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -50,6 +52,10 @@ export default function TagsPage() {
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [selectedTagId, setSelectedTagId] = useState(null);
   const [editingTag, setEditingTag] = useState({ id: null, name: '' });
+
+  if (!t) return <TagsSkeleton />;
+  const tp = t.tagsPage;
+  if (!tp) return <TagsSkeleton />;
 
   useEffect(() => {
     fetchTags();
@@ -59,7 +65,7 @@ export default function TagsPage() {
     try {
       const response = await fetch('/api/tags');
       if (!response.ok) {
-        throw new Error('获取标签失败');
+        throw new Error(tp.fetchError);
       }
       const data = await response.json();
       setTags(data);
@@ -84,15 +90,13 @@ export default function TagsPage() {
       const data = await response.json();
       
       if (!response.ok) {
-        throw new Error(data.error || '删除标签失败');
+        throw new Error(data.error || tp.deleteError);
       }
 
       setDeleteModalOpen(false);
-      // 删除成功后刷新列表
       fetchTags();
     } catch (err) {
       setError(err.message);
-      // 3秒后清除错误信息
       setTimeout(() => setError(''), 3000);
     }
   };
@@ -115,15 +119,13 @@ export default function TagsPage() {
       const data = await response.json();
       
       if (!response.ok) {
-        throw new Error(data.error || '更新标签失败');
+        throw new Error(data.error || tp.updateError);
       }
 
       setEditModalOpen(false);
-      // 更新成功后刷新列表
       fetchTags();
     } catch (err) {
       setError(err.message);
-      // 3秒后清除错误信息
       setTimeout(() => setError(''), 3000);
     }
   };
@@ -140,16 +142,16 @@ export default function TagsPage() {
           className="py-2 hover:bg-gray-100 rounded-full transition-colors flex items-center gap-2"
         >
           <ArrowLeft className="w-5 h-5" />
-          <span className="text-sm text-gray-500">返回提示词列表</span>
+          <span className="text-sm text-gray-500">{tp.backToList}</span>
         </button>
       </div>
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">标签管理</h1>
+        <h1 className="text-2xl font-bold">{tp.title}</h1>
         <Link
           href="/tags/new"
           className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
         >
-          新建标签
+          {tp.newTagButton}
         </Link>
       </div>
 
@@ -161,13 +163,13 @@ export default function TagsPage() {
 
       {tags.length === 0 ? (
         <div className="text-center text-gray-500 py-8">
-          暂无标签，点击右上角添加新标签
+          {tp.noTagsMessage}
         </div>
       ) : (
         <div className="space-y-8">
           {/* 公共标签部分 */}
           <div>
-            <h2 className="text-xl font-semibold mb-4">公共标签</h2>
+            <h2 className="text-xl font-semibold mb-4">{tp.publicTagsTitle}</h2>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {tags.filter(tag => !tag.user_id).map((tag) => (
                 <div
@@ -181,7 +183,7 @@ export default function TagsPage() {
               ))}
               {tags.filter(tag => !tag.user_id).length === 0 && (
                 <div className="col-span-full text-center text-gray-500 py-4">
-                  暂无公共标签
+                  {tp.noPublicTags}
                 </div>
               )}
             </div>
@@ -189,7 +191,7 @@ export default function TagsPage() {
 
           {/* 私有标签部分 */}
           <div>
-            <h2 className="text-xl font-semibold mb-4">私有标签</h2>
+            <h2 className="text-xl font-semibold mb-4">{tp.privateTagsTitle}</h2>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {tags.filter(tag => tag.user_id).map((tag) => (
                 <div
@@ -198,7 +200,7 @@ export default function TagsPage() {
                 >
                   <div className="inline-flex items-center">
                     <span className="text-sm font-medium text-gray-700">{tag.name}</span>
-                    <span className="ml-2 px-2 py-0.5 text-[10px] font-medium bg-indigo-50 text-indigo-600 rounded-full">私有</span>
+                    <span className="ml-2 px-2 py-0.5 text-[10px] font-medium bg-indigo-50 text-indigo-600 rounded-full">{tp.privateTagBadge}</span>
                   </div>
                   <div className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
                     <button
@@ -218,7 +220,7 @@ export default function TagsPage() {
               ))}
               {tags.filter(tag => tag.user_id).length === 0 && (
                 <div className="col-span-full text-center text-gray-500 py-4">
-                  暂无私有标签
+                  {tp.noPrivateTags}
                 </div>
               )}
             </div>
@@ -229,21 +231,21 @@ export default function TagsPage() {
       <Modal isOpen={deleteModalOpen} onClose={() => setDeleteModalOpen(false)}>
         <ModalContent>
           <ModalHeader>
-            <ModalTitle>确认删除</ModalTitle>
+            <ModalTitle>{tp.deleteConfirmTitle}</ModalTitle>
           </ModalHeader>
-          <p className="py-4">确定要删除这个标签吗？此操作无法撤销。</p>
+          <p className="py-4">{tp.deleteConfirmDescription}</p>
           <ModalFooter>
             <button
               onClick={() => setDeleteModalOpen(false)}
               className="px-4 py-2 text-gray-500 hover:text-gray-700"
             >
-              取消
+              {tp.cancel}
             </button>
             <button
               onClick={confirmDelete}
               className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
             >
-              删除
+              {tp.delete}
             </button>
           </ModalFooter>
         </ModalContent>
@@ -252,13 +254,13 @@ export default function TagsPage() {
       <Modal isOpen={editModalOpen} onClose={() => setEditModalOpen(false)}>
         <ModalContent>
           <ModalHeader>
-            <ModalTitle>编辑标签</ModalTitle>
+            <ModalTitle>{tp.editModalTitle}</ModalTitle>
           </ModalHeader>
           <div className="py-4">
             <Input
               value={editingTag.name}
               onChange={(e) => setEditingTag({ ...editingTag, name: e.target.value })}
-              placeholder="请输入标签名称"
+              placeholder={tp.editPlaceholder}
               className="w-full"
             />
           </div>
@@ -267,13 +269,13 @@ export default function TagsPage() {
               onClick={() => setEditModalOpen(false)}
               className="px-4 py-2 text-gray-500 hover:text-gray-700"
             >
-              取消
+              {tp.cancel}
             </button>
             <button
               onClick={confirmEdit}
               className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
             >
-              保存
+              {tp.save}
             </button>
           </ModalFooter>
         </ModalContent>

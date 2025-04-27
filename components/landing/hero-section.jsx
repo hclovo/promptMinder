@@ -5,8 +5,16 @@ import Link from "next/link";
 import { useAuth } from "@clerk/nextjs";
 import { TypeAnimation } from 'react-type-animation';
 
-export function HeroSection() {
+export function HeroSection({ t }) {
   const { isSignedIn } = useAuth();
+  const translations = t || { 
+    mainTitle: 'Make AI Prompt Management Simpler',
+    subtitleStart: 'An open-source prompt management platform built for ',
+    animatedText: ['AI practitioners', 'content creators'],
+    subtitleEnd: '',
+    description: 'Supports version control, team collaboration, smart categorization, and more.',
+    ctaButton: 'Start Using for Free'
+  };
 
   return (
     <section className="relative overflow-hidden bg-white pt-24 pb-24">
@@ -23,33 +31,28 @@ export function HeroSection() {
           className="text-center max-w-3xl mx-auto"
         >
           <h1 className="text-4xl md:text-6xl font-bold mb-6 [-webkit-background-clip:text] [background-clip:text] text-transparent bg-gradient-to-r from-gray-900 to-gray-600">
-            让AI提示词管理更简单
+            {translations.mainTitle}
           </h1>
           <p className="text-xl md:text-2xl text-gray-600 mb-2">
-            开源的提示词管理平台，为
+            {translations.subtitleStart}
             <TypeAnimation
-              sequence={[
-                'AI从业者',
-                3000,
-                '内容创作者',
-                3000,
-              ]}
+              sequence={translations.animatedText.flatMap(item => [item, 3000])}
               wrapper="span"
               speed={50}
               className="text-blue-600 font-medium"
               repeat={Infinity}
             />
-            打造
+            {translations.subtitleEnd}
           </p>
           <p className="text-sm md:text-base text-gray-600 mb-8">
-            支持版本控制、团队协作、智能分类等功能
+            {translations.description}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
               href={isSignedIn ? "/prompts" : "/sign-up"}
               className="px-8 py-4 bg-black text-white rounded-lg font-medium hover:bg-gray-800 transition-all"
             >
-              免费开始使用
+              {translations.ctaButton}
             </Link>
             {/* <Link
               href="/pricing"

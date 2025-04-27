@@ -23,6 +23,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Loader2, Wand2 } from "lucide-react"
 import dynamic from 'next/dynamic'
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const CreatableSelect = dynamic(() => import('react-select/creatable'), {
   ssr: false
@@ -110,8 +111,10 @@ async function deletePrompt(id) {
   return res.json();
 }
 
-// 添加新的 NewPromptCard 组件
+// 修改 NewPromptCard 使用翻译
 const NewPromptCard = ({ onClick }) => {
+  const { t } = useLanguage();
+  if (!t) return null;
   return (
     <Card 
       onClick={onClick}
@@ -119,13 +122,15 @@ const NewPromptCard = ({ onClick }) => {
     >
       <div className="flex flex-col items-center gap-2 text-muted-foreground">
         <PlusCircle className="h-8 w-8" />
-        <span className="text-sm">新建提示词</span>
+        <span className="text-sm">{t.promptsPage.newPromptCard}</span>
       </div>
     </Card>
   );
 };
 
 export default function PromptsPage() {
+  const { language, t } = useLanguage();
+  const { toast } = useToast();
   const [prompts, setPrompts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedTags, setSelectedTags] = useState([]);
@@ -141,26 +146,28 @@ export default function PromptsPage() {
     title: '',
     content: '',
     description: '',
-    tags: 'Text',
+    tags: '',
     version: '1.0.0',
     cover_img: '',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { toast } = useToast();
   const [tagOptions, setTagOptions] = useState([]);
+
+  if (!t) return null;
+  const tp = t.promptsPage;
 
   const handleCopy = async (content) => {
     try {
       await navigator.clipboard.writeText(content);
       toast({
-        description: "提示词已复制到剪贴板",
+        description: tp.copySuccess,
         duration: 2000,
       });
     } catch (err) {
-      console.error('复制失败:', err);
+      console.error('Copy failed:', err);
       toast({
         variant: "destructive",
-        description: "复制失败",
+        description: tp.copyError,
         duration: 2000,
       });
     }
@@ -205,14 +212,14 @@ export default function PromptsPage() {
       setPrompts(prompts.filter(prompt => prompt.id !== promptToDelete));
       setDeleteDialogOpen(false);
       toast({
-        description: "提示词已删除",
+        description: tp.deleteSuccess,
         duration: 2000,
       });
     } catch (error) {
       console.error('Error deleting prompt:', error);
       toast({
         variant: "destructive",
-        description: "删除失败，请重试",
+        description: tp.deleteError,
         duration: 2000,
       });
     }
@@ -230,14 +237,12 @@ export default function PromptsPage() {
 
   const handleShare = async (id) => {
     const shareUrl = `${window.location.origin}/share/${id}`;
-    
-    toast({
-      description: "链接已复制到剪贴板",
-      duration: 2000,
-    });
-
     try {
       await navigator.clipboard.writeText(shareUrl);
+      toast({
+        description: tp.shareSuccess,
+        duration: 2000,
+      });
     } catch (clipboardErr) {
       const textarea = document.createElement('textarea');
       textarea.value = shareUrl;
@@ -245,10 +250,14 @@ export default function PromptsPage() {
       textarea.select();
       try {
         document.execCommand('copy');
+        toast({
+          description: tp.shareSuccess,
+          duration: 2000,
+        });
       } catch (fallbackErr) {
         toast({
           variant: "destructive",
-          description: "复制失败，请手动复制链接",
+          description: tp.shareError,
           duration: 2000,
         });
       } finally {
@@ -257,7 +266,6 @@ export default function PromptsPage() {
     }
   };
 
-  // 按标题对提示词进行分组
   const groupedPrompts = filteredPrompts.reduce((acc, prompt) => {
     if (!acc[prompt.title]) {
       acc[prompt.title] = [];
@@ -275,7 +283,7 @@ export default function PromptsPage() {
     if (!newPrompt.title.trim() || !newPrompt.content.trim()) {
       toast({
         variant: "destructive",
-        description: "请填写标题和提示词内容",
+        description: tp.createValidation,
         duration: 2000,
       });
       return;
@@ -295,7 +303,6 @@ export default function PromptsPage() {
         throw new Error('Failed to create prompt');
       }
 
-      // 刷新提示词列表
       const data = await getPrompts();
       setPrompts(data.map(prompt => ({
         ...prompt,
@@ -309,20 +316,20 @@ export default function PromptsPage() {
         title: '',
         content: '',
         description: '',
-        tags: 'General',
+        tags: '',
         version: '1.0.0',
         cover_img: '',
       });
 
       toast({
-        description: "提示词创建成功",
+        description: tp.createSuccess,
         duration: 2000,
       });
     } catch (error) {
       console.error('Error creating prompt:', error);
       toast({
         variant: "destructive",
-        description: "创建失败，请重试",
+        description: tp.createError,
         duration: 2000,
       });
     } finally {
@@ -384,7 +391,7 @@ export default function PromptsPage() {
         body: JSON.stringify({ text: newPrompt.content }),
       });
       
-      if (!response.ok) throw new Error('优化失败');
+      if (!response.ok) throw new Error(tp.optimizeError);
       
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
@@ -408,16 +415,16 @@ export default function PromptsPage() {
               setOptimizedContent(tempContent);
             }
           } catch (e) {
-            console.error('解析响应数据出错:', e);
+            console.error(tp.optimizeParsingError, e);
           }
         }
       }
 
     } catch (error) {
-      console.error('优化错误:', error);
+      console.error('Optimization error:', error);
       toast({
         variant: "destructive",
-        description: "优化失败，请重试",
+        description: tp.optimizeRetry,
         duration: 2000,
       });
     } finally {
@@ -431,9 +438,9 @@ export default function PromptsPage() {
         <div className="space-y-6">
           <div className="flex flex-col space-y-4">
             <div className="flex justify-between items-center">
-              <h1 className="text-3xl font-bold">提示词库</h1>
+              <h1 className="text-3xl font-bold">{tp.title}</h1>
               <p className="text-muted-foreground">
-                共 {prompts.length} 个提示词
+                {tp.totalPrompts.replace('{count}', prompts.length.toString())}
               </p>
             </div>
             
@@ -443,7 +450,7 @@ export default function PromptsPage() {
                 <Input
                   type="search"
                   onChange={(e) => debouncedSearch(e.target.value)}
-                  placeholder="搜索提示词..."
+                  placeholder={tp.searchPlaceholder}
                   className="w-full h-10 pl-9 transition-all border rounded-lg focus:ring-2 focus:ring-primary/50"
                 />
               </div>
@@ -454,11 +461,12 @@ export default function PromptsPage() {
                     selectedTags={selectedTags}
                     onTagSelect={setSelectedTags}
                     className="touch-manipulation w-full md:w-auto"
+                    t={t}
                   />
                   <Link href="/tags" className="w-full md:w-auto">
                     <Button variant="outline" className="w-full">
                       <Tags className="mr-2 h-4 w-4" />
-                      标签管理
+                      {tp.manageTags}
                     </Button>
                   </Link>
                 </>
@@ -559,7 +567,7 @@ export default function PromptsPage() {
                         {versions.length > 1 && (
                           <>
                             <span>•</span>
-                            <span>{versions.length} 个版本</span>
+                            <span>{tp.versionsCount.replace('{count}', versions.length.toString())}</span>
                           </>
                         )}
                       </div>
@@ -572,11 +580,10 @@ export default function PromptsPage() {
         </div>
       </div>
 
-      {/* 版本历史对话框 */}
       <Dialog open={!!selectedVersions} onOpenChange={() => setSelectedVersions(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>版本历史</DialogTitle>
+            <DialogTitle>{tp.versionHistoryTitle}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 mt-4">
             {selectedVersions?.map((version) => (
@@ -605,9 +612,9 @@ export default function PromptsPage() {
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>确认删除</DialogTitle>
+            <DialogTitle>{tp.deleteConfirmTitle}</DialogTitle>
             <DialogDescription>
-              你确定要删除这个提示词吗？此操作无法撤销。
+              {tp.deleteConfirmDescription}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -615,40 +622,39 @@ export default function PromptsPage() {
               variant="outline"
               onClick={() => setDeleteDialogOpen(false)}
             >
-              取消
+              {tp.cancel}
             </Button>
             <Button
               variant="destructive"
               onClick={confirmDelete}
             >
-              删除
+              {tp.delete}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      {/* 新建提示词对话框 */}
       <Dialog open={showNewPromptDialog} onOpenChange={setShowNewPromptDialog}>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>新增提示词</DialogTitle>
+            <DialogTitle>{tp.newPromptTitle}</DialogTitle>
           </DialogHeader>
           <div className="space-y-6 py-4">
             <div className="space-y-2">
               <Label htmlFor="title">
-                标题
+                {tp.formTitleLabel}
                 <span className="text-red-500 ml-1">*</span>
               </Label>
               <Input
                 id="title"
                 value={newPrompt.title}
                 onChange={(e) => setNewPrompt({ ...newPrompt, title: e.target.value })}
-                placeholder="为你的提示词起个醒目的标题"
+                placeholder={tp.formTitlePlaceholder}
               />
             </div>
             <div className="space-y-2">
               <Label htmlFor="content">
-                提示词内容
+                {tp.formContentLabel}
                 <span className="text-red-500 ml-1">*</span>
               </Label>
               <div className="relative">
@@ -656,7 +662,7 @@ export default function PromptsPage() {
                   id="content"
                   value={newPrompt.content}
                   onChange={(e) => setNewPrompt({ ...newPrompt, content: e.target.value })}
-                  placeholder="在这里输入你的提示词内容，可以包含具体的指令、上下文要求等"
+                  placeholder={tp.formContentPlaceholder}
                   className="min-h-[200px] pr-10"
                 />
                 <Button
@@ -676,16 +682,16 @@ export default function PromptsPage() {
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="description">描述</Label>
+              <Label htmlFor="description">{tp.formDescriptionLabel}</Label>
               <Textarea
                 id="description"
                 value={newPrompt.description}
                 onChange={(e) => setNewPrompt({ ...newPrompt, description: e.target.value })}
-                placeholder="简要描述这个提示词的用途和使用场景"
+                placeholder={tp.formDescriptionPlaceholder}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="tags">标签</Label>
+              <Label htmlFor="tags">{tp.formTagsLabel}</Label>
               <CreatableSelect
                 isMulti
                 value={newPrompt.tags ? newPrompt.tags.split(',').map(tag => ({ value: tag, label: tag })) : []}
@@ -703,7 +709,7 @@ export default function PromptsPage() {
                     setNewPrompt({ ...newPrompt, tags: newTags });
                   }
                 }}
-                placeholder="选择或创建新标签"
+                placeholder={tp.formTagsPlaceholder}
                 classNamePrefix="select"
                 styles={{
                   control: (baseStyles, state) => ({
@@ -775,19 +781,19 @@ export default function PromptsPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="version">版本</Label>
+              <Label htmlFor="version">{tp.formVersionLabel}</Label>
               <div className="flex items-center gap-2">
                 <span className="text-sm text-muted-foreground">v</span>
                 <Input
                   id="version"
                   value={newPrompt.version}
                   onChange={(e) => setNewPrompt({ ...newPrompt, version: e.target.value })}
-                  placeholder="1.0.0"
+                  placeholder={tp.formVersionPlaceholder}
                   className="w-32"
                 />
               </div>
               <p className="text-sm text-muted-foreground">
-                建议使用语义化版本号，例如：1.0.0
+                {tp.versionSuggestion}
               </p>
             </div>
           </div>
@@ -796,7 +802,7 @@ export default function PromptsPage() {
               variant="outline"
               onClick={() => setShowNewPromptDialog(false)}
             >
-              取消
+              {tp.cancel}
             </Button>
             <Button
               onClick={handleCreatePrompt}
@@ -805,26 +811,25 @@ export default function PromptsPage() {
               {isSubmitting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  创建中...
+                  {tp.creating}
                 </>
-              ) : '创建'}
+              ) : tp.create}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      {/* 优化结果对话框 */}
       <Dialog open={showOptimizeModal} onOpenChange={setShowOptimizeModal}>
         <DialogContent className="max-w-3xl max-h-[90vh]">
           <DialogHeader>
-            <DialogTitle>优化结果预览</DialogTitle>
+            <DialogTitle>{tp.optimizePreviewTitle}</DialogTitle>
           </DialogHeader>
           <div className="relative min-h-[200px] max-h-[50vh] overflow-y-auto">
             <Textarea
               value={optimizedContent}
               onChange={(e) => setOptimizedContent(e.target.value)}
               className="min-h-[200px] w-full"
-              placeholder="正在生成优化内容..."
+              placeholder={tp.optimizePlaceholder}
             />
           </div>
           <DialogFooter>
@@ -833,7 +838,7 @@ export default function PromptsPage() {
               onClick={() => setShowOptimizeModal(false)}
               className="mr-2"
             >
-              取消
+              {tp.cancel}
             </Button>
             <Button
               onClick={() => {
@@ -842,7 +847,7 @@ export default function PromptsPage() {
               }}
               disabled={!optimizedContent.trim()}
             >
-              应用优化结果
+              {tp.applyOptimization}
             </Button>
           </DialogFooter>
         </DialogContent>

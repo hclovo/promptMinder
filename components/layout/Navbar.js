@@ -2,7 +2,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import {
   NavigationMenu,
@@ -11,38 +11,30 @@ import {
   NavigationMenuList,
 } from "@/components/ui/navigation-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Menu, FolderPlus, Library, LogOut } from "lucide-react"
+import { Menu, FolderPlus, Library, LogOut, Languages } from "lucide-react"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { ClerkProvider, SignInButton, SignedIn, SignedOut, UserButton } from '@clerk/nextjs'
-
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function Navbar() {
   const pathname = usePathname();
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [user, setUser] = useState(null);
+  const { language, toggleLanguage, t } = useLanguage();
 
   useEffect(() => {
     const checkAuth = async () => {
       const hasAuthToken = document.cookie.includes('authToken=');
       if (!hasAuthToken) {
-        setIsLoggedIn(false);
-        setUser(null);
         return;
       }
-      setUser('prompt大师');
-      setIsLoggedIn(true);
     };
     checkAuth();
   }, []);
 
-  const handleSignOut = async () => {
-    document.cookie = 'authToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-    window.location.href = '/';
-  };
+  if (!t) return null;
 
   return (
     <nav className="border-b">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <Link href="/" className="flex items-center group">
             <Image src="/logo2.png" alt="PromptMinder" width={60} height={60} />
@@ -64,7 +56,7 @@ export default function Navbar() {
                       } flex items-center gap-1`}
                     >
                       <Library className="h-4 w-4" />
-                      管理
+                      {t.navbar.manage}
                     </NavigationMenuLink>
                   </Link>
                 </NavigationMenuItem>
@@ -79,7 +71,7 @@ export default function Navbar() {
                       } flex items-center gap-1`}
                     >
                       <FolderPlus className="h-4 w-4" />
-                      新建
+                      {t.navbar.new}
                     </NavigationMenuLink>
                   </Link>
                 </NavigationMenuItem>
@@ -105,7 +97,7 @@ export default function Navbar() {
                       } flex items-center gap-2`}
                     >
                       <Library className="h-4 w-4" />
-                      管理
+                      {t.navbar.manage}
                     </Link>
                     <Link
                       href="/prompts/new"
@@ -116,14 +108,21 @@ export default function Navbar() {
                       } flex items-center gap-2`}
                     >
                       <FolderPlus className="h-4 w-4" />
-                      新建
+                      {t.navbar.new}
                     </Link>
+                    <Button variant="ghost" onClick={toggleLanguage} className="justify-start mt-4">
+                      <Languages className="h-4 w-4 mr-2" /> 
+                      {t.language.switchTo} ({t.language.current})
+                    </Button>
                   </div>
                 </SheetContent>
               </Sheet>
             </div>
 
-            <div className="flex items-center ml-8">
+            <div className="flex items-center ml-8 space-x-4">
+              <Button variant="outline" size="icon" onClick={toggleLanguage} className="hidden sm:inline-flex">
+                <Languages className="h-5 w-5" />
+              </Button>
               <SignedOut>
                 <SignInButton />
               </SignedOut>

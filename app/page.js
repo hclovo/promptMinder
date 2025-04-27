@@ -1,38 +1,51 @@
+"use client"; // 必须是客户端组件才能使用 hooks
 import Link from "next/link";
-import { Metadata } from "next";
+// import { Metadata } from "next"; // 移除静态 Metadata 导入
 import { Header } from "@/components/landing/header";
 import Footer from "@/components/layout/Footer";
 import { HeroSection } from "@/components/landing/hero-section";
 import { FeatureSection } from "@/components/landing/feature-section";
-import { PricingSection } from "@/components/landing/pricing-section";
+// import { PricingSection } from "@/components/landing/pricing-section"; // 保持注释
 import { TestimonialSection } from "@/components/landing/testimonial-section";
 import { FAQSection } from "@/components/landing/faq-section";
 import { CTASection } from "@/components/landing/cta-section";
+// 移除 useState, useEffect 和翻译文件导入
+// import { useState, useEffect } from 'react';
+// import en from '@/messages/en.json';
+// import zh from '@/messages/zh.json';
+// 导入 useLanguage hook
+import { useLanguage } from '@/contexts/LanguageContext';
 
-export const metadata = {
-  title: "Prompt Minder - 专业的AI提示词管理平台",
-  description: "为AI从业者打造的提示词管理工具，支持版本控制、团队协作、智能分类等功能",
-  keywords: ["AI提示词", "Prompt工程", "GPT", "Claude", "AI助手", "提示词管理", "deepseek", "qwen"],
-  openGraph: {
-    title: "Prompt Minder - 专业的AI提示词管理平台",
-    description: "为AI从业者打造的提示词管理工具，支持版本控制、团队协作、智能分类等功能",
-    images: [{ url: "/og-image.png" }],
-  },
-};
+// 移除本地 translations 对象
+// const translations = { en, zh };
 
 export default function Home() {
+  // 使用 Context 获取翻译对象 t
+  const { t } = useLanguage();
+
+  // 移除本地状态和 effects
+  // const [language, setLanguage] = useState('zh');
+  // const t = translations[language];
+  // useEffect(() => { ... }, [language]);
+
+  // Context 加载保护
+  if (!t) return null; 
+
   return (
     <>
-      <Header />
+      {/* Header 现在从 Context 获取状态，无需 props */}
+      <Header /> 
       <main className="flex min-h-screen flex-col pt-16">
-        <HeroSection />
-        <FeatureSection />
+        {/* 将 Context 中的 t 传递给子组件 */}
+        <HeroSection t={t.hero} />
+        <FeatureSection t={t.features} />
         {/* <PricingSection /> */}
-        <TestimonialSection />
-        <FAQSection />
-        <CTASection />
+        <TestimonialSection t={t.testimonials} />
+        <FAQSection t={t.faq} />
+        <CTASection t={t.cta} />
       </main>
-      <Footer />
+      {/* 将 Context 中的 t 传递给 Footer */}
+      <Footer t={t.footer} />
     </>
   );
 }

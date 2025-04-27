@@ -1,6 +1,23 @@
 import Link from 'next/link';
 
-export default function Footer() {
+export default function Footer({ t }) {
+  const translations = t || {
+    description: 'Make AI prompt management simpler and more efficient...',
+    product: 'Product',
+    privacyPolicy: 'Privacy Policy',
+    termsOfUse: 'Terms of Use',
+    support: 'Support',
+    feedback: 'Feedback',
+    changelog: 'Changelog',
+    friendlyLinks: 'Friendly Links',
+    promptCoder: 'PromptCoder - Code Prompts',
+    promptGuide: 'PromptGuide - Prompt Guide',
+    aiShort: 'AIshort - Excellent Prompt Collection',
+    promptate: 'Promptate - Prompt Generator',
+    copyright: '© {year} PromptMinder. All rights reserved'
+  };
+  const currentYear = new Date().getFullYear();
+
   return (
     <footer className="bg-white border-t border-gray-200">
       <div className="max-w-7xl mx-auto pt-12 pb-8 px-4 sm:px-6 lg:px-8">
@@ -13,7 +30,7 @@ export default function Footer() {
               </span>
             </Link>
             <p className="text-gray-500 text-sm leading-6">
-              让AI提示词管理变得更简单、更高效。打造你的专属提示词库，提升AI对话效率。
+              {translations.description}
             </p>
             <div className="flex space-x-6">
               <Link href="https://github.com/aircrushin/promptMinder" target="_blank" className="text-gray-400 hover:text-gray-500 transition-colors duration-200">
@@ -35,57 +52,63 @@ export default function Footer() {
           <div className="mt-12 grid grid-cols-2 gap-20 xl:mt-0 xl:col-span-2 justify-self-end">
             <div className="md:grid md:grid-cols-2 md:gap-12 ">
               <div className="text-left">
-                <h3 className="text-sm font-semibold text-gray-900 tracking-wider uppercase">产品</h3>
+                <h3 className="text-sm font-semibold text-gray-900 tracking-wider uppercase">
+                  {translations.product}
+                </h3>
                 <ul className="mt-4 space-y-4">
                   <li>
                     <Link href="/privacy" className="text-sm text-gray-500 hover:text-gray-900">
-                      隐私政策
+                      {translations.privacyPolicy}
                     </Link>
                   </li>
                   <li>
                     <Link href="/terms" className="text-sm text-gray-500 hover:text-gray-900">
-                      使用条款
+                      {translations.termsOfUse}
                     </Link>
                   </li>
                 </ul>
               </div>
               <div className="mt-12 md:mt-0 text-left">
-                <h3 className="text-sm font-semibold text-gray-900 tracking-wider uppercase">支持</h3>
+                <h3 className="text-sm font-semibold text-gray-900 tracking-wider uppercase">
+                  {translations.support}
+                </h3>
                 <ul className="mt-4 space-y-4">
                   <li>
                     <Link href="https://prompt-minder.canny.io/feature-requests" target="_blank" className="text-sm text-gray-500 hover:text-gray-900">
-                      功能反馈
+                      {translations.feedback}
                     </Link>
                   </li>
                   <li>
                     <Link href="https://prompt-minder.canny.io/changelog" target="_blank" className="text-sm text-gray-500 hover:text-gray-900">
-                      更新日志
+                      {translations.changelog}
                     </Link>
                   </li>
                 </ul>
               </div>
             </div>
             <div className="text-left">
-              <h3 className="text-sm font-semibold text-gray-900 tracking-wider uppercase">友情链接</h3>
+              <h3 className="text-sm font-semibold text-gray-900 tracking-wider uppercase">
+                {translations.friendlyLinks}
+              </h3>
               <ul className="mt-4 space-y-4">
                 <li>
                   <Link href="https://code.promptate.xyz/" target="_blank" className="text-sm text-gray-500 hover:text-gray-900">
-                    PromptCoder - 代码提示词
+                    {translations.promptCoder}
                   </Link>
                 </li>
                 <li>
                   <Link href="https://www.promptingguide.ai/zh" target="_blank" className="text-sm text-gray-500 hover:text-gray-900">
-                    PromptGuide - 提示词指南
+                    {translations.promptGuide}
                   </Link>
                 </li>
                 <li>
                   <Link href="https://www.aishort.top/" target="_blank" className="text-sm text-gray-500 hover:text-gray-900">
-                    AIshort - 优秀 Prompt 集合
+                    {translations.aiShort}
                   </Link>
                 </li>
                 <li>
                   <Link href="https://www.promptate.xyz/" target="_blank" className="text-sm text-gray-500 hover:text-gray-900">
-                    Promptate - Prompt生成器
+                    {translations.promptate}
                   </Link>
                 </li>
               </ul>
@@ -96,7 +119,7 @@ export default function Footer() {
         {/* 版权信息 */}
         <div className="mt-4 pt-8 border-gray-200">
           <p className="text-sm text-gray-400 text-center">
-            © {new Date().getFullYear()} PromptMinder. All rights reserved
+            {translations.copyright.replace('{year}', currentYear.toString())}
           </p>
         </div>
       </div>

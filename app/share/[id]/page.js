@@ -5,12 +5,17 @@ import { Spinner } from '@/components/ui/Spinner';
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function SharePromptDetail({ params }) {
-  const unwrappedParams = use(params);
-  const id = unwrappedParams.id;
+  const { id } = params;
+  const { language, t } = useLanguage();
   const [prompt, setPrompt] = useState(null);
   const [copySuccess, setCopySuccess] = useState(false);
+
+  if (!t) return <div className="flex justify-center items-center h-64"><Spinner /></div>;
+  const tp = t.sharePage;
+  if (!tp) return <div className="flex justify-center items-center h-64"><Spinner /></div>;
 
   useEffect(() => {
     if (id) {
@@ -83,7 +88,7 @@ export default function SharePromptDetail({ params }) {
                   <div className="rounded-2xl border border-border/50 bg-secondary/5 backdrop-blur-sm overflow-hidden shadow-lg">
                     <div className="flex items-center justify-between px-6 py-4 border-b border-border/50 bg-secondary/10">
                       <div className="text-sm font-medium text-muted-foreground">
-                        提示词内容
+                        {tp.contentTitle}
                       </div>
                       <Button
                         onClick={handleCopy}
@@ -94,7 +99,7 @@ export default function SharePromptDetail({ params }) {
                         <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-12a2 2 0 00-2-2h-2M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2" />
                         </svg>
-                        {copySuccess ? '已复制' : '复制提示词'}
+                        {copySuccess ? tp.copyButtonSuccess : tp.copyButton}
                       </Button>
                     </div>
                     <div className="p-6 max-h-[600px] overflow-y-auto bg-gradient-to-b from-transparent to-secondary/5">

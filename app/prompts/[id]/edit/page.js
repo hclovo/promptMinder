@@ -1,7 +1,6 @@
 'use client';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { use } from 'react';
 import { Spinner } from '@/components/ui/Spinner';
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -11,7 +10,6 @@ import { Card, CardContent } from "@/components/ui/card"
 import Image from 'next/image';
 import CreatableSelect from 'react-select/creatable';
 import { motion } from "framer-motion";
-import { toast } from "sonner";
 import { Loader2, Wand2 } from "lucide-react";
 import {
   Modal,
@@ -20,11 +18,14 @@ import {
   ModalFooter,
   ModalTitle,
 } from "@/components/ui/modal"
+import { useLanguage } from '@/contexts/LanguageContext';
+import { useToast } from "@/hooks/use-toast";
 
 export default function EditPrompt({ params }) {
   const router = useRouter();
-  const unwrappedParams = use(params);
-  const id = unwrappedParams.id;
+  const { id } = params;
+  const { language, t } = useLanguage();
+  const { toast } = useToast();
   const [prompt, setPrompt] = useState(() => {
     if (typeof window !== 'undefined') {
       const state = window.history.state;
@@ -40,6 +41,10 @@ export default function EditPrompt({ params }) {
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [optimizedContent, setOptimizedContent] = useState('');
   const [showOptimizeModal, setShowOptimizeModal] = useState(false);
+
+  if (!t) return <div className="flex justify-center items-center min-h-[70vh]"><Spinner className="w-8 h-8" /></div>;
+  const tp = t.promptEditPage;
+  if (!tp) return <div className="flex justify-center items-center min-h-[70vh]"><Spinner className="w-8 h-8" /></div>;
 
   useEffect(() => {
     if (id && !prompt) {
@@ -90,14 +95,14 @@ export default function EditPrompt({ params }) {
 
       if (response.ok) {
         const data = await response.json();
-        toast.success(isNewVersion ? '新版本创建成功！' : '提示词更新成功！');
+        toast.success(isNewVersion ? tp.createVersionSuccess : tp.updateSuccess);
         router.push(`/prompts/${isNewVersion ? data.id : id}`);
       } else {
         const errorData = await response.json();
-        toast.error(errorData.error || '更新失败，请重试');
+        toast.error(errorData.error || tp.updateError);
       }
     } catch (error) {
-      toast.error('更新失败，请重试');
+      toast.error(tp.updateError);
       console.error('Error updating prompt:', error);
     } finally {
       setIsSubmitting(false);
@@ -119,7 +124,7 @@ export default function EditPrompt({ params }) {
         body: JSON.stringify({ text: prompt.content }),
       });
       
-      if (!response.ok) throw new Error('优化失败');
+      if (!response.ok) throw new Error(tp.optimizeError);
       
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
@@ -143,14 +148,14 @@ export default function EditPrompt({ params }) {
               setOptimizedContent(tempContent);
             }
           } catch (e) {
-            console.error('解析响应数出错:', e);
+            console.error(tp.optimizeParsingError, e);
           }
         }
       }
 
     } catch (error) {
-      console.error('优化错误:', error);
-      toast.error('优化失败，请重试');
+      console.error(tp.optimizeErrorLog, error);
+      toast.error(tp.optimizeRetry);
     } finally {
       setIsOptimizing(false);
     }
@@ -162,7 +167,7 @@ export default function EditPrompt({ params }) {
       content: optimizedContent
     }));
     setShowOptimizeModal(false);
-    toast.success('已应用优化结果');
+    toast.success(tp.applyOptimizeSuccess);
   };
 
   if (!prompt) {
@@ -189,7 +194,7 @@ export default function EditPrompt({ params }) {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
             </svg>
           </button>
-          <h1 className="text-3xl font-bold">编辑提示词</h1>
+          <h1 className="text-3xl font-bold">{tp.title}</h1>
         </div>
 
         <Card className="shadow-lg">
@@ -202,26 +207,26 @@ export default function EditPrompt({ params }) {
                 transition={{ delay: 0.2 }}
               >
                 <div className="space-y-2">
-                  <Label htmlFor="title" className="text-lg font-medium">标题</Label>
+                  <Label htmlFor="title" className="text-lg font-medium">{tp.formTitleLabel}</Label>
                   <Input
                     id="title"
                     value={prompt.title}
                     onChange={(e) => setPrompt({ ...prompt, title: e.target.value })}
                     className="h-12"
-                    placeholder="输入提示词标题"
+                    placeholder={tp.formTitlePlaceholder}
                     required
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="content" className="text-lg font-medium">内容</Label>
+                  <Label htmlFor="content" className="text-lg font-medium">{tp.formContentLabel}</Label>
                   <div className="relative">
                     <Textarea
                       id="content"
                       value={prompt.content}
                       onChange={(e) => setPrompt({ ...prompt, content: e.target.value })}
                       className="min-h-[250px] resize-y pr-12"
-                      placeholder="输入提示词内容"
+                      placeholder={tp.formContentPlaceholder}
                       required
                     />
                     <Button
@@ -242,18 +247,18 @@ export default function EditPrompt({ params }) {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="description" className="text-lg font-medium">描述</Label>
+                  <Label htmlFor="description" className="text-lg font-medium">{tp.formDescriptionLabel}</Label>
                   <Textarea
                     id="description"
                     value={prompt.description}
                     onChange={(e) => setPrompt({ ...prompt, description: e.target.value })}
                     className="min-h-[80px] resize-y"
-                    placeholder="添加描述信息"
+                    placeholder={tp.formDescriptionPlaceholder}
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="tags" className="text-lg font-medium">标签</Label>
+                  <Label htmlFor="tags" className="text-lg font-medium">{tp.formTagsLabel}</Label>
                   <CreatableSelect
                     id="tags"
                     isMulti
@@ -265,7 +270,7 @@ export default function EditPrompt({ params }) {
                     options={tagOptions}
                     className="basic-multi-select"
                     classNamePrefix="select"
-                    placeholder="选择或创建标签"
+                    placeholder={tp.formTagsPlaceholder}
                     styles={{
                       control: (base) => ({
                         ...base,
@@ -303,13 +308,13 @@ export default function EditPrompt({ params }) {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="version" className="text-lg font-medium">版本</Label>
+                  <Label htmlFor="version" className="text-lg font-medium">{tp.formVersionLabel}</Label>
                   <Input
                     id="version"
                     value={prompt.version}
                     onChange={(e) => setPrompt({ ...prompt, version: e.target.value })}
                     className="h-12"
-                    placeholder="输入版本号"
+                    placeholder={tp.formVersionPlaceholder}
                   />
                 </div>
               </motion.div>
@@ -323,9 +328,9 @@ export default function EditPrompt({ params }) {
                   {isSubmitting ? (
                     <div className="flex items-center gap-2">
                       <Spinner className="w-4 h-4" />
-                      <span>保存中...</span>
+                      <span>{tp.saving}</span>
                     </div>
-                  ) : '保存'}
+                  ) : tp.save}
                 </Button>
                 <Button
                   type="button"
@@ -333,7 +338,7 @@ export default function EditPrompt({ params }) {
                   onClick={() => router.back()}
                   className="w-32 h-12"
                 >
-                  取消
+                  {tp.cancel}
                 </Button>
               </div>
             </form>
@@ -344,14 +349,14 @@ export default function EditPrompt({ params }) {
       <Modal isOpen={showOptimizeModal} onClose={() => setShowOptimizeModal(false)}>
         <ModalContent className="max-w-3xl max-h-[80vh]">
           <ModalHeader>
-            <ModalTitle>优化结果预览</ModalTitle>
+            <ModalTitle>{tp.optimizePreviewTitle}</ModalTitle>
           </ModalHeader>
           <div className="relative min-h-[200px] max-h-[50vh] overflow-y-auto">
             <Textarea
               value={optimizedContent}
               onChange={(e) => setOptimizedContent(e.target.value)}
               className="min-h-[200px] w-full"
-              placeholder="正在生成优化内容..."
+              placeholder={tp.optimizePlaceholder}
             />
           </div>
           <ModalFooter>
@@ -361,14 +366,14 @@ export default function EditPrompt({ params }) {
               onClick={() => setShowOptimizeModal(false)}
               className="mr-2"
             >
-              取消
+              {tp.cancel}
             </Button>
             <Button
               type="button"
               onClick={handleApplyOptimized}
               disabled={!optimizedContent.trim()}
             >
-              应用优化结果
+              {tp.applyOptimization}
             </Button>
           </ModalFooter>
         </ModalContent>

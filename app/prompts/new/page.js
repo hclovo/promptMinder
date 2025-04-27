@@ -16,6 +16,8 @@ import {
   ModalFooter,
   ModalTitle,
 } from "@/components/ui/modal"
+import { useLanguage } from '@/contexts/LanguageContext';
+import { useToast } from "@/hooks/use-toast";
 
 const Select = dynamic(() => import('react-select'), {
   ssr: false
@@ -26,20 +28,26 @@ const CreatableSelect = dynamic(() => import('react-select/creatable'), {
 });
 
 export default function NewPrompt() {
+  const { language, t } = useLanguage();
+  const { toast } = useToast();
+  const router = useRouter();
+
   const [prompt, setPrompt] = useState({
     title: '',
     content: '',
     description: '',
-    tags: 'Text',
+    tags: '',
     version: '1.0.0',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [tagOptions, setTagOptions] = useState([]);
-  const router = useRouter();
   const [errors, setErrors] = useState({});
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [optimizedContent, setOptimizedContent] = useState('');
   const [showOptimizeModal, setShowOptimizeModal] = useState(false);
+
+  if (!t) return null;
+  const tp = t.newPromptPage;
 
   useEffect(() => {
     fetch('/api/tags')
@@ -59,8 +67,8 @@ export default function NewPrompt() {
 
   const validateForm = () => {
     const newErrors = {};
-    if (!prompt.title.trim()) newErrors.title = '请输入标题';
-    if (!prompt.content.trim()) newErrors.content = '请输入提示词内容';
+    if (!prompt.title.trim()) newErrors.title = tp.errorTitleRequired;
+    if (!prompt.content.trim()) newErrors.content = tp.errorContentRequired;
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -98,10 +106,8 @@ export default function NewPrompt() {
         e.preventDefault();
         e.stopPropagation();
         
-        // Get the input value
         const inputValue = e.target.value;
         if (inputValue) {
-          // Call onCreateOption with the current input value
           tagSelectProps.onCreateOption(inputValue);
         }
       }
@@ -144,7 +150,7 @@ export default function NewPrompt() {
         body: JSON.stringify({ text: prompt.content }),
       });
       
-      if (!response.ok) throw new Error('优化失败');
+      if (!response.ok) throw new Error(tp.optimizeError);
       
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
@@ -168,13 +174,18 @@ export default function NewPrompt() {
               setOptimizedContent(tempContent);
             }
           } catch (e) {
-            console.error('解析响应数据出错:', e);
+            console.error(tp.optimizeParsingError, e);
           }
         }
       }
 
     } catch (error) {
-      console.error('优化错误:', error);
+      console.error(tp.optimizationErrorLog, error);
+      toast({
+        variant: "destructive",
+        description: tp.optimizeError,
+        duration: 3000,
+      });
     } finally {
       setIsOptimizing(false);
     }
@@ -196,7 +207,7 @@ export default function NewPrompt() {
         transition={{ duration: 0.5 }}
         className="container mx-auto p-6 max-w-7xl"
       >
-        <h1 className="text-3xl font-bold mb-6">创建新提示词</h1>
+        <h1 className="text-3xl font-bold mb-6">{tp.title}</h1>
         <Card>
           <CardContent className="pt-6">
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -206,14 +217,14 @@ export default function NewPrompt() {
                 transition={{ duration: 0.2 }}
               >
                 <Label htmlFor="title" className="text-base">
-                  标题
+                  {tp.formTitleLabel}
                   <span className="text-red-500 ml-1">*</span>
                 </Label>
                 <Input
                   id="title"
                   value={prompt.title}
                   onChange={(e) => setPrompt({ ...prompt, title: e.target.value })}
-                  placeholder="为你的提示词起个醒目的标题"
+                  placeholder={tp.formTitlePlaceholder}
                   className={errors.title ? 'border-red-500' : ''}
                   required
                 />
@@ -228,7 +239,7 @@ export default function NewPrompt() {
                 transition={{ duration: 0.2 }}
               >
                 <Label htmlFor="content" className="text-base">
-                  提示词内容
+                  {tp.formContentLabel}
                   <span className="text-red-500 ml-1">*</span>
                 </Label>
                 <div className="relative">
@@ -236,7 +247,7 @@ export default function NewPrompt() {
                     id="content"
                     value={prompt.content}
                     onChange={(e) => setPrompt({ ...prompt, content: e.target.value })}
-                    placeholder="在这里输入你的提示词内容，可以包含具体的指令、上下文要求等"
+                    placeholder={tp.formContentPlaceholder}
                     className={`min-h-[250px] pr-12 ${errors.content ? 'border-red-500' : ''}`}
                     required
                   />
@@ -265,12 +276,12 @@ export default function NewPrompt() {
                 whileHover={{ scale: 1.01 }}
                 transition={{ duration: 0.2 }}
               >
-                <Label htmlFor="description" className="text-base">描述</Label>
+                <Label htmlFor="description" className="text-base">{tp.formDescriptionLabel}</Label>
                 <Textarea
                   id="description"
                   value={prompt.description}
                   onChange={(e) => setPrompt({ ...prompt, description: e.target.value })}
-                  placeholder="简要描述这个提示词的用途和使用场景"
+                  placeholder={tp.formDescriptionPlaceholder}
                   className="min-h-[80px]"
                 />
               </motion.div>
@@ -278,7 +289,7 @@ export default function NewPrompt() {
               <div 
                 className="space-y-2"
               >
-                <Label htmlFor="tags" className="text-base">标签</Label>
+                <Label htmlFor="tags" className="text-base">{tp.formTagsLabel}</Label>
                 <CreatableSelect
                   key="tags-select"
                   id="tags"
@@ -289,7 +300,7 @@ export default function NewPrompt() {
                     setPrompt({ ...prompt, tags });
                   }}
                   options={tagOptions}
-                  placeholder="选择或创建新标签"
+                  placeholder={tp.formTagsPlaceholder}
                   className="basic-multi-select"
                   classNamePrefix="select"
                   {...tagSelectProps}
@@ -302,14 +313,14 @@ export default function NewPrompt() {
                 whileHover={{ scale: 1.01 }}
                 transition={{ duration: 0.2 }}
               >
-                <Label htmlFor="version" className="text-base">版本</Label>
+                <Label htmlFor="version" className="text-base">{tp.formVersionLabel}</Label>
                 <Input
                   id="version"
                   value={prompt.version}
                   onChange={(e) => setPrompt({ ...prompt, version: e.target.value })}
-                  placeholder="例如: 1.0.0"
+                  placeholder={tp.formVersionPlaceholder}
                 />
-                <p className="text-sm text-muted-foreground">建议使用语义化版本号，例如：1.0.0</p>
+                <p className="text-sm text-muted-foreground">{tp.versionSuggestion}</p>
               </motion.div>
 
               <motion.div 
@@ -325,16 +336,16 @@ export default function NewPrompt() {
                   {isSubmitting ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      创建中...
+                      {tp.creating}
                     </>
-                  ) : '创建'}
+                  ) : tp.create}
                 </Button>
                 <Button
                   type="button"
                   variant="secondary"
                   onClick={() => router.back()}
                 >
-                  取消
+                  {tp.cancel}
                 </Button>
               </motion.div>
             </form>
@@ -345,14 +356,14 @@ export default function NewPrompt() {
       <Modal isOpen={showOptimizeModal} onClose={() => setShowOptimizeModal(false)}>
         <ModalContent className="max-w-3xl max-h-[80vh]">
           <ModalHeader>
-            <ModalTitle>优化结果预览</ModalTitle>
+            <ModalTitle>{tp.optimizePreviewTitle}</ModalTitle>
           </ModalHeader>
           <div className="relative min-h-[200px] max-h-[50vh] overflow-y-auto">
             <Textarea
               value={optimizedContent}
               onChange={(e) => setOptimizedContent(e.target.value)}
               className="min-h-[200px] w-full"
-              placeholder="正在生成优化内容..."
+              placeholder={tp.optimizePlaceholder}
             />
           </div>
           <ModalFooter>
@@ -362,14 +373,14 @@ export default function NewPrompt() {
               onClick={() => setShowOptimizeModal(false)}
               className="mr-2"
             >
-              取消
+              {tp.cancel}
             </Button>
             <Button
               type="button"
               onClick={handleApplyOptimized}
               disabled={!optimizedContent.trim()}
             >
-              应用优化结果
+              {tp.applyOptimization}
             </Button>
           </ModalFooter>
         </ModalContent>
