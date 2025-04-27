@@ -97,9 +97,9 @@ const PromptSkeleton = () => {
 };
 
 export default function PromptDetail({ params }) {
-  const router = useRouter();
   const { id } = params;
-  const { language, t } = useLanguage();
+  const router = useRouter();
+  const { t } = useLanguage();
   const { toast } = useToast();
   const [prompt, setPrompt] = useState(null);
   const [copySuccess, setCopySuccess] = useState(false);
@@ -142,9 +142,6 @@ export default function PromptDetail({ params }) {
   const [versions, setVersions] = useState([]);
   const [selectedVersion, setSelectedVersion] = useState(null);
 
-  if (!t) return <PromptSkeleton />;
-  const tp = t.promptDetailPage;
-
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
@@ -172,6 +169,9 @@ export default function PromptDetail({ params }) {
         .catch((error) => console.error('Error fetching prompt:', error));
     }
   }, [id]);
+
+  if (!t) return <PromptSkeleton />;
+  const tp = t.promptDetailPage;
 
   const handleCopy = async () => {
     try {

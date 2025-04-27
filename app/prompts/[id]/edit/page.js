@@ -42,10 +42,6 @@ export default function EditPrompt({ params }) {
   const [optimizedContent, setOptimizedContent] = useState('');
   const [showOptimizeModal, setShowOptimizeModal] = useState(false);
 
-  if (!t) return <div className="flex justify-center items-center min-h-[70vh]"><Spinner className="w-8 h-8" /></div>;
-  const tp = t.promptEditPage;
-  if (!tp) return <div className="flex justify-center items-center min-h-[70vh]"><Spinner className="w-8 h-8" /></div>;
-
   useEffect(() => {
     if (id && !prompt) {
       fetch(`/api/prompts/${id}`)
@@ -66,6 +62,10 @@ export default function EditPrompt({ params }) {
       })
       .catch((error) => console.error('Error fetching tags:', error));
   }, [id, prompt, originalVersion]);
+
+  if (!t) return <div className="flex justify-center items-center min-h-[70vh]"><Spinner className="w-8 h-8" /></div>;
+  const tp = t.promptEditPage;
+  if (!tp) return <div className="flex justify-center items-center min-h-[70vh]"><Spinner className="w-8 h-8" /></div>;
 
   const handleSubmit = async (e) => {
     e.preventDefault();

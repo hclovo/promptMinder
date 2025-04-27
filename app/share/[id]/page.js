@@ -13,10 +13,6 @@ export default function SharePromptDetail({ params }) {
   const [prompt, setPrompt] = useState(null);
   const [copySuccess, setCopySuccess] = useState(false);
 
-  if (!t) return <div className="flex justify-center items-center h-64"><Spinner /></div>;
-  const tp = t.sharePage;
-  if (!tp) return <div className="flex justify-center items-center h-64"><Spinner /></div>;
-
   useEffect(() => {
     if (id) {
       fetch(`/api/share/${id}`)
@@ -25,6 +21,10 @@ export default function SharePromptDetail({ params }) {
         .catch((error) => console.error('Error fetching prompt:', error));
     }
   }, [id]);
+
+  if (!t) return <div className="flex justify-center items-center h-64"><Spinner /></div>;
+  const tp = t.sharePage;
+  if (!tp) return <div className="flex justify-center items-center h-64"><Spinner /></div>;
 
   const handleCopy = async () => {
     try {

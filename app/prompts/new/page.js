@@ -46,9 +46,6 @@ export default function NewPrompt() {
   const [optimizedContent, setOptimizedContent] = useState('');
   const [showOptimizeModal, setShowOptimizeModal] = useState(false);
 
-  if (!t) return null;
-  const tp = t.newPromptPage;
-
   useEffect(() => {
     fetch('/api/tags')
       .then((response) => response.json())
@@ -64,6 +61,9 @@ export default function NewPrompt() {
       })
       .catch((error) => console.error('Error fetching tags:', error));
   }, [prompt.tags]);
+
+  if (!t) return null;
+  const tp = t.newPromptPage;
 
   const validateForm = () => {
     const newErrors = {};

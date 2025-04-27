@@ -153,26 +153,6 @@ export default function PromptsPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [tagOptions, setTagOptions] = useState([]);
 
-  if (!t) return null;
-  const tp = t.promptsPage;
-
-  const handleCopy = async (content) => {
-    try {
-      await navigator.clipboard.writeText(content);
-      toast({
-        description: tp.copySuccess,
-        duration: 2000,
-      });
-    } catch (err) {
-      console.error('Copy failed:', err);
-      toast({
-        variant: "destructive",
-        description: tp.copyError,
-        duration: 2000,
-      });
-    }
-  };
-
   const debouncedSearch = useCallback((value) => {
     const timeoutId = setTimeout(() => {
       setSearchQuery(value);
@@ -200,6 +180,44 @@ export default function PromptsPage() {
 
     fetchPrompts();
   }, []);
+
+  useEffect(() => {
+    const fetchTags = async () => {
+      try {
+        const response = await fetch('/api/tags');
+        const data = await response.json();
+        const mappedTags = data.map(tag => ({ 
+          value: tag.name, 
+          label: tag.name 
+        }));
+        setTagOptions(mappedTags);
+      } catch (error) {
+        console.error('Error fetching tags:', error);
+      }
+    };
+
+    fetchTags();
+  }, []);
+
+  if (!t) return null;
+  const tp = t.promptsPage;
+
+  const handleCopy = async (content) => {
+    try {
+      await navigator.clipboard.writeText(content);
+      toast({
+        description: tp.copySuccess,
+        duration: 2000,
+      });
+    } catch (err) {
+      console.error('Copy failed:', err);
+      toast({
+        variant: "destructive",
+        description: tp.copyError,
+        duration: 2000,
+      });
+    }
+  };
 
   const handleDelete = async (id) => {
     setPromptToDelete(id);
@@ -336,24 +354,6 @@ export default function PromptsPage() {
       setIsSubmitting(false);
     }
   };
-
-  useEffect(() => {
-    const fetchTags = async () => {
-      try {
-        const response = await fetch('/api/tags');
-        const data = await response.json();
-        const mappedTags = data.map(tag => ({ 
-          value: tag.name, 
-          label: tag.name 
-        }));
-        setTagOptions(mappedTags);
-      } catch (error) {
-        console.error('Error fetching tags:', error);
-      }
-    };
-
-    fetchTags();
-  }, []);
 
   const handleCreateTag = async (inputValue) => {
     try {

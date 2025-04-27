@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Modal, ModalContent, ModalHeader, ModalTitle, ModalFooter } from '@/components/ui/modal';
@@ -10,30 +10,32 @@ import { Input } from "@/components/ui/input";
 import { useLanguage } from '@/contexts/LanguageContext';
 
 const TagsSkeleton = () => {
-  return (
-    <div className="max-w-4xl mx-auto p-4">
-      <div className="flex justify-between items-center mb-6">
-        <Skeleton className="h-8 w-32" />
-        <Skeleton className="h-10 w-24 rounded-md" />
-      </div>
+  const { t } = useLanguage();
+  if (!t) return null;
+  const tp = t.tagsPage;
+  if (!tp) return null;
 
+  return (
+    <div className="max-w-5xl mx-auto p-4 animate-pulse">
+      <div className="h-8 bg-gray-200 rounded w-1/4 mb-6"></div>
+      <div className="flex justify-between items-center mb-6">
+        <div className="h-8 bg-gray-200 rounded w-1/3"></div>
+        <div className="h-10 bg-gray-200 rounded w-24"></div>
+      </div>
       <div className="space-y-8">
-        {/* 公共标签骨架 */}
         <div>
-          <Skeleton className="h-7 w-24 mb-4" />
+          <div className="h-6 bg-gray-200 rounded w-1/5 mb-4"></div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {[...Array(4)].map((_, index) => (
-              <Skeleton key={`public-${index}`} className="h-10 rounded-lg" />
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="h-10 bg-gray-200 rounded"></div>
             ))}
           </div>
         </div>
-
-        {/* 私有标签骨架 */}
         <div>
-          <Skeleton className="h-7 w-24 mb-4" />
+          <div className="h-6 bg-gray-200 rounded w-1/5 mb-4"></div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {[...Array(4)].map((_, index) => (
-              <Skeleton key={`private-${index}`} className="h-10 rounded-lg" />
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="h-10 bg-gray-200 rounded"></div>
             ))}
           </div>
         </div>
@@ -53,19 +55,12 @@ export default function TagsPage() {
   const [selectedTagId, setSelectedTagId] = useState(null);
   const [editingTag, setEditingTag] = useState({ id: null, name: '' });
 
-  if (!t) return <TagsSkeleton />;
-  const tp = t.tagsPage;
-  if (!tp) return <TagsSkeleton />;
-
-  useEffect(() => {
-    fetchTags();
-  }, []);
-
-  const fetchTags = async () => {
+  const fetchTags = useCallback(async () => {
     try {
       const response = await fetch('/api/tags');
       if (!response.ok) {
-        throw new Error(tp.fetchError);
+        // Make sure tp is accessible or handle differently
+        throw new Error(t?.tagsPage?.fetchError || 'Failed to fetch tags'); 
       }
       const data = await response.json();
       setTags(data);
@@ -74,7 +69,15 @@ export default function TagsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [t]); // Add t to dependencies
+
+  useEffect(() => {
+    fetchTags();
+  }, [fetchTags]);
+
+  if (!t) return <TagsSkeleton />;
+  const tp = t.tagsPage;
+  if (!tp) return <TagsSkeleton />;
 
   const handleDelete = async (tagId) => {
     setSelectedTagId(tagId);
