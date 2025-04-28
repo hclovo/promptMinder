@@ -24,6 +24,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Loader2, Wand2 } from "lucide-react"
 import dynamic from 'next/dynamic'
 import { useLanguage } from '@/contexts/LanguageContext';
+import * as VisuallyHidden from '@radix-ui/react-visually-hidden';
 
 const CreatableSelect = dynamic(() => import('react-select/creatable'), {
   ssr: false
@@ -582,6 +583,7 @@ export default function PromptsPage() {
 
       <Dialog open={!!selectedVersions} onOpenChange={() => setSelectedVersions(null)}>
         <DialogContent>
+          <VisuallyHidden.Root><DialogTitle>Dialog</DialogTitle></VisuallyHidden.Root>
           <DialogHeader>
             <DialogTitle>{tp.versionHistoryTitle}</DialogTitle>
           </DialogHeader>
@@ -611,6 +613,7 @@ export default function PromptsPage() {
 
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent>
+          <VisuallyHidden.Root><DialogTitle>Dialog</DialogTitle></VisuallyHidden.Root>
           <DialogHeader>
             <DialogTitle>{tp.deleteConfirmTitle}</DialogTitle>
             <DialogDescription>
@@ -636,6 +639,7 @@ export default function PromptsPage() {
 
       <Dialog open={showNewPromptDialog} onOpenChange={setShowNewPromptDialog}>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <VisuallyHidden.Root><DialogTitle>Dialog</DialogTitle></VisuallyHidden.Root>
           <DialogHeader>
             <DialogTitle>{tp.newPromptTitle}</DialogTitle>
           </DialogHeader>
@@ -821,6 +825,7 @@ export default function PromptsPage() {
 
       <Dialog open={showOptimizeModal} onOpenChange={setShowOptimizeModal}>
         <DialogContent className="max-w-3xl max-h-[90vh]">
+          <VisuallyHidden.Root><DialogTitle>Dialog</DialogTitle></VisuallyHidden.Root>
           <DialogHeader>
             <DialogTitle>{tp.optimizePreviewTitle}</DialogTitle>
           </DialogHeader>
