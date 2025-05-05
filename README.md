@@ -17,7 +17,7 @@
 
 ## 技术栈
 
-- Next.js 14
+- Next.js 15
 - Tailwind CSS
 - Shadcn UI
 - OpenAI
@@ -87,7 +87,8 @@
 ### clerk
 
 clerk 是一个用户认证平台，可以用来管理用户认证和权限。
-配置非常简单，按照流程一步步来就行，这里不做详细说明。
+配置参考官方文档
+https://clerk.com/docs
 
 ### canny
 
