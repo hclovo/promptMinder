@@ -9,7 +9,7 @@ export async function POST(request) {
     const { 
       messages, 
       apiKey, 
-      model = 'glm-4-flash', 
+      model = 'glm-4v-flash', 
       systemPrompt, 
       temperature = 0.7,
       max_tokens = 2000,

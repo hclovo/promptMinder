@@ -1,6 +1,6 @@
 'use client';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, use } from 'react';
 import { Spinner } from '@/components/ui/Spinner';
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -23,7 +23,7 @@ import { useToast } from "@/hooks/use-toast";
 
 export default function EditPrompt({ params }) {
   const router = useRouter();
-  const { id } = params;
+  const { id } = use(params);
   const { language, t } = useLanguage();
   const { toast } = useToast();
   const [prompt, setPrompt] = useState(() => {
@@ -95,14 +95,25 @@ export default function EditPrompt({ params }) {
 
       if (response.ok) {
         const data = await response.json();
-        toast.success(isNewVersion ? tp.createVersionSuccess : tp.updateSuccess);
+        toast({
+          title: "成功",
+          description: isNewVersion ? tp.createVersionSuccess : tp.updateSuccess,
+        });
         router.push(`/prompts/${isNewVersion ? data.id : id}`);
       } else {
         const errorData = await response.json();
-        toast.error(errorData.error || tp.updateError);
+        toast({
+          title: "错误",
+          description: errorData.error || tp.updateError,
+          variant: "destructive",
+        });
       }
     } catch (error) {
-      toast.error(tp.updateError);
+      toast({
+        title: "错误",
+        description: tp.updateError,
+        variant: "destructive",
+      });
       console.error('Error updating prompt:', error);
     } finally {
       setIsSubmitting(false);
@@ -155,7 +166,11 @@ export default function EditPrompt({ params }) {
 
     } catch (error) {
       console.error(tp.optimizeErrorLog, error);
-      toast.error(tp.optimizeRetry);
+      toast({
+        title: "错误",
+        description: tp.optimizeRetry,
+        variant: "destructive",
+      });
     } finally {
       setIsOptimizing(false);
     }
@@ -167,7 +182,10 @@ export default function EditPrompt({ params }) {
       content: optimizedContent
     }));
     setShowOptimizeModal(false);
-    toast.success(tp.applyOptimizeSuccess);
+    toast({
+      title: "成功",
+      description: tp.applyOptimizeSuccess,
+    });
   };
 
   if (!prompt) {

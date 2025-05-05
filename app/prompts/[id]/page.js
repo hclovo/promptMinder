@@ -97,7 +97,7 @@ const PromptSkeleton = () => {
 };
 
 export default function PromptDetail({ params }) {
-  const { id } = params;
+  const { id } = use(params);
   const router = useRouter();
   const { t } = useLanguage();
   const { toast } = useToast();
@@ -261,6 +261,7 @@ export default function PromptDetail({ params }) {
         title: "Success",
         description: "Content saved successfully.",
       });
+      router.push(`/prompts/${id}`);
     } catch (error) {
       console.error('Error saving content:', error);
       setPrompt(prev => ({...prev, content: previousContent}));
