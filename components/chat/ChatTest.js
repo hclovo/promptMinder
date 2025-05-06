@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Textarea } from "@/components/ui/textarea"
-import { Settings2, Send, Check, Copy, HelpCircle } from "lucide-react"
+import { Settings2, Send, Check, Copy, HelpCircle, Trash2 } from "lucide-react"
 import {
   Select,
   SelectContent,
@@ -192,6 +192,10 @@ export default function ChatTest({ prompt }) {
     });
   };
 
+  const clearChat = () => {
+    setMessages([]);
+  };
+
   return (
     <Card className="h-full flex flex-col">
       <CardHeader>
@@ -204,14 +208,25 @@ export default function ChatTest({ prompt }) {
             </span>
             测试
           </CardTitle>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setShowSettings(!showSettings)}
-            className="hover:bg-secondary"
-          >
-            <Settings2 className="h-4 w-4" />
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={clearChat}
+              className="hover:bg-secondary"
+              title="清空聊天记录"
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setShowSettings(!showSettings)}
+              className="hover:bg-secondary"
+            >
+              <Settings2 className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
         
         {showSettings && (

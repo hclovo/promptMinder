@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
 
 const DEFAULT_API_KEY = process.env.ZHIPU_API_KEY;
-
+const DEFAULT_BASE_URL = 'https://open.bigmodel.cn/api/paas/v4';
 export async function POST(request) {
   try {
     const body = await request.json();
@@ -14,7 +14,7 @@ export async function POST(request) {
       temperature = 0.7,
       max_tokens = 2000,
       top_p = 0.7,
-      baseURL = 'https://open.bigmodel.cn/api/paas/v4'
+      baseURL = DEFAULT_BASE_URL
     } = body;
 
     const finalApiKey = apiKey || DEFAULT_API_KEY;
