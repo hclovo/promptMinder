@@ -28,7 +28,7 @@ export function FAQSection({ t }) {
             {/* 使用翻译 */}
             {translations.title}
           </h2>
-          <p className="text-gray-600">
+          <p className="text-gray-600 text-lg">
             {/* 使用翻译 */}
             {translations.description}
           </p>
