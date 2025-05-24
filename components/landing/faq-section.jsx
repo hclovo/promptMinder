@@ -1,6 +1,5 @@
 "use client";
 
-import { motion } from "framer-motion";
 import { useState } from "react";
 
 // 接收 t prop
@@ -37,11 +36,8 @@ export function FAQSection({ t }) {
         <div className="max-w-5xl mx-auto">
           {/* 使用翻译后的 faqs 列表 */}
           {faqs.map((faq, index) => (
-            <motion.div
+            <div
               key={index}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: index * 0.15 }}
               className="mb-4"
             >
               <button
@@ -58,20 +54,15 @@ export function FAQSection({ t }) {
                   </span>
                 </div>
                 {openIndex === index && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0, marginTop: 0 }}
-                    animate={{ opacity: 1, height: 'auto', marginTop: '1rem' }}
-                    exit={{ opacity: 0, height: 0, marginTop: 0 }}
-                    transition={{ duration: 0.3 }}
-                  >
+                  <div className="mt-4">
                     <p className="text-gray-700 leading-relaxed">
                       {/* 使用翻译 */}
                       {faq.answer}
                     </p>
-                  </motion.div>
+                  </div>
                 )}
               </button>
-            </motion.div>
+            </div>
           ))}
         </div>
       </div>
