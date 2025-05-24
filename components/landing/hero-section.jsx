@@ -41,7 +41,7 @@ export function HeroSection({ t }) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
-          className="text-center max-w-4xl mx-auto" // Increased max-width for a wider feel
+          className="text-center max-w-5xl mx-auto" // Increased max-width for a wider feel
         >
           <h1 className="text-5xl md:text-7xl font-extrabold mb-8 [-webkit-background-clip:text] [background-clip:text] text-transparent bg-gradient-to-r from-gray-900 via-slate-700 to-slate-600 leading-tight">
             {translations.mainTitle}
@@ -57,7 +57,7 @@ export function HeroSection({ t }) {
             />
             {translations.subtitleEnd}
           </p>
-          <p className="text-md md:text-lg text-gray-600 mb-10 max-w-2xl mx-auto"> {/* Slightly smaller, centered description */}
+          <p className="text-md md:text-lg text-gray-600 mb-10 max-w-5xl mx-auto"> {/* Slightly smaller, centered description */}
             {translations.description}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">

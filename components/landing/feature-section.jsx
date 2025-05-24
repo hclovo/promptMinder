@@ -56,13 +56,13 @@ export function FeatureSection({ t }) { // t is expected to be context_t.feature
   });
 
   return (
-    <section className="py-24 bg-gradient-to-b from-white to-gray-50"> {/* Subtle gradient background */}
+    <section className="py-24 bg-white"> {/* Subtle gradient background */}
       <div className="container mx-auto px-8">
         <div className="text-center mb-20"> {/* Increased margin */}
           <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-6"> {/* Bolder title */}
             {sectionTitle}
           </h2>
-          <p className="text-lg text-gray-700 max-w-2xl mx-auto"> {/* Improved description text */}
+          <p className="text-lg text-gray-700 max-w-5xl mx-auto"> {/* Improved description text */}
             {sectionDescription}
           </p>
         </div>

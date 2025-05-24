@@ -21,46 +21,54 @@ export function FAQSection({ t }) {
   const faqs = translations.items;
 
   return (
-    <section className="py-20 bg-white">
-      <div className="container mx-auto px-4">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+    <section className="py-24 bg-white">
+      <div className="container mx-auto px-8">
+        <div className="text-center mb-20">
+          <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-6">
             {/* 使用翻译 */}
             {translations.title}
           </h2>
-          <p className="text-gray-600 text-lg">
+          <p className="text-lg text-gray-700 max-w-3xl mx-auto">
             {/* 使用翻译 */}
             {translations.description}
           </p>
         </div>
 
-        <div className="max-w-3xl mx-auto">
+        <div className="max-w-5xl mx-auto">
           {/* 使用翻译后的 faqs 列表 */}
           {faqs.map((faq, index) => (
             <motion.div
               key={index}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: index * 0.15 }}
               className="mb-4"
             >
               <button
                 onClick={() => setOpenIndex(openIndex === index ? null : index)}
-                className="w-full text-left p-6 rounded-lg bg-white border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all"
+                className="w-full text-left p-6 rounded-xl border border-gray-200 bg-white hover:shadow-lg transition-all duration-300 ease-in-out transform hover:-translate-y-1"
               >
                 <div className="flex justify-between items-center">
-                  <h3 className="text-lg font-medium text-gray-900">
+                  <h3 className="text-xl font-semibold text-gray-900">
                     {/* 使用翻译 */}
                     {faq.question}
                   </h3>
-                  <span className="text-gray-500">
+                  <span className="text-gray-600 text-xl">
                     {openIndex === index ? "−" : "+"}
                   </span>
                 </div>
                 {openIndex === index && (
-                  <p className="mt-4 text-gray-600">
-                    {/* 使用翻译 */}
-                    {faq.answer}
-                  </p>
+                  <motion.div
+                    initial={{ opacity: 0, height: 0, marginTop: 0 }}
+                    animate={{ opacity: 1, height: 'auto', marginTop: '1rem' }}
+                    exit={{ opacity: 0, height: 0, marginTop: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <p className="text-gray-700 leading-relaxed">
+                      {/* 使用翻译 */}
+                      {faq.answer}
+                    </p>
+                  </motion.div>
                 )}
               </button>
             </motion.div>

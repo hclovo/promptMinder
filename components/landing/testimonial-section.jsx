@@ -28,14 +28,14 @@ export function TestimonialSection({ t }) {
   }));
 
   return (
-    <section className="py-20 bg-white">
-      <div className="container mx-auto px-4">
-        <h2 className="text-3xl md:text-4xl font-bold text-center text-gray-900 mb-16">
+    <section className="py-24 bg-white">
+      <div className="container mx-auto px-8">
+        <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 text-center mb-20">
            {/* 使用翻译 */}
           {translations.title}
         </h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-10 max-w-5xl mx-auto">
            {/* 使用翻译后的 testimonials 列表 */}
           {testimonials.map((testimonial, index) => (
             <motion.div
@@ -43,10 +43,10 @@ export function TestimonialSection({ t }) {
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
-              className="bg-white rounded-2xl p-8 shadow-[0_1px_3px_0_rgba(0,0,0,0.1)] hover:shadow-[0_2px_4px_0_rgba(0,0,0,0.1)] transition-shadow"
+              className="group bg-white rounded-xl p-8 border border-gray-200 hover:shadow-2xl transition-all duration-300 ease-in-out transform hover:-translate-y-1 flex flex-col"
             >
-              <div className="min-h-[160px] flex flex-col">
-                <p className="text-gray-600 text-lg italic mb-4">
+              <div className="min-h-[160px] flex flex-col flex-grow">
+                <p className="text-gray-700 text-lg italic mb-4">
                    {/* 使用翻译 */}
                   &ldquo;{testimonial.content}&rdquo;
                 </p>
