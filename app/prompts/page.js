@@ -119,7 +119,7 @@ const NewPromptCard = ({ onClick }) => {
   return (
     <Card 
       onClick={onClick}
-      className="group relative border p-4 hover:shadow-md transition-all bg-card cursor-pointer border-dashed h-[156px] flex items-center justify-center"
+      className="group relative border p-4 hover:shadow-lg transition-all duration-200 ease-in-out bg-card cursor-pointer border-dashed h-[156px] flex items-center justify-center"
     >
       <div className="flex flex-col items-center gap-2 text-muted-foreground">
         <PlusCircle className="h-8 w-8" />
@@ -452,7 +452,7 @@ export default function PromptsPage() {
                   type="search"
                   onChange={(e) => debouncedSearch(e.target.value)}
                   placeholder={tp.searchPlaceholder}
-                  className="w-full h-10 pl-9 transition-all border rounded-lg focus:ring-2 focus:ring-primary/50"
+                  className="w-full h-10 pl-9 transition-all duration-200 ease-in-out border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
                 />
               </div>
               {!isLoading && (
@@ -487,7 +487,7 @@ export default function PromptsPage() {
                 return (
                   <Card 
                     key={title}
-                    className="group relative rounded-lg border p-4 hover:shadow-md transition-all bg-card cursor-pointer"
+                    className="group relative rounded-lg border p-4 hover:shadow-lg transition-all duration-200 ease-in-out bg-card cursor-pointer"
                     onClick={(e) => {
                       e.preventDefault();
                       if (versions.length > 1) {
@@ -519,7 +519,7 @@ export default function PromptsPage() {
                                 e.stopPropagation();
                                 handleCopy(latestPrompt.content);
                               }}
-                              className="h-8 w-8"
+                              className="h-8 w-8 hover:bg-accent"
                             >
                               <Copy className="h-4 w-4" />
                             </Button>
@@ -530,7 +530,7 @@ export default function PromptsPage() {
                                 e.stopPropagation();
                                 handleShare(latestPrompt.id);
                               }}
-                              className="h-8 w-8"
+                              className="h-8 w-8 hover:bg-accent"
                             >
                               <Share2 className="h-4 w-4" />
                             </Button>
@@ -541,7 +541,7 @@ export default function PromptsPage() {
                                 e.stopPropagation();
                                 handleDelete(latestPrompt.id);
                               }}
-                              className="h-8 w-8 text-destructive hover:text-destructive"
+                              className="h-8 w-8 text-destructive hover:text-destructive hover:bg-accent"
                             >
                               <Trash2 className="h-4 w-4" />
                             </Button>
