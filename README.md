@@ -96,3 +96,5 @@ Canny 是一个用户反馈平台，可以用来收集用户反馈和建议。
 
 1. 注册 Canny 账号并创建项目
 2. 将 Canny URL 填入 footer 页面中
+
+<a href="https://www.buymeacoffee.com/aircrushin" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
