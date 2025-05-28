@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input"
 import { Spinner } from '@/components/ui/Spinner';
 import TagFilter from '@/components/prompt/TagFilter';
 import { Button } from "@/components/ui/button"
-import { Search, PlusCircle, ChevronDown, Copy, Share2, Trash2, Clock, Tags } from "lucide-react"
+import { Search, PlusCircle, ChevronDown, Copy, Share2, Trash2, Clock, Tags, Wand2, Loader2 } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
   Dialog,
@@ -21,7 +21,6 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Loader2, Wand2 } from "lucide-react"
 import dynamic from 'next/dynamic'
 import { useLanguage } from '@/contexts/LanguageContext';
 import * as VisuallyHidden from '@radix-ui/react-visually-hidden';
@@ -30,7 +29,7 @@ const CreatableSelect = dynamic(() => import('react-select/creatable'), {
   ssr: false
 });
 
-// 自定义 debounce 函数
+// Custom debounce function
 function debounce(func, wait) {
   let timeout;
   return function executedFunction(...args) {
@@ -45,8 +44,8 @@ function debounce(func, wait) {
 
 const PromptCardSkeleton = () => {
   return (
-    <Card className="group relative p-4 hover:shadow-md transition-all bg-card">
-      <div className="space-y-3">
+    <Card className="group relative p-5 hover:shadow-md transition-all bg-card border border-border/40">
+      <div className="space-y-4">
         <div className="flex justify-between items-start">
           <div className="space-y-2">
             <Skeleton className="h-6 w-[180px]" />
@@ -72,11 +71,11 @@ const PromptCardSkeleton = () => {
 
 const PromptListSkeleton = () => {
   return (
-    <div className="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      <Card className="group relative border p-4 hover:shadow-md transition-all bg-card cursor-pointer border-dashed h-[156px] flex items-center justify-center">
+    <div className="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+      <Card className="group relative border p-5 hover:shadow-md transition-all bg-card cursor-pointer border-dashed h-[180px] flex items-center justify-center">
         <div className="flex flex-col items-center gap-2">
-          <Skeleton className="h-8 w-8 rounded-full" />
-          <Skeleton className="h-4 w-16" />
+          <Skeleton className="h-10 w-10 rounded-full" />
+          <Skeleton className="h-5 w-24" />
         </div>
       </Card>
       {[...Array(5)].map((_, index) => (
@@ -112,19 +111,22 @@ async function deletePrompt(id) {
   return res.json();
 }
 
-// 修改 NewPromptCard 使用翻译
+// Modified NewPromptCard with enhanced styling
 const NewPromptCard = ({ onClick }) => {
   const { t } = useLanguage();
   if (!t) return null;
   return (
     <Card 
       onClick={onClick}
-      className="group relative border p-4 hover:shadow-lg transition-all duration-200 ease-in-out bg-card cursor-pointer border-dashed h-[156px] flex items-center justify-center"
+      className="group relative border p-5 hover:shadow-xl transition-all duration-300 ease-in-out bg-card cursor-pointer border-dashed h-[180px] flex items-center justify-center overflow-hidden"
     >
-      <div className="flex flex-col items-center gap-2 text-muted-foreground">
-        <PlusCircle className="h-8 w-8" />
-        <span className="text-sm">{t.promptsPage.newPromptCard}</span>
+      <div className="flex flex-col items-center gap-3 text-muted-foreground group-hover:scale-110 transition-transform duration-300">
+        <div className="bg-primary/10 p-3 rounded-full">
+          <PlusCircle className="h-8 w-8 text-primary" />
+        </div>
+        <span className="text-sm font-medium">{t.promptsPage.newPromptCard}</span>
       </div>
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
     </Card>
   );
 };
@@ -435,24 +437,28 @@ export default function PromptsPage() {
 
   return (
     <div className="min-h-[80vh] bg-gradient-to-b from-background to-background/80">
-      <div className="container px-4 py-4 sm:py-16 mx-auto max-w-7xl">
-        <div className="space-y-6">
-          <div className="flex flex-col space-y-4">
-            <div className="flex justify-between items-center">
-              <h1 className="text-3xl font-bold">{tp.title}</h1>
-              <p className="text-muted-foreground">
-                {tp.totalPrompts.replace('{count}', prompts.length.toString())}
-              </p>
+      <div className="container px-4 py-8 sm:py-16 mx-auto max-w-7xl">
+        <div className="space-y-8">
+          <div className="flex flex-col space-y-6">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+              <h1 className="text-3xl font-bold tracking-tight">{tp.title}</h1>
+              <div className="flex items-center gap-2 px-4 py-2 bg-secondary/30 rounded-lg">
+                <span className="text-sm font-medium text-secondary-foreground">
+                  {tp.totalPrompts.replace('{count}', prompts.length.toString())}
+                </span>
+              </div>
             </div>
             
             <div className="flex flex-col md:flex-row gap-4 items-center">
               <div className="relative w-full md:w-[320px]">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground">
+                  <Search className="h-4 w-4" />
+                </div>
                 <Input
                   type="search"
                   onChange={(e) => debouncedSearch(e.target.value)}
                   placeholder={tp.searchPlaceholder}
-                  className="w-full h-10 pl-9 transition-all duration-200 ease-in-out border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+                  className="w-full h-10 pl-9 pr-4 transition-all duration-200 ease-in-out border rounded-lg focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:border-primary"
                 />
               </div>
               {!isLoading && (
@@ -465,9 +471,9 @@ export default function PromptsPage() {
                     t={t}
                   />
                   <Link href="/tags" className="w-full md:w-auto">
-                    <Button variant="outline" className="w-full">
-                      <Tags className="mr-2 h-4 w-4" />
-                      {tp.manageTags}
+                    <Button variant="outline" className="w-full group">
+                      <Tags className="mr-2 h-4 w-4 group-hover:text-primary transition-colors" />
+                      <span className="group-hover:text-primary transition-colors">{tp.manageTags}</span>
                     </Button>
                   </Link>
                 </>
@@ -480,14 +486,14 @@ export default function PromptsPage() {
               <PromptListSkeleton />
             </div>
           ) : (
-            <div className="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
               <NewPromptCard onClick={() => setShowNewPromptDialog(true)} />
               {Object.entries(groupedPrompts).map(([title, versions]) => {
                 const latestPrompt = versions[0];
                 return (
                   <Card 
                     key={title}
-                    className="group relative rounded-lg border p-4 hover:shadow-lg transition-all duration-200 ease-in-out bg-card cursor-pointer"
+                    className="group relative rounded-lg border p-5 hover:shadow-lg transition-all duration-300 ease-in-out bg-card cursor-pointer overflow-hidden"
                     onClick={(e) => {
                       e.preventDefault();
                       if (versions.length > 1) {
@@ -497,20 +503,22 @@ export default function PromptsPage() {
                       }
                     }}
                   >
-                    <div className="space-y-3">
+                    <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    
+                    <div className="space-y-4 relative z-10">
                       <div className="flex justify-between items-start">
                         <div>
-                          <h3 className="text-lg font-semibold line-clamp-1 mb-2">
+                          <h3 className="text-lg font-semibold line-clamp-1 mb-2 group-hover:text-primary transition-colors">
                             {title}
                           </h3>
                           {latestPrompt.description && (
-                            <p className="text-sm text-muted-foreground line-clamp-1">
+                            <p className="text-sm text-muted-foreground line-clamp-2">
                               {latestPrompt.description}
                             </p>
                           )}
                         </div>
 
-                        <div className="opacity-0 group-hover:opacity-100 transition-all duration-200 bg-background/80 backdrop-blur-sm rounded-lg p-1">
+                        <div className="opacity-0 group-hover:opacity-100 transition-all duration-200 bg-background/90 backdrop-blur-sm rounded-lg p-1 shadow-sm">
                           <div className="flex items-center gap-1">
                             <Button
                               variant="ghost"
@@ -519,7 +527,7 @@ export default function PromptsPage() {
                                 e.stopPropagation();
                                 handleCopy(latestPrompt.content);
                               }}
-                              className="h-8 w-8 hover:bg-accent"
+                              className="h-8 w-8 hover:bg-accent hover:text-primary"
                             >
                               <Copy className="h-4 w-4" />
                             </Button>
@@ -530,7 +538,7 @@ export default function PromptsPage() {
                                 e.stopPropagation();
                                 handleShare(latestPrompt.id);
                               }}
-                              className="h-8 w-8 hover:bg-accent"
+                              className="h-8 w-8 hover:bg-accent hover:text-primary"
                             >
                               <Share2 className="h-4 w-4" />
                             </Button>
@@ -541,7 +549,7 @@ export default function PromptsPage() {
                                 e.stopPropagation();
                                 handleDelete(latestPrompt.id);
                               }}
-                              className="h-8 w-8 text-destructive hover:text-destructive hover:bg-accent"
+                              className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
                             >
                               <Trash2 className="h-4 w-4" />
                             </Button>
@@ -553,7 +561,7 @@ export default function PromptsPage() {
                         {latestPrompt.tags.map((tag) => (
                           <span 
                             key={tag}
-                            className="bg-secondary/80 text-secondary-foreground text-xs px-2.5 py-0.5 rounded-full"
+                            className="bg-secondary/50 text-secondary-foreground text-xs px-2.5 py-0.5 rounded-full font-medium"
                           >
                             #{tag}
                           </span>
@@ -566,10 +574,9 @@ export default function PromptsPage() {
                           {new Date(latestPrompt.updated_at).toLocaleString()}
                         </div>
                         {versions.length > 1 && (
-                          <>
-                            <span>•</span>
+                          <div className="flex items-center gap-1 ml-2 bg-primary/10 text-primary px-2 py-0.5 rounded-full">
                             <span>{tp.versionsCount.replace('{count}', versions.length.toString())}</span>
-                          </>
+                          </div>
                         )}
                       </div>
                     </div>
@@ -582,27 +589,27 @@ export default function PromptsPage() {
       </div>
 
       <Dialog open={!!selectedVersions} onOpenChange={() => setSelectedVersions(null)}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-md">
           <VisuallyHidden.Root><DialogTitle>Dialog</DialogTitle></VisuallyHidden.Root>
           <DialogHeader>
-            <DialogTitle>{tp.versionHistoryTitle}</DialogTitle>
+            <DialogTitle className="text-xl">{tp.versionHistoryTitle}</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 mt-4">
+          <div className="space-y-3 mt-4 max-h-[60vh] overflow-y-auto pr-1">
             {selectedVersions?.map((version) => (
               <Link 
                 key={version.id} 
                 href={`/prompts/${version.id}`}
                 className="block"
               >
-                <Card className="p-4 hover:bg-accent cursor-pointer">
+                <Card className="p-4 hover:bg-accent/50 cursor-pointer transition-colors border border-border/50 hover:border-primary/30">
                   <div className="flex justify-between items-center">
                     <div>
-                      <div className="font-medium">v{version.version}</div>
+                      <div className="font-medium text-primary">v{version.version}</div>
                       <div className="text-sm text-muted-foreground">
                         {new Date(version.created_at).toLocaleString()}
                       </div>
                     </div>
-                    <ChevronDown className="h-4 w-4" />
+                    <ChevronDown className="h-4 w-4 text-muted-foreground" />
                   </div>
                 </Card>
               </Link>
@@ -612,15 +619,15 @@ export default function PromptsPage() {
       </Dialog>
 
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-md">
           <VisuallyHidden.Root><DialogTitle>Dialog</DialogTitle></VisuallyHidden.Root>
           <DialogHeader>
-            <DialogTitle>{tp.deleteConfirmTitle}</DialogTitle>
+            <DialogTitle className="text-xl text-destructive">{tp.deleteConfirmTitle}</DialogTitle>
             <DialogDescription>
               {tp.deleteConfirmDescription}
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter>
+          <DialogFooter className="mt-4 gap-2">
             <Button
               variant="outline"
               onClick={() => setDeleteDialogOpen(false)}
@@ -638,14 +645,14 @@ export default function PromptsPage() {
       </Dialog>
 
       <Dialog open={showNewPromptDialog} onOpenChange={setShowNewPromptDialog}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto scrollbar-thumb-muted/50 scrollbar-track-background">
           <VisuallyHidden.Root><DialogTitle>Dialog</DialogTitle></VisuallyHidden.Root>
           <DialogHeader>
-            <DialogTitle>{tp.newPromptTitle}</DialogTitle>
+            <DialogTitle className="text-xl">{tp.newPromptTitle}</DialogTitle>
           </DialogHeader>
           <div className="space-y-6 py-4">
             <div className="space-y-2">
-              <Label htmlFor="title">
+              <Label htmlFor="title" className="text-sm font-medium">
                 {tp.formTitleLabel}
                 <span className="text-red-500 ml-1">*</span>
               </Label>
@@ -654,10 +661,11 @@ export default function PromptsPage() {
                 value={newPrompt.title}
                 onChange={(e) => setNewPrompt({ ...newPrompt, title: e.target.value })}
                 placeholder={tp.formTitlePlaceholder}
+                className="focus-visible:ring-primary/30"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="content">
+              <Label htmlFor="content" className="text-sm font-medium">
                 {tp.formContentLabel}
                 <span className="text-red-500 ml-1">*</span>
               </Label>
@@ -667,13 +675,13 @@ export default function PromptsPage() {
                   value={newPrompt.content}
                   onChange={(e) => setNewPrompt({ ...newPrompt, content: e.target.value })}
                   placeholder={tp.formContentPlaceholder}
-                  className="min-h-[200px] pr-10"
+                  className="min-h-[200px] pr-10 focus-visible:ring-primary/30"
                 />
                 <Button
                   type="button"
                   variant="ghost"
                   size="icon"
-                  className="absolute right-2 top-2 hover:bg-accent hover:text-accent-foreground"
+                  className="absolute right-2 top-2 hover:bg-accent hover:text-primary"
                   onClick={handleOptimize}
                   disabled={!newPrompt.content.trim() || isOptimizing}
                 >
@@ -686,16 +694,17 @@ export default function PromptsPage() {
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="description">{tp.formDescriptionLabel}</Label>
+              <Label htmlFor="description" className="text-sm font-medium">{tp.formDescriptionLabel}</Label>
               <Textarea
                 id="description"
                 value={newPrompt.description}
                 onChange={(e) => setNewPrompt({ ...newPrompt, description: e.target.value })}
                 placeholder={tp.formDescriptionPlaceholder}
+                className="focus-visible:ring-primary/30"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="tags">{tp.formTagsLabel}</Label>
+              <Label htmlFor="tags" className="text-sm font-medium">{tp.formTagsLabel}</Label>
               <CreatableSelect
                 isMulti
                 value={newPrompt.tags ? newPrompt.tags.split(',').map(tag => ({ value: tag, label: tag })) : []}
@@ -721,7 +730,7 @@ export default function PromptsPage() {
                     backgroundColor: 'hsl(var(--background))',
                     borderColor: state.isFocused ? 'hsl(var(--primary))' : 'hsl(var(--border))',
                     borderRadius: 'calc(var(--radius) - 2px)',
-                    boxShadow: state.isFocused ? '0 0 0 1px hsl(var(--primary))' : 'none',
+                    boxShadow: state.isFocused ? '0 0 0 2px hsl(var(--primary)/30%)' : 'none',
                     '&:hover': {
                       borderColor: 'hsl(var(--primary))',
                     },
@@ -731,7 +740,8 @@ export default function PromptsPage() {
                     backgroundColor: 'hsl(var(--background))',
                     border: '1px solid hsl(var(--border))',
                     borderRadius: 'calc(var(--radius) - 2px)',
-                    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
+                    zIndex: 100,
                   }),
                   option: (baseStyles, { isFocused, isSelected }) => ({
                     ...baseStyles,
@@ -750,7 +760,7 @@ export default function PromptsPage() {
                   }),
                   multiValue: (baseStyles) => ({
                     ...baseStyles,
-                    backgroundColor: 'hsl(var(--secondary))',
+                    backgroundColor: 'hsl(var(--secondary)/50%)',
                     borderRadius: 'calc(var(--radius) - 2px)',
                   }),
                   multiValueLabel: (baseStyles) => ({
@@ -785,7 +795,7 @@ export default function PromptsPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="version">{tp.formVersionLabel}</Label>
+              <Label htmlFor="version" className="text-sm font-medium">{tp.formVersionLabel}</Label>
               <div className="flex items-center gap-2">
                 <span className="text-sm text-muted-foreground">v</span>
                 <Input
@@ -793,7 +803,7 @@ export default function PromptsPage() {
                   value={newPrompt.version}
                   onChange={(e) => setNewPrompt({ ...newPrompt, version: e.target.value })}
                   placeholder={tp.formVersionPlaceholder}
-                  className="w-32"
+                  className="w-32 focus-visible:ring-primary/30"
                 />
               </div>
               <p className="text-sm text-muted-foreground">
@@ -801,7 +811,7 @@ export default function PromptsPage() {
               </p>
             </div>
           </div>
-          <DialogFooter>
+          <DialogFooter className="gap-2">
             <Button
               variant="outline"
               onClick={() => setShowNewPromptDialog(false)}
@@ -811,13 +821,19 @@ export default function PromptsPage() {
             <Button
               onClick={handleCreatePrompt}
               disabled={isSubmitting}
+              className="gap-2"
             >
               {isSubmitting ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <Loader2 className="h-4 w-4 animate-spin" />
                   {tp.creating}
                 </>
-              ) : tp.create}
+              ) : (
+                <>
+                  <PlusCircle className="h-4 w-4" />
+                  {tp.create}
+                </>
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -827,21 +843,31 @@ export default function PromptsPage() {
         <DialogContent className="max-w-3xl max-h-[90vh]">
           <VisuallyHidden.Root><DialogTitle>Dialog</DialogTitle></VisuallyHidden.Root>
           <DialogHeader>
-            <DialogTitle>{tp.optimizePreviewTitle}</DialogTitle>
+            <DialogTitle className="text-xl flex items-center gap-2">
+              <Wand2 className="h-5 w-5 text-primary" />
+              {tp.optimizePreviewTitle}
+            </DialogTitle>
           </DialogHeader>
-          <div className="relative min-h-[200px] max-h-[50vh] overflow-y-auto">
+          <div className="relative min-h-[200px] max-h-[50vh] overflow-y-auto mt-4 border rounded-lg p-1">
+            {isOptimizing && (
+              <div className="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm z-10">
+                <div className="flex flex-col items-center gap-3">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                  <p className="text-sm text-muted-foreground">{tp.optimizePlaceholder}</p>
+                </div>
+              </div>
+            )}
             <Textarea
               value={optimizedContent}
               onChange={(e) => setOptimizedContent(e.target.value)}
-              className="min-h-[200px] w-full"
-              placeholder={tp.optimizePlaceholder}
+              className="min-h-[200px] w-full border-0 focus-visible:ring-0 resize-none"
+              placeholder={isOptimizing ? '' : tp.optimizePlaceholder}
             />
           </div>
-          <DialogFooter>
+          <DialogFooter className="gap-2 mt-4">
             <Button
               variant="outline"
               onClick={() => setShowOptimizeModal(false)}
-              className="mr-2"
             >
               {tp.cancel}
             </Button>
@@ -851,7 +877,9 @@ export default function PromptsPage() {
                 setShowOptimizeModal(false);
               }}
               disabled={!optimizedContent.trim()}
+              className="gap-2"
             >
+              <Wand2 className="h-4 w-4" />
               {tp.applyOptimization}
             </Button>
           </DialogFooter>
