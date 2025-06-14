@@ -379,7 +379,12 @@
   "sharePage": {
     "contentTitle": "Prompt Content",
     "copyButton": "Copy Prompt",
-    "copyButtonSuccess": "Copied"
+    "copyButtonSuccess": "Copied",
+    "copyToWorkspaceButton": "Copy to My Workspace",
+    "copyToWorkspaceButtonLoading": "Copying...",
+    "copyToWorkspaceSuccess": "Copied to workspace",
+    "copyToWorkspaceError": "Copy failed, please try again",
+    "loginRequired": "Please login first"
   },
   "promptEditPage": {
     "createVersionSuccess": "New version created successfully!",

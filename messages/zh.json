@@ -406,7 +406,12 @@
   "sharePage": {
     "contentTitle": "提示词内容",
     "copyButton": "复制提示词",
-    "copyButtonSuccess": "已复制"
+    "copyButtonSuccess": "已复制",
+    "copyToWorkspaceButton": "拷贝到我的工作台",
+    "copyToWorkspaceButtonLoading": "复制中...",
+    "copyToWorkspaceSuccess": "已复制到工作台",
+    "copyToWorkspaceError": "复制失败，请重试",
+    "loginRequired": "请先登录"
   },
   "promptEditPage": {
     "createVersionSuccess": "新版本创建成功！",
