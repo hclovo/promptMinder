@@ -36,7 +36,7 @@ export default function NewPrompt() {
     title: '',
     content: '',
     description: '',
-    tags: '',
+    tags: 'Chatbot',
     version: '1.0.0',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);

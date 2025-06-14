@@ -6,12 +6,21 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { useLanguage } from '@/contexts/LanguageContext';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
 export default function SharePromptDetail({ params }) {
-  const { id } = params;
+  const resolvedParams = use(params);
+  const { id } = resolvedParams;
   const { language, t } = useLanguage();
   const [prompt, setPrompt] = useState(null);
   const [copySuccess, setCopySuccess] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     if (id) {
@@ -21,6 +30,12 @@ export default function SharePromptDetail({ params }) {
         .catch((error) => console.error('Error fetching prompt:', error));
     }
   }, [id]);
+
+  const handleVersionChange = (newId) => {
+    if (newId !== id) {
+      router.push(`/share/${newId}`);
+    }
+  };
 
   if (!t) return <div className="flex justify-center items-center h-64"><Spinner /></div>;
   const tp = t.sharePage;
@@ -61,11 +76,34 @@ export default function SharePromptDetail({ params }) {
                   </svg>
                   {new Date(prompt.created_at).toLocaleDateString()}
                 </div>
-                <div className="flex items-center px-4 py-2 rounded-xl bg-primary/5 shadow-sm">
-                  <svg className="w-4 h-4 mr-2 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                  </svg>
-                  Version {prompt.version}
+                <div className="flex items-center">
+                  {prompt.versions && prompt.versions.length > 1 ? (
+                      <Select onValueChange={handleVersionChange} value={id}>
+                        <SelectTrigger className="w-full bg-primary/5 shadow-sm border-none rounded-xl px-4 py-2">
+                          <SelectValue placeholder="Select a version" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {prompt.versions.map((v) => (
+                            <SelectItem key={v.id} value={v.id}>
+                              <div className="flex items-center gap-2">
+                                <svg className="w-4 h-4 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                                </svg>
+                                <span className='pr-2'>Version {v.version}</span>
+                                {/* <span className="text-xs text-muted-foreground">({new Date(v.created_at).toLocaleDateString()})</span> */}
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                  ) : (
+                    <div className="flex items-center px-4 py-2 rounded-xl bg-primary/5 shadow-sm">
+                      <svg className="w-4 h-4 mr-2 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                      </svg>
+                      Version {prompt.version}
+                    </div>
+                  )}
                 </div>
                 {prompt.tags?.length > 0 && prompt.tags.map((tag) => (
                   <Badge 

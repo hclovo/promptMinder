@@ -147,7 +147,7 @@ export default function PromptsPage() {
     title: '',
     content: '',
     description: '',
-    tags: '',
+    tags: 'chatbot',
     version: '1.0.0',
     cover_img: '',
   });
@@ -335,7 +335,7 @@ export default function PromptsPage() {
         title: '',
         content: '',
         description: '',
-        tags: '',
+        tags: 'Chatbot',
         version: '1.0.0',
         cover_img: '',
       });
