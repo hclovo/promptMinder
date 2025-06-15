@@ -4,6 +4,7 @@ export default function Footer({ t }) {
   const translations = t || {
     description: 'Make AI prompt management simpler and more efficient...',
     product: 'Product',
+    roadmap: 'Roadmap',
     privacyPolicy: 'Privacy Policy',
     termsOfUse: 'Terms of Use',
     support: 'Support',
@@ -56,6 +57,11 @@ export default function Footer({ t }) {
                   {translations.product}
                 </h3>
                 <ul className="mt-4 space-y-4">
+                  <li>
+                    <Link href="https://flo.host/qlUpOXp/" target="_blank" className="text-sm text-gray-500 hover:text-gray-900">
+                      {translations.roadmap}
+                    </Link>
+                  </li>
                   <li>
                     <Link href="/privacy" className="text-sm text-gray-500 hover:text-gray-900">
                       {translations.privacyPolicy}
