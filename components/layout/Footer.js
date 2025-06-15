@@ -58,7 +58,7 @@ export default function Footer({ t }) {
                 </h3>
                 <ul className="mt-4 space-y-4">
                   <li>
-                    <Link href="https://flo.host/qlUpOXp/" target="_blank" className="text-sm text-gray-500 hover:text-gray-900">
+                    <Link href="https://flo.host/zLaaewm/" target="_blank" className="text-sm text-gray-500 hover:text-gray-900">
                       {translations.roadmap}
                     </Link>
                   </li>
