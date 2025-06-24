@@ -447,5 +447,14 @@
     "currentPromptPrefix": "Currently using",
     "currentPromptSuffix": "prompt for conversation",
     "defaultInputHint": "Enter a message to start the conversation"
+  },
+  "publicPage": {
+    "title": "Prompt Collection",
+    "subtitle": "Explore, copy, and use these curated prompts to spark your creativity",
+    "totalPrompts": "Total {count} prompts",
+    "copied": "Copied!",
+    "copySuccess": "Prompt copied to clipboard.",
+    "copyTooltip": "Copy prompt",
+    "copiedTooltip": "Copied"
   }
 } 

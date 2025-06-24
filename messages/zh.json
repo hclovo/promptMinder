@@ -444,5 +444,14 @@
   "language": {
     "switchTo": "Switch to English",
     "current": "中文"
+  },
+  "publicPage": {
+    "title": "提示词合集",
+    "subtitle": "探索、复制并使用这些精选的提示词来激发您的创造力",
+    "totalPrompts": "共 {count} 个提示词",
+    "copied": "已复制!",
+    "copySuccess": "提示词已复制到剪贴板。",
+    "copyTooltip": "复制提示词",
+    "copiedTooltip": "已复制"
   }
 } 

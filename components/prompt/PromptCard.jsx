@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
+import { useLanguage } from '@/contexts/LanguageContext';
 import {
   Tooltip,
   TooltipContent,
@@ -52,14 +53,18 @@ function CheckIcon(props) {
 
 export function PromptCard({ prompt }) {
   const { toast } = useToast();
+  const { t } = useLanguage();
   const [copied, setCopied] = useState(false);
+
+  // Handle case where translations are not loaded yet
+  if (!t || !t.publicPage) return null;
 
   const handleCopy = () => {
     navigator.clipboard.writeText(prompt.prompt);
     setCopied(true);
     toast({
-      title: '已复制!',
-      description: '提示词已复制到剪贴板。',
+      title: t.publicPage.copied,
+      description: t.publicPage.copySuccess,
     });
     setTimeout(() => setCopied(false), 2000);
   };
@@ -99,7 +104,7 @@ export function PromptCard({ prompt }) {
                   side="top"
                   className="bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 border-0 shadow-lg"
                 >
-                  <p className="font-medium">{copied ? '已复制' : '复制提示词'}</p>
+                  <p className="font-medium">{copied ? t.publicPage.copiedTooltip : t.publicPage.copyTooltip}</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
