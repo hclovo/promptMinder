@@ -3,9 +3,6 @@
 import { motion } from "framer-motion";
 import Image from "next/image";
 
-// 移除硬编码的 testimonials 数组
-// const testimonials = [ ... ];
-
 // 接收 t prop
 export function TestimonialSection({ t }) {
   // 如果 t 不存在，提供一个默认值

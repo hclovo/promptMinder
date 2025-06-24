@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from 'next/navigation';
-import { Menu, FolderPlus, Library, LogOut, Languages } from "lucide-react"
+import { Menu, FolderPlus, Library, LogOut, Languages, LayoutGrid } from "lucide-react"
 import Image from "next/image";
 import { SignInButton, SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 import {
@@ -52,21 +52,20 @@ export function Header() {
                       </NavigationMenuLink>
                     </Link>
                   </NavigationMenuItem>
-                  
-                  {/* <NavigationMenuItem>
-                    <Link href="/prompts/new" legacyBehavior passHref>
+                  <NavigationMenuItem>
+                    <Link href="/public" legacyBehavior passHref>
                       <NavigationMenuLink
                         className={`${
-                          pathname === '/prompts/new'
+                          pathname === '/public'
                             ? 'text-primary font-medium'
                             : 'text-muted-foreground'
                         } flex items-center gap-1`}
                       >
-                        <FolderPlus className="h-4 w-4" />
-                        {t.header.new}
+                        <LayoutGrid className="h-4 w-4" />
+                        {t.header.public}
                       </NavigationMenuLink>
                     </Link>
-                  </NavigationMenuItem> */}
+                  </NavigationMenuItem>
                 </NavigationMenuList>
               </NavigationMenu>
             </SignedIn>

@@ -1,11 +1,16 @@
 {
   "navbar": {
     "manage": "管理",
-    "new": "新建"
+    "new": "新建",
+    "public": "合集",
+    "pricing": "价格",
+    "faq": "常见问题",
+    "testimonials": "推荐"
   },
   "header": {
-    "manage": "管理",
-    "new": "新建"
+    "manage": "控制台",
+    "new": "新建",
+    "public": "合集"
   },
   "auth": {
     "login": "登录",
@@ -114,7 +119,8 @@
     "title": "准备好开始使用了吗？",
     "description": "立即加入 Prompt Minder，开启您的 AI 提示词管理之旅",
     "buttonLoggedIn": "进入控制台",
-    "buttonLoggedOut": "免费注册"
+    "buttonLoggedOut": "免费注册",
+    "promptCollections": "提示词合集"
   },
   "privacyPolicy": {
     "title": "隐私政策",

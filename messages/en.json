@@ -1,14 +1,19 @@
 {
   "navbar": {
     "manage": "Manage",
-    "new": "New"
+    "new": "New",
+    "public": "Public",
+    "pricing": "Pricing",
+    "faq": "FAQ",
+    "testimonials": "Testimonials"
   },
   "header": {
-    "manage": "Manage",
-    "new": "New"
+    "manage": "Console",
+    "new": "New Prompt",
+    "public": "Collections"
   },
   "auth": {
-    "login": "Log In",
+    "login": "Login",
     "signup": "Sign Up"
   },
   "footer": {
@@ -114,7 +119,8 @@
     "title": "Ready to get started?",
     "description": "Join Prompt Minder now and start your AI prompt management journey",
     "buttonLoggedIn": "Go to Console",
-    "buttonLoggedOut": "Sign Up for Free"
+    "buttonLoggedOut": "Sign Up for Free",
+    "promptCollections": "Prompt Collections"
   },
   "language": {
     "switchTo": "切换到中文",

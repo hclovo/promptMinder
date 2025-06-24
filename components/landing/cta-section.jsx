@@ -11,7 +11,8 @@ export function CTASection({ t }) {
     title: 'Ready to get started?',
     description: 'Join Prompt Minder now and start your AI prompt management journey',
     buttonLoggedIn: 'Go to Console',
-    buttonLoggedOut: 'Sign Up for Free'
+    buttonLoggedOut: 'Sign Up for Free',
+    promptCollections: 'Prompt Collections'
   };
   
   return (
@@ -42,6 +43,12 @@ export function CTASection({ t }) {
               className="inline-flex items-center justify-center px-10 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg font-semibold text-lg hover:from-blue-700 hover:to-indigo-700 transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
             >
               {isSignedIn ? translations.buttonLoggedIn : translations.buttonLoggedOut}
+            </Link>
+            <Link
+              href="/public"
+              className="inline-flex items-center justify-center px-10 py-4 bg-white text-gray-800 border border-gray-300 rounded-lg font-semibold text-lg hover:bg-gray-50 transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
+            >
+              {translations.promptCollections}
             </Link>
           </div>
         </motion.div>

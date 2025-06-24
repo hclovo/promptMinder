@@ -11,7 +11,7 @@ import {
   NavigationMenuList,
 } from "@/components/ui/navigation-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Menu, FolderPlus, Library, LogOut, Languages } from "lucide-react"
+import { Menu, FolderPlus, Library, LogOut, Languages, Globe } from "lucide-react"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { ClerkProvider, SignInButton, SignedIn, SignedOut, UserButton } from '@clerk/nextjs'
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -76,6 +76,21 @@ export default function Navbar() {
                   </Link>
                 </NavigationMenuItem>
 
+                <NavigationMenuItem>
+                  <Link href="/public" legacyBehavior passHref>
+                    <NavigationMenuLink
+                      className={`${
+                        pathname === '/public'
+                          ? 'text-primary font-medium'
+                          : 'text-muted-foreground'
+                      } flex items-center gap-1`}
+                    >
+                      <Globe className="h-4 w-4" />
+                      {t.navbar.public}
+                    </NavigationMenuLink>
+                  </Link>
+                </NavigationMenuItem>
+
               </NavigationMenuList>
             </NavigationMenu>
 
@@ -109,6 +124,17 @@ export default function Navbar() {
                     >
                       <FolderPlus className="h-4 w-4" />
                       {t.navbar.new}
+                    </Link>
+                    <Link
+                      href="/public"
+                      className={`${
+                        pathname === '/public'
+                          ? 'text-primary font-medium'
+                          : 'text-muted-foreground'
+                      } flex items-center gap-2`}
+                    >
+                      <Globe className="h-4 w-4" />
+                      {t.navbar.public}
                     </Link>
                     <Button variant="ghost" onClick={toggleLanguage} className="justify-start mt-4">
                       <Languages className="h-4 w-4 mr-2" /> 
