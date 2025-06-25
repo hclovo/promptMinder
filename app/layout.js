@@ -21,7 +21,7 @@ const structuredData = {
       "@type": "Organization",
       "name": "Prompt Minder",
       "url": "https://prompt-minder.com",
-      "logo": "https://prompt-minder.com/logo.png", // Confirm this is the correct logo URL
+      "logo": "https://prompt-minder.com/logo2.png", // Confirm this is the correct logo URL
       "sameAs": [ // Add links to your social media profiles here
         // "https://twitter.com/yourprofile",
         // "https://linkedin.com/company/yourcompany"

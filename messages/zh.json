@@ -458,6 +458,10 @@
     "copied": "已复制!",
     "copySuccess": "提示词已复制到剪贴板。",
     "copyTooltip": "复制提示词",
-    "copiedTooltip": "已复制"
+    "copiedTooltip": "已复制",
+    "searchPlaceholder": "搜索角色/类别...",
+    "noResults": "没有找到匹配的提示词",
+    "clearSearch": "清空搜索",
+    "tryOtherKeywords": "试试其他关键词或"
   }
 } 

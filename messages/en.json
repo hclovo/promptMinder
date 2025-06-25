@@ -461,6 +461,10 @@
     "copied": "Copied!",
     "copySuccess": "Prompt copied to clipboard.",
     "copyTooltip": "Copy prompt",
-    "copiedTooltip": "Copied"
+    "copiedTooltip": "Copied",
+    "searchPlaceholder": "Search by role/category...",
+    "noResults": "No prompts found matching your search",
+    "clearSearch": "Clear search",
+    "tryOtherKeywords": "Try other keywords or"
   }
 } 
