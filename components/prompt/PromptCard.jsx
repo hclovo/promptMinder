@@ -11,6 +11,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import { ImportIcon } from "lucide-react";
 
 function CopyIcon(props) {
   return (
@@ -55,6 +56,7 @@ export function PromptCard({ prompt }) {
   const { toast } = useToast();
   const { t } = useLanguage();
   const [copied, setCopied] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
 
   // Handle case where translations are not loaded yet
   if (!t || !t.publicPage) return null;
@@ -69,6 +71,37 @@ export function PromptCard({ prompt }) {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const handleImport = async () => {
+    setIsImporting(true);
+    try {
+      const response = await fetch('/api/prompts/copy', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ promptData: prompt }), // Pass the whole prompt object
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to import prompt');
+      }
+
+      toast({
+        title: t.publicPage.importSuccessTitle,
+        description: t.publicPage.importSuccessDescription,
+      });
+    } catch (error) {
+      toast({
+        title: t.publicPage.importErrorTitle,
+        description: error.message,
+        variant: 'destructive',
+      });
+    } finally {
+      setIsImporting(false);
+    }
+  };
+
   return (
     <div className="group">
       <Card className="relative bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border border-gray-200/80 dark:border-gray-700/80 hover:border-blue-200 dark:hover:border-blue-800 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/10 dark:hover:shadow-blue-500/5 hover:-translate-y-1 overflow-hidden rounded-xl">
@@ -80,34 +113,57 @@ export function PromptCard({ prompt }) {
             <CardTitle className="text-lg font-bold text-gray-900 dark:text-gray-100 leading-tight group-hover:text-blue-900 dark:group-hover:text-blue-100 transition-colors duration-300 flex-1">
               {prompt.role}
             </CardTitle>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button 
-                    onClick={handleCopy} 
-                    variant="ghost" 
-                    size="icon" 
-                    className={`flex-shrink-0 h-8 w-8 rounded-lg transition-all duration-300 ${
-                      copied 
-                        ? 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-900/30' 
-                        : 'text-gray-400 dark:text-gray-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400'
-                    } hover:scale-105`}
+            <div className="flex items-center gap-2">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button 
+                      onClick={handleImport} 
+                      variant="ghost" 
+                      size="icon" 
+                      disabled={isImporting}
+                      className="flex-shrink-0 h-8 w-8 rounded-lg transition-all duration-300 text-gray-400 dark:text-gray-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 hover:scale-105"
+                    >
+                      <ImportIcon className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent 
+                    side="top"
+                    className="bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 border-0 shadow-lg"
                   >
-                    {copied ? (
-                      <CheckIcon className="h-4 w-4 transition-transform duration-300" />
-                    ) : (
-                      <CopyIcon className="h-4 w-4 transition-transform duration-300" />
-                    )}
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent 
-                  side="top"
-                  className="bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 border-0 shadow-lg"
-                >
-                  <p className="font-medium">{copied ? t.publicPage.copiedTooltip : t.publicPage.copyTooltip}</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+                    <p className="font-medium">{t.publicPage.importTooltip}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button 
+                      onClick={handleCopy} 
+                      variant="ghost" 
+                      size="icon" 
+                      className={`flex-shrink-0 h-8 w-8 rounded-lg transition-all duration-300 ${
+                        copied 
+                          ? 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-900/30' 
+                          : 'text-gray-400 dark:text-gray-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400'
+                      } hover:scale-105`}
+                    >
+                      {copied ? (
+                        <CheckIcon className="h-4 w-4 transition-transform duration-300" />
+                      ) : (
+                        <CopyIcon className="h-4 w-4 transition-transform duration-300" />
+                      )}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent 
+                    side="top"
+                    className="bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 border-0 shadow-lg"
+                  >
+                    <p className="font-medium">{copied ? t.publicPage.copiedTooltip : t.publicPage.copyTooltip}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
           </div>
           
           {/* Category badge */}
