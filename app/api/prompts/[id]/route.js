@@ -1,18 +1,13 @@
-import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server'
+// import { auth } from '@clerk/nextjs/server'
+import { PromptService } from '@/server/service/promptService';
+
 
 export async function GET(request, { params }) {
   const { id } = await params;
-  const { userId } = await auth()
-  const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
-  
-  const { data: prompt, error } = await supabase
-    .from('prompts')
-    .select('*')
-    .eq('id', id)
-    .eq('user_id', userId)
-    .single();
+  const { status, data: prompt, error: error } = await PromptService.getPromptById({
+    id,
+  })
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
@@ -27,20 +22,15 @@ export async function GET(request, { params }) {
 
 export async function POST(request, { params }) {
   const { id } = await params;
-  const { userId } = await auth()
-  const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
 
   const { title, content, description, is_public, tags, image_url, version } = await request.json();
 
-  const { data: prompt, error } = await supabase
-    .from('prompts')
-    .select('version')
-    .eq('id', id)
-    .eq('user_id', userId)
-    .single();
+  const { status, data: prompt, error: fetchError } = await PromptService.getPromptById({
+    id,
+  })
 
-  if (error || !prompt) {
-    return NextResponse.json({ error: error ? error.message : 'Prompt not found' }, { status: 500 });
+  if (fetchError || !prompt) {
+    return NextResponse.json({ error: fetchError ? fetchError.message : 'Prompt not found' }, { status: 500 });
   }
 
   const updateData = {
@@ -55,10 +45,10 @@ export async function POST(request, { params }) {
   if (image_url !== undefined) updateData.cover_img = image_url;
   if (version !== undefined) updateData.version = version;
 
-  const { error: updateError } = await supabase
-    .from('prompts')
-    .update(updateData)
-    .eq('id', id);
+  const { updateStatus, data: updatedPrompt, error: updateError } = await PromptService.updatePrompt({
+    id,
+    updateData
+  })
 
   if (updateError) {
     return NextResponse.json({ error: updateError.message }, { status: 500 });
