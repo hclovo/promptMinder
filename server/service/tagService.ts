@@ -7,7 +7,7 @@ export class TagService {
         userId?: string;
       }) {
         try {
-            const result = db
+            const result = await db
                 .select()
                 .from(tags)
                 .where(and(
@@ -22,10 +22,14 @@ export class TagService {
     }
     static async getAllTags() {
         try {
-            const result = db
+            const result = await db
                 .select()
                 .from(tags)
+                .orderBy(desc(tags.createdAt))
                 .execute();
+            if (!result) {
+                return {status: true, data: [], error: null};
+            }
             return {status: true, data: result || null, error: null};
         } catch (error) {
             return {status: false, data: null, error: error.message};
@@ -40,7 +44,7 @@ export class TagService {
             if (!params.name) {
                 throw new Error('Missing userId or name');
             }
-            const result = db
+            const result = await db
                 .insert(tags)
                 .values({
                     id: crypto.randomUUID(),
@@ -64,7 +68,7 @@ export class TagService {
             if (!params.id || !params.name) {
                 throw new Error('Missing id or name');
             }
-            const result = db
+            const result = await db
                 .update(tags)
                 .set({
                     name: params.name,
@@ -87,7 +91,7 @@ export class TagService {
             if (!params.id) {
                 throw new Error('Missing id');
             }
-            const result = db
+            const result = await db
                 .delete(tags)
                 .where(and(
                     eq(tags.id, params.id)

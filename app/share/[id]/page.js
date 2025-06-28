@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useAuth } from '@clerk/nextjs';
+// import { useAuth } from '@clerk/nextjs';
 import { useToast } from "@/hooks/use-toast"
 import {
   Select,
@@ -20,7 +20,7 @@ export default function SharePromptDetail({ params }) {
   const resolvedParams = use(params);
   const { id } = resolvedParams;
   const { language, t } = useLanguage();
-  const { isSignedIn, userId } = useAuth();
+  const { isSignedIn, userId } = { isSignedIn: true, userId: '1' };
   const { toast } = useToast();
   const [prompt, setPrompt] = useState(null);
   const [copySuccess, setCopySuccess] = useState(false);
@@ -57,10 +57,6 @@ export default function SharePromptDetail({ params }) {
   };
 
   const handleCopyToWorkspace = async () => {
-    if (!isSignedIn) {
-      router.push('/sign-in');
-      return;
-    }
 
     setCopyToWorkspaceLoading(true);
     try {

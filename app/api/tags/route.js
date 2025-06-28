@@ -3,17 +3,10 @@ import { auth } from '@clerk/nextjs/server';
 import { TagService } from '@/server/service/tagService';
 
 export async function GET(request) {
-  // const { userId } = await auth()
   
-  // 获取公共标签和用户私有标签
-  // const { data: tags, error } = await supabase
-  //   .from('tags')
-  //   .select('*')
-  //   .or(`user_id.is.null,user_id.eq.${userId}`)
-  //   .order('name');
-  
-  const { status: getStatus, data: publicTags, error: getError } = await TagService.getPublicTags();
+  const { status: getStatus, data: publicTags, error: getError } = await TagService.getAllTags();
 
+  console.log(getStatus, publicTags, getError);
   if (getError) {
     return NextResponse.json({ error: getError.message }, { status: 500 });
   }
@@ -22,7 +15,6 @@ export async function GET(request) {
 }
 
 export async function POST(request) {
-  // const { userId } = await auth();
 
   const { name, isPublic } = await request.json();
 
@@ -38,8 +30,7 @@ export async function POST(request) {
 }
 
 export async function DELETE(request) {
-  const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
-  const { userId } = await auth();
+
   
   try {
     const { searchParams } = new URL(request.url);
@@ -76,8 +67,7 @@ export async function DELETE(request) {
 }
 
 export async function PATCH(request) {
-  const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
-  const { userId } = await auth();
+  
   
   try {
     const { searchParams } = new URL(request.url);

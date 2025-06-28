@@ -2,6 +2,7 @@ import { db } from '@/server/db/db';
 import { prompts } from '@/server/db/schema';
 import { idID } from '@clerk/localizations';
 import { eq, desc, and, ilike } from "drizzle-orm";
+import { comma } from 'postcss/lib/list';
 
 export class PromptService {
     static async getPromptById(params: {
@@ -11,7 +12,7 @@ export class PromptService {
             if (!params.id) {
                 throw new Error('Missing id');
             }
-            const result = db
+            const result = await db
                 .select()
                 .from(prompts)
                 .where(and(
@@ -19,8 +20,10 @@ export class PromptService {
                 ))
                 .orderBy(desc(prompts.createdAt))
                 .execute();
-                return {status: true, data: result[0] || null};
+
+            return {status: true, data: result[0] || null};
         } catch (error) {
+            console.log(error);
             return {status: false, data: null, error: error.message};
         }
     }
@@ -85,7 +88,7 @@ export class PromptService {
         }
     }
 
-    static async insertPrompt(params: {
+    public static async insertPrompt(params: {
         title: string;
         content: string;
         description: string;

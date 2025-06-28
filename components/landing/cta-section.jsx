@@ -2,10 +2,9 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { useAuth } from "@clerk/nextjs";
 
 export function CTASection({ t }) {
-  const { isSignedIn } = useAuth();
+  const { isSignedIn } = { isSignedIn: true };
   
   const translations = t || {
     title: 'Ready to get started?',

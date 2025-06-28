@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-// import { auth } from '@clerk/nextjs/server'
 import { PromptService } from '@/server/service/promptService';
 
 
@@ -8,7 +7,7 @@ export async function GET(request, { params }) {
   const { status, data: prompt, error: error } = await PromptService.getPromptById({
     id,
   })
-
+  console.log(status, prompt, error)
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
@@ -59,16 +58,11 @@ export async function POST(request, { params }) {
 
 export async function DELETE(request, { params }) {
   const { id } = await params;
-  const { userId } = await auth()
-  const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
 
   // 检查提示词是否存在
-  const { data: prompt, error: checkError } = await supabase
-    .from('prompts')
-    .select('id')
-    .eq('id', id)
-    .eq('user_id', userId)
-    .single();
+  const { data: prompt, error: checkError } = await PromptService.getPromptById({
+      id,
+    })
 
   if (checkError || !prompt) {
     return NextResponse.json(
@@ -78,13 +72,12 @@ export async function DELETE(request, { params }) {
   }
 
   // 执行删除操作
-  const { error: deleteError } = await supabase
-    .from('prompts')
-    .delete()
-    .eq('id', id);
+  const { error: deleteError } = await PromptService.deletePromptById({
+    id,
+  });
 
   if (deleteError) {
-    return NextResponse.json({ error: deleteError.message }, { status: 500 });
+    return NextResponse.json({ error: deleteError }, { status: 500 });
   }
 
   return NextResponse.json({ message: 'Prompt deleted successfully' });

@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server'
 import { PromptService } from '@/server/service/promptService';
 
 export async function POST(request) {

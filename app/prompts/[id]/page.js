@@ -152,6 +152,7 @@ export default function PromptDetail({ params }) {
 
   useEffect(() => {
     if (id) {
+      console.log('Prompt ID:', id);
       fetch(`/api/prompts/${id}`)
         .then((response) => response.json())
         .then((data) => {

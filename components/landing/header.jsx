@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from 'next/navigation';
 import { Menu, FolderPlus, Library, LogOut, Languages } from "lucide-react"
 import Image from "next/image";
-import { SignInButton, SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
+// import { SignInButton, SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 import {
     NavigationMenu,
     NavigationMenuItem,
@@ -35,8 +35,8 @@ export function Header() {
           {/* Navigation & Auth */}
           <div className="flex items-center gap-8">
             {/* Center Navigation */}
-            <SignedIn>
-              <NavigationMenu className="hidden sm:flex">
+            {/* <SignedIn> */}
+              {/* <NavigationMenu className="hidden sm:flex">
                 <NavigationMenuList className="space-x-8">
                   <NavigationMenuItem>
                     <Link href="/prompts" legacyBehavior passHref>
@@ -51,7 +51,7 @@ export function Header() {
                         {t.header.manage}
                       </NavigationMenuLink>
                     </Link>
-                  </NavigationMenuItem>
+                  </NavigationMenuItem> */}
                   
                   {/* <NavigationMenuItem>
                     <Link href="/prompts/new" legacyBehavior passHref>
@@ -67,16 +67,16 @@ export function Header() {
                       </NavigationMenuLink>
                     </Link>
                   </NavigationMenuItem> */}
-                </NavigationMenuList>
-              </NavigationMenu>
-            </SignedIn>
+                {/* </NavigationMenuList>
+              </NavigationMenu> */}
+            {/* </SignedIn> */}
 
             {/* Right aligned auth buttons & Language Switcher */}
             <div className="flex items-center space-x-3">
               <Button variant="outline" size="icon" onClick={toggleLanguage}>
                   <Languages className="h-5 w-5" />
               </Button>
-              <SignedOut>
+              {/* <SignedOut>
                 <Link href="/prompts">
                   <button className="px-4 py-2 text-gray-600 hover:text-gray-900 transition-colors">
                     {t.auth.login}
@@ -90,7 +90,7 @@ export function Header() {
               </SignedOut>
               <SignedIn>
                 <UserButton afterSignOutUrl="/" />
-              </SignedIn>
+              </SignedIn> */}
             </div>
           </div>
         </div>

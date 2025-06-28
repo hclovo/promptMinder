@@ -17,5 +17,6 @@ CREATE TABLE "tags" (
 	"name" text NOT NULL,
 	"user_id" text,
 	"created_at" timestamp with time zone DEFAULT now(),
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
 	CONSTRAINT "tags_name_user_id_unique" UNIQUE("name","user_id")
 );
