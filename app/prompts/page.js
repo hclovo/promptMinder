@@ -24,6 +24,7 @@ import { Textarea } from "@/components/ui/textarea"
 import dynamic from 'next/dynamic'
 import { useLanguage } from '@/contexts/LanguageContext';
 import * as VisuallyHidden from '@radix-ui/react-visually-hidden';
+import { formatDate } from "@/lib/utils";
 
 const CreatableSelect = dynamic(() => import('react-select/creatable'), {
   ssr: false
@@ -571,7 +572,7 @@ export default function PromptsPage() {
                       <div className="flex items-center gap-2 text-xs text-muted-foreground pt-1">
                         <div className="flex items-center gap-1">
                           <Clock className="h-3 w-3" />
-                          {new Date(latestPrompt.updated_at).toLocaleString()}
+                          {formatDate(latestPrompt.updated_at || latestPrompt.updatedAt, { includeTime: true })}
                         </div>
                         {versions.length > 1 && (
                           <div className="flex items-center gap-1 ml-2 bg-primary/10 text-primary px-2 py-0.5 rounded-full">
@@ -606,7 +607,7 @@ export default function PromptsPage() {
                     <div>
                       <div className="font-medium text-primary">v{version.version}</div>
                       <div className="text-sm text-muted-foreground">
-                        {new Date(version.created_at).toLocaleString()}
+                        {formatDate(version.updated_at || version.updatedAt, { includeTime: true })}
                       </div>
                     </div>
                     <ChevronDown className="h-4 w-4 text-muted-foreground" />

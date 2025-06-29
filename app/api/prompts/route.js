@@ -49,21 +49,22 @@ export async function POST(request) {
       return NextResponse.json({ error: error }, { status: 500 });
     }
 
-    // 返回前处理日期字段
+    // 返回前处理日期字段，确保字段名与前端一致
     const processedData = {
       ...newPrompt,
-      createdAt: newPrompt.createdAt.toISOString(),
-      updatedAt: newPrompt.updatedAt.toISOString()
+      created_at: newPrompt.createdAt?.toISOString() || newPrompt.created_at,
+      updated_at: newPrompt.updatedAt?.toISOString() || newPrompt.updated_at
     };
+    // 删除驼峰命名的字段，避免混淆
+    delete processedData.createdAt;
+    delete processedData.updatedAt;
+    
     return NextResponse.json(processedData);
   } catch (error) {
     console.error('error:', error);
     return NextResponse.json({ error: error }, { status: 500 });
   }
 }
-
-// 移除Clerk引用
-// import { auth } from '@clerk/nextjs/server'
 
 // 硬编码用户ID
 const userId = '1';

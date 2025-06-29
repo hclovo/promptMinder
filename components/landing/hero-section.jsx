@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
-// import { useAuth } from "@clerk/nextjs";
+
 import { TypeAnimation } from 'react-type-animation';
 
 export function HeroSection({ t }) {

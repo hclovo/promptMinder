@@ -2,7 +2,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import {
   NavigationMenu,
@@ -10,25 +9,16 @@ import {
   NavigationMenuLink,
   NavigationMenuList,
 } from "@/components/ui/navigation-menu"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Menu, FolderPlus, Library, LogOut, Languages } from "lucide-react"
+import { Menu, FolderPlus, Library, Languages } from "lucide-react"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import { ClerkProvider, SignInButton, SignedIn, SignedOut, UserButton } from '@clerk/nextjs'
+// 已移除认证功能
 import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function Navbar() {
   const pathname = usePathname();
   const { language, toggleLanguage, t } = useLanguage();
 
-  useEffect(() => {
-    const checkAuth = async () => {
-      const hasAuthToken = document.cookie.includes('authToken=');
-      if (!hasAuthToken) {
-        return;
-      }
-    };
-    checkAuth();
-  }, []);
+
 
   if (!t) return null;
 
@@ -123,12 +113,6 @@ export default function Navbar() {
               <Button variant="outline" size="icon" onClick={toggleLanguage} className="hidden sm:inline-flex">
                 <Languages className="h-5 w-5" />
               </Button>
-              <SignedOut>
-                <SignInButton />
-              </SignedOut>
-              <SignedIn>
-                <UserButton />
-              </SignedIn>
             </div>
           </div>
         </div>

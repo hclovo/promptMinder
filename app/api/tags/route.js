@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
 import { TagService } from '@/server/service/tagService';
 
 export async function GET(request) {

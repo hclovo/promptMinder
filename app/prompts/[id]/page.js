@@ -25,6 +25,7 @@ import { oneDark } from 'react-syntax-highlighter/dist/cjs/styles/prism';
 import ChatTest from '@/components/chat/ChatTest';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from "@/hooks/use-toast"
+import { formatDate } from "@/lib/utils"
 
 const STORAGE_KEY = 'chat_settings';
 
@@ -163,7 +164,7 @@ export default function PromptDetail({ params }) {
             .then((response) => response.json())
             .then((versionsData) => {
               const sameTitle = versionsData.filter(v => v.title === data.title);
-              setVersions(sameTitle.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)));
+              setVersions(sameTitle.sort((a, b) => new Date(b.updated_at || b.updatedAt) - new Date(a.updated_at || a.updatedAt)));
             })
             .catch((error) => console.error('Error fetching versions:', error));
         })
@@ -362,7 +363,7 @@ export default function PromptDetail({ params }) {
                         <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
-                        {new Date(prompt.created_at).toLocaleDateString()}
+                        {formatDate(prompt.updated_at || prompt.updatedAt)}
                       </div>
                       <span>•</span>
                       <div className="flex items-center gap-1">
@@ -386,7 +387,7 @@ export default function PromptDetail({ params }) {
                                   value={version.version}
                                   className="text-xs"
                                 >
-                                  v{version.version} ({new Date(version.created_at).toLocaleDateString()})
+                                  v{version.version} ({formatDate(version.updated_at || version.updatedAt)})
                                 </SelectItem>
                               ))}
                             </SelectContent>

@@ -25,6 +25,8 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Separator } from "@/components/ui/separator"
 import { useLanguage } from '@/contexts/LanguageContext';
+import { toast } from "@/hooks/use-toast";
+import { formatTime } from "@/lib/utils";
 
 // Message loading animation component
 function MessageLoading() {
@@ -600,7 +602,7 @@ export default function ChatTest({ prompt }) {
                         {message.role === 'user' ? t.chatTest.userLabel : prompt.title || t.chatTest.aiAssistantLabel}
                       </p>
                       <span className="text-xs text-muted-foreground">
-                        {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        {formatTime(message.timestamp)}
                       </span>
                       {message.role === 'user' && !isEditing && (
                         <Button

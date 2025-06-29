@@ -7,16 +7,13 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
-    "db:pull": "drizzle-kit pull",
+    "db:pull": "drizzle-kit introspect",
     "db:studio": "drizzle-kit studio",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
   },
   "dependencies": {
-    "@clerk/localizations": "^3.9.5",
-    "@clerk/nextjs": "^6.9.5",
-    "@clerk/themes": "^2.2.3",
     "@heroicons/react": "^2.2.0",
     "@radix-ui/react-avatar": "^1.1.1",
     "@radix-ui/react-dialog": "^1.1.2",
@@ -58,8 +55,8 @@
   },
   "devDependencies": {
     "@tailwindcss/typography": "^0.5.15",
-    "drizzle-kit": "^0.20.14",
-    "drizzle-orm": "^0.29.8",
+    "drizzle-kit": "^0.31.4",
+    "drizzle-orm": "^0.44.2",
     "eslint": "^8",
     "eslint-config-next": "15.0.3",
     "mini-css-extract-plugin": "^2.9.2",

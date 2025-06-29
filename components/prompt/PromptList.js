@@ -11,6 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import { formatDate } from "@/lib/utils"
 
 export default function PromptList({ prompts, onDelete, onShare }) {
   const { toast } = useToast();
@@ -139,7 +140,7 @@ export default function PromptList({ prompts, onDelete, onShare }) {
                         <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
-                        {new Date(latestPrompt.created_at).toLocaleDateString()}
+                        {formatDate(latestPrompt.updated_at || latestPrompt.updatedAt)}
                       </div>
                       <span>•</span>
                       <div className="flex items-center gap-1">
@@ -231,7 +232,7 @@ export default function PromptList({ prompts, onDelete, onShare }) {
                     <div>
                       <div className="font-medium">v{version.version}</div>
                       <div className="text-sm text-muted-foreground">
-                        {new Date(version.created_at).toLocaleString()}
+                        {formatDate(version.updated_at || version.updatedAt, { includeTime: true })}
                       </div>
                     </div>
                     <ChevronDown className="h-4 w-4" />

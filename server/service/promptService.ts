@@ -1,6 +1,5 @@
 import { db } from '@/server/db/db';
 import { prompts } from '@/server/db/schema';
-import { idID } from '@clerk/localizations';
 import { eq, desc, and, ilike } from "drizzle-orm";
 import { comma } from 'postcss/lib/list';
 
@@ -21,7 +20,18 @@ export class PromptService {
                 .orderBy(desc(prompts.createdAt))
                 .execute();
 
-            return {status: true, data: result[0] || null};
+            const prompt = result[0];
+            if (prompt) {
+                // 转换字段名格式，确保与前端一致
+                const processedPrompt = {
+                    ...prompt,
+                    created_at: prompt.createdAt,
+                    updated_at: prompt.updatedAt
+                };
+                return {status: true, data: processedPrompt};
+            }
+
+            return {status: true, data: null};
         } catch (error) {
             console.log(error);
             return {status: false, data: null, error: error.message};
@@ -60,9 +70,16 @@ export class PromptService {
             .orderBy(desc(prompts.createdAt))
             .execute();
 
+            // 转换字段名格式，确保与前端一致
+            const processedResult = result.map(item => ({
+                ...item,
+                created_at: item.createdAt,
+                updated_at: item.updatedAt
+            }));
+
             return {
             status: true,
-            data: result
+            data: processedResult
             };
         } catch (error) {
             return {
@@ -156,7 +173,15 @@ export class PromptService {
             .from(prompts)
             .where(ilike(prompts.tags, `%${params.tag}%`))
             .execute();
-            return { status: true, data: result, error: null };
+            
+            // 转换字段名格式，确保与前端一致
+            const processedResult = result.map(item => ({
+                ...item,
+                created_at: item.createdAt,
+                updated_at: item.updatedAt
+            }));
+            
+            return { status: true, data: processedResult, error: null };
         } catch (error) {
             return { status: false, data: null, error: error.message };
         }
@@ -172,8 +197,16 @@ export class PromptService {
             .where(and(eq(prompts.title, params.title), eq(prompts.isPublic, true)))
             .orderBy(desc(prompts.createdAt))
             .execute();
+            
+            // 转换字段名格式，确保与前端一致
+            const processedResult = result.map(item => ({
+                ...item,
+                created_at: item.createdAt,
+                updated_at: item.updatedAt
+            }));
+            
             const version = []
-            result.forEach((item) => {
+            processedResult.forEach((item) => {
                 version.push(item.version);
             })
             // 去除version中的重复元素
