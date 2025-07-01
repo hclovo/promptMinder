@@ -22,6 +22,7 @@ export async function GET(request, { params }) {
 export async function POST(request, { params }) {
   const { id } = await params;
 
+  const userId = 1;
   const { title, content, description, is_public, tags, image_url, version } = await request.json();
 
   const { status, data: prompt, error: fetchError } = await PromptService.getPromptById({
