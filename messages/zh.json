@@ -498,6 +498,36 @@
   "admin": {
     "contributions": {
       "title": "贡献管理",
+      "loading": "加载中...",
+      "totalContributions": "总贡献数",
+      "pending": "待审核",
+      "approved": "已通过",
+      "rejected": "已拒绝",
+      "all": "全部",
+      "noContributions": "暂无贡献记录",
+      "status": {
+        "pending": "待审核",
+        "approved": "已通过",
+        "rejected": "已拒绝"
+      },
+      "category": "类别",
+      "submittedAt": "提交时间",
+      "viewDetails": "查看详情",
+      "delete": "删除",
+      "deleteConfirm": "确定要删除这个贡献吗？此操作无法撤销。",
+      "modal": {
+        "title": "贡献详情",
+        "description": "查看详细内容并进行审核",
+        "titleLabel": "标题",
+        "categoryLabel": "角色/类别",
+        "contentLabel": "提示词内容",
+        "currentStatus": "当前状态",
+        "adminNotes": "管理员备注",
+        "adminNotesPlaceholder": "添加审核备注...",
+        "approveAndPublish": "通过并发布",
+        "approveOnly": "仅通过",
+        "reject": "拒绝"
+      },
       "toast": {
         "reviewSuccess": "审核完成",
         "reviewFailed": "审核失败",

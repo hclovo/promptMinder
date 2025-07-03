@@ -79,7 +79,7 @@ export default function ContributionsAdminPage() {
                 const publishText = publishToPrompts ? t.admin.contributions.toast.andPublished : '';
                 toast({
                     title: t.admin.contributions.toast.reviewSuccess,
-                    description: `贡献已${statusText}审核${publishText}`,
+                    description: `${t.admin.contributions.toast.reviewSuccess}${statusText}${publishText}`,
                     variant: "default",
                 });
                 setIsModalOpen(false);
@@ -89,7 +89,7 @@ export default function ContributionsAdminPage() {
             } else {
                 toast({
                     title: t.admin.contributions.toast.reviewFailed,
-                    description: data.error || '操作失败',
+                    description: data.error || t.admin.contributions.toast.reviewFailed,
                     variant: "destructive",
                 });
             }
@@ -107,7 +107,7 @@ export default function ContributionsAdminPage() {
 
     // 删除贡献
     const handleDelete = async (contributionId) => {
-        if (!confirm('确定要删除这个贡献吗？此操作无法撤销。')) {
+        if (!confirm(t.admin.contributions.deleteConfirm)) {
             return;
         }
 
@@ -119,7 +119,7 @@ export default function ContributionsAdminPage() {
             if (response.ok) {
                 toast({
                     title: t.admin.contributions.toast.deleteSuccess,
-                    description: '贡献已成功删除',
+                    description: t.admin.contributions.toast.deleteSuccess,
                     variant: "default",
                 });
                 fetchContributions(currentFilter);
@@ -128,7 +128,7 @@ export default function ContributionsAdminPage() {
                 const data = await response.json();
                 toast({
                     title: t.admin.contributions.toast.deleteFailed,
-                    description: data.error || '操作失败',
+                    description: data.error || t.admin.contributions.toast.deleteFailed,
                     variant: "destructive",
                 });
             }
@@ -152,9 +152,9 @@ export default function ContributionsAdminPage() {
     // 状态徽章样式
     const getStatusBadge = (status) => {
         const styles = {
-            pending: { variant: 'secondary', icon: Clock, text: '待审核' },
-            approved: { variant: 'default', icon: CheckCircle, text: '已通过' },
-            rejected: { variant: 'destructive', icon: XCircle, text: '已拒绝' }
+            pending: { variant: 'secondary', icon: Clock, text: t.admin.contributions.status.pending },
+            approved: { variant: 'default', icon: CheckCircle, text: t.admin.contributions.status.approved },
+            rejected: { variant: 'destructive', icon: XCircle, text: t.admin.contributions.status.rejected }
         };
         
         const config = styles[status] || styles.pending;
@@ -166,6 +166,17 @@ export default function ContributionsAdminPage() {
                 {config.text}
             </Badge>
         );
+    };
+
+    // 获取筛选按钮文本
+    const getFilterText = (filter) => {
+        const filterTexts = {
+            pending: t.admin.contributions.pending,
+            approved: t.admin.contributions.approved,
+            rejected: t.admin.contributions.rejected,
+            all: t.admin.contributions.all
+        };
+        return filterTexts[filter] || filter;
     };
 
     useEffect(() => {
@@ -185,7 +196,7 @@ export default function ContributionsAdminPage() {
         return (
             <div className="container mx-auto px-4 py-8">
                 <div className="flex items-center justify-center h-64">
-                    <div className="text-lg">加载中...</div>
+                    <div className="text-lg">{t.admin.contributions.loading}</div>
                 </div>
             </div>
         );
@@ -194,26 +205,26 @@ export default function ContributionsAdminPage() {
     return (
         <div className="container mx-auto px-4 py-8">
             <div className="mb-8">
-                <h1 className="text-3xl font-bold mb-4">贡献管理</h1>
+                <h1 className="text-3xl font-bold mb-4">{t.admin.contributions.title}</h1>
                 
                 {/* 统计卡片 */}
                 {stats && (
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
                         <Card className="p-4">
                             <div className="text-2xl font-bold text-blue-600">{stats.statusStats?.total || 0}</div>
-                            <div className="text-sm text-gray-600">总贡献数</div>
+                            <div className="text-sm text-gray-600">{t.admin.contributions.totalContributions}</div>
                         </Card>
                         <Card className="p-4">
                             <div className="text-2xl font-bold text-yellow-600">{stats.statusStats?.pending || 0}</div>
-                            <div className="text-sm text-gray-600">待审核</div>
+                            <div className="text-sm text-gray-600">{t.admin.contributions.pending}</div>
                         </Card>
                         <Card className="p-4">
                             <div className="text-2xl font-bold text-green-600">{stats.statusStats?.approved || 0}</div>
-                            <div className="text-sm text-gray-600">已通过</div>
+                            <div className="text-sm text-gray-600">{t.admin.contributions.approved}</div>
                         </Card>
                         <Card className="p-4">
                             <div className="text-2xl font-bold text-red-600">{stats.statusStats?.rejected || 0}</div>
-                            <div className="text-sm text-gray-600">已拒绝</div>
+                            <div className="text-sm text-gray-600">{t.admin.contributions.rejected}</div>
                         </Card>
                     </div>
                 )}
@@ -226,9 +237,7 @@ export default function ContributionsAdminPage() {
                             variant={currentFilter === status ? 'default' : 'outline'}
                             onClick={() => setCurrentFilter(status)}
                         >
-                            {status === 'pending' ? '待审核' : 
-                             status === 'approved' ? '已通过' : 
-                             status === 'rejected' ? '已拒绝' : '全部'}
+                            {getFilterText(status)}
                         </Button>
                     ))}
                 </div>
@@ -238,7 +247,7 @@ export default function ContributionsAdminPage() {
             <div className="space-y-4">
                 {contributions.length === 0 ? (
                     <Card className="p-8 text-center">
-                        <div className="text-gray-500">暂无贡献记录</div>
+                        <div className="text-gray-500">{t.admin.contributions.noContributions}</div>
                     </Card>
                 ) : (
                     contributions.map((contribution) => (
@@ -250,10 +259,10 @@ export default function ContributionsAdminPage() {
                                         {getStatusBadge(contribution.status)}
                                     </div>
                                     <div className="text-sm text-gray-600 mb-2">
-                                        类别: {contribution.role_category}
+                                        {t.admin.contributions.category}: {contribution.role_category}
                                     </div>
                                     <div className="text-sm text-gray-500 mb-2">
-                                        提交时间: {new Date(contribution.created_at).toLocaleString('zh-CN')}
+                                        {t.admin.contributions.submittedAt}: {new Date(contribution.created_at).toLocaleString()}
                                     </div>
                                     <div className="text-sm line-clamp-2">
                                         {contribution.content.length > 150 
@@ -267,6 +276,7 @@ export default function ContributionsAdminPage() {
                                         variant="outline"
                                         size="sm"
                                         onClick={() => handleViewDetails(contribution)}
+                                        title={t.admin.contributions.viewDetails}
                                     >
                                         <Eye className="w-4 h-4" />
                                     </Button>
@@ -274,6 +284,7 @@ export default function ContributionsAdminPage() {
                                         variant="outline"
                                         size="sm"
                                         onClick={() => handleDelete(contribution.id)}
+                                        title={t.admin.contributions.delete}
                                     >
                                         <Trash2 className="w-4 h-4" />
                                     </Button>
@@ -290,44 +301,44 @@ export default function ContributionsAdminPage() {
                     {selectedContribution && (
                         <>
                             <DialogHeader>
-                                <DialogTitle>贡献详情</DialogTitle>
+                                <DialogTitle>{t.admin.contributions.modal.title}</DialogTitle>
                                 <DialogDescription>
-                                    查看详细内容并进行审核
+                                    {t.admin.contributions.modal.description}
                                 </DialogDescription>
                             </DialogHeader>
                             
                             <div className="space-y-4">
                                 <div>
-                                    <Label className="text-sm font-medium">标题</Label>
+                                    <Label className="text-sm font-medium">{t.admin.contributions.modal.titleLabel}</Label>
                                     <div className="mt-1 p-2 bg-gray-50 rounded">{selectedContribution.title}</div>
                                 </div>
                                 
                                 <div>
-                                    <Label className="text-sm font-medium">角色/类别</Label>
+                                    <Label className="text-sm font-medium">{t.admin.contributions.modal.categoryLabel}</Label>
                                     <div className="mt-1 p-2 bg-gray-50 rounded">{selectedContribution.role_category}</div>
                                 </div>
                                 
                                 <div>
-                                    <Label className="text-sm font-medium">提示词内容</Label>
+                                    <Label className="text-sm font-medium">{t.admin.contributions.modal.contentLabel}</Label>
                                     <div className="mt-1 p-3 bg-gray-50 rounded max-h-40 overflow-y-auto whitespace-pre-wrap">
                                         {selectedContribution.content}
                                     </div>
                                 </div>
 
                                 <div>
-                                    <Label className="text-sm font-medium">当前状态</Label>
+                                    <Label className="text-sm font-medium">{t.admin.contributions.modal.currentStatus}</Label>
                                     <div className="mt-1">
                                         {getStatusBadge(selectedContribution.status)}
                                     </div>
                                 </div>
                                 
                                 <div>
-                                    <Label htmlFor="admin-notes">管理员备注</Label>
+                                    <Label htmlFor="admin-notes">{t.admin.contributions.modal.adminNotes}</Label>
                                     <Textarea
                                         id="admin-notes"
                                         value={adminNotes}
                                         onChange={(e) => setAdminNotes(e.target.value)}
-                                        placeholder="添加审核备注..."
+                                        placeholder={t.admin.contributions.modal.adminNotesPlaceholder}
                                         rows={3}
                                     />
                                 </div>
@@ -340,7 +351,7 @@ export default function ContributionsAdminPage() {
                                             className="bg-green-600 hover:bg-green-700"
                                         >
                                             <CheckCircle className="w-4 h-4 mr-2" />
-                                            通过并发布
+                                            {t.admin.contributions.modal.approveAndPublish}
                                         </Button>
                                         <Button
                                             variant="outline"
@@ -348,7 +359,7 @@ export default function ContributionsAdminPage() {
                                             disabled={isProcessing}
                                         >
                                             <CheckCircle className="w-4 h-4 mr-2" />
-                                            仅通过
+                                            {t.admin.contributions.modal.approveOnly}
                                         </Button>
                                         <Button
                                             variant="destructive"
@@ -356,7 +367,7 @@ export default function ContributionsAdminPage() {
                                             disabled={isProcessing}
                                         >
                                             <XCircle className="w-4 h-4 mr-2" />
-                                            拒绝
+                                            {t.admin.contributions.modal.reject}
                                         </Button>
                                     </div>
                                 )}

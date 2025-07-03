@@ -501,6 +501,36 @@
   "admin": {
     "contributions": {
       "title": "Contribution Management",
+      "loading": "Loading...",
+      "totalContributions": "Total Contributions",
+      "pending": "Pending",
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "all": "All",
+      "noContributions": "No contribution records",
+      "status": {
+        "pending": "Pending",
+        "approved": "Approved",
+        "rejected": "Rejected"
+      },
+      "category": "Category",
+      "submittedAt": "Submitted At",
+      "viewDetails": "View Details",
+      "delete": "Delete",
+      "deleteConfirm": "Are you sure you want to delete this contribution? This action cannot be undone.",
+      "modal": {
+        "title": "Contribution Details",
+        "description": "View detailed content and conduct review",
+        "titleLabel": "Title",
+        "categoryLabel": "Role/Category",
+        "contentLabel": "Prompt Content",
+        "currentStatus": "Current Status",
+        "adminNotes": "Admin Notes",
+        "adminNotesPlaceholder": "Add review notes...",
+        "approveAndPublish": "Approve and Publish",
+        "approveOnly": "Approve Only",
+        "reject": "Reject"
+      },
       "toast": {
         "reviewSuccess": "Review Completed",
         "reviewFailed": "Review Failed",
