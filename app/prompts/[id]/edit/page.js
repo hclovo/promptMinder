@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/modal"
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from "@/hooks/use-toast";
+import VariableInputs from '@/components/prompt/VariableInputs';
 
 export default function EditPrompt({ params }) {
   const router = useRouter();
@@ -262,7 +263,15 @@ export default function EditPrompt({ params }) {
                       )}
                     </Button>
                   </div>
+                  <p className="text-sm text-muted-foreground">{tp.variableTip}</p>
                 </div>
+
+                {/* 动态变量输入组件 */}
+                <VariableInputs
+                  content={prompt.content}
+                  showPreview={false}
+                  className="my-4"
+                />
 
                 <div className="space-y-2">
                   <Label htmlFor="description" className="text-lg font-medium">{tp.formDescriptionLabel}</Label>

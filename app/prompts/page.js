@@ -24,6 +24,7 @@ import { Textarea } from "@/components/ui/textarea"
 import dynamic from 'next/dynamic'
 import { useLanguage } from '@/contexts/LanguageContext';
 import * as VisuallyHidden from '@radix-ui/react-visually-hidden';
+import { extractVariables } from '@/lib/promptVariables';
 
 const CreatableSelect = dynamic(() => import('react-select/creatable'), {
   ssr: false
@@ -573,6 +574,17 @@ export default function PromptsPage() {
                           <Clock className="h-3 w-3" />
                           {new Date(latestPrompt.updated_at).toLocaleString()}
                         </div>
+                        {(() => {
+                          const variables = extractVariables(latestPrompt.content);
+                          return variables.length > 0 && (
+                            <div className="flex items-center gap-1 ml-2 bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">
+                              <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h4" />
+                              </svg>
+                              <span>{t?.variableInputs?.variableCount?.replace('{count}', variables.length.toString()) || `${variables.length} 变量`}</span>
+                            </div>
+                          );
+                        })()}
                         {versions.length > 1 && (
                           <div className="flex items-center gap-1 ml-2 bg-primary/10 text-primary px-2 py-0.5 rounded-full">
                             <span>{tp.versionsCount.replace('{count}', versions.length.toString())}</span>
@@ -692,6 +704,7 @@ export default function PromptsPage() {
                   )}
                 </Button>
               </div>
+              <p className="text-sm text-muted-foreground">{tp.variableTip}</p>
             </div>
             <div className="space-y-2">
               <Label htmlFor="description" className="text-sm font-medium">{tp.formDescriptionLabel}</Label>

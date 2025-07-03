@@ -126,6 +126,77 @@
     "switchTo": "切换到中文",
     "current": "English"
   },
+  "variableInputs": {
+    "title": "Variables",
+    "fillExamples": "Fill Examples",
+    "showPreview": "Show Preview",
+    "hidePreview": "Hide Preview",
+    "livePreview": "Live Preview",
+    "copy": "Copy",
+    "copied": "Copied",
+    "exampleFilled": "Example data has been filled.",
+    "previewCopied": "Preview content copied to clipboard.",
+    "copyFailed": "Copy failed.",
+    "fillVariablesHint": "💡 Fill in the variables above to see the full preview.",
+    "requiredFieldsError": "Please fill in all required variable fields.",
+    "variableCount": "{count} variables"
+  },
+  "dynamicVariablesDemo": {
+    "title": "Dynamic Variables Demo",
+    "subtitle": "Experience the power of {{variable}} syntax",
+    "presetTemplates": "Preset Templates",
+    "customPrompt": "Custom Prompt",
+    "customDescription": "Enter your own prompt content",
+    "promptContent": "Prompt Content",
+    "customMode": "Custom Mode",
+    "usageInstructions": "Usage Instructions",
+    "syntaxRules": "📝 Syntax Rules",
+    "syntaxItems": [
+      "Use {{variableName}} to define variables",
+      "Variable names support letters, numbers, underscores, and hyphens",
+      "System automatically recognizes and generates input fields",
+      "Supports intelligent type inference (text, email, number, etc.)"
+    ],
+    "smartFeatures": "🎯 Smart Features",
+    "smartItems": [
+      "Automatically generates friendly display names",
+      "Smart placeholder hints",
+      "Real-time preview functionality",
+      "One-click example data filling"
+    ],
+    "bestPractices": "💡 Best Practices",
+    "namingConvention": "Naming Convention",
+    "namingDescription": "Use descriptive variable names, like user_name instead of x",
+    "typeHints": "Type Hints",
+    "typeDescription": "Include type information in variable names, like email, age, content",
+    "clearStructure": "Clear Structure",
+    "structureDescription": "Group related variables and use clear contextual structure",
+    "customPlaceholder": "Enter prompt content with {{variableName}} syntax...",
+    "categories": {
+      "career": "Career Development",
+      "marketing": "Marketing",
+      "education": "Education & Training",
+      "development": "Development Tools"
+    },
+    "templates": {
+      "resume": {
+        "title": "Personal Resume Assistant",
+        "description": "Automatically generate professional resumes based on personal information"
+      },
+      "marketing": {
+        "title": "Product Marketing Copy",
+        "description": "Create compelling marketing copy for products"
+      },
+      "learning": {
+        "title": "Learning Plan Creation",
+        "description": "Create personalized learning plans based on individual circumstances"
+      },
+      "codeReview": {
+        "title": "Code Review Assistant",
+        "description": "Professional code quality review and improvement suggestions"
+      }
+    }
+  },
   "privacyPolicy": {
     "title": "Privacy Policy",
     "introductionTitle": "1. Introduction",
@@ -282,6 +353,7 @@
     "formTagsPlaceholder": "Select or create new tags",
     "formVersionPlaceholder": "1.0.0",
     "versionSuggestion": "Semantic versioning is recommended, e.g., 1.0.0",
+    "variableTip": "💡 Tip: Use {{variableName}} syntax to create dynamic variables",
     "creating": "Creating...",
     "create": "Create",
     "optimizePreviewTitle": "Optimization Result Preview",
@@ -306,6 +378,7 @@
     "formTagsPlaceholder": "Select or create new tags",
     "formVersionPlaceholder": "e.g., 1.0.0",
     "versionSuggestion": "Semantic versioning is recommended, e.g., 1.0.0",
+    "variableTip": "💡 Tip: Use {{variableName}} syntax to create dynamic variables",
     "creating": "Creating...",
     "create": "Create",
     "cancel": "Cancel",
@@ -359,7 +432,39 @@
       "settingsTokensTooltip": "Limits the maximum length of the model's response. One token is approximately 0.75 Chinese characters or 1.5 English letters.",
       "settingsTopPTooltip": "Controls the diversity of vocabulary choices. Higher values broaden the selection range; lower values make choices more conservative. Works better in conjunction with Temperature.",
       "settingsParamsDescription": "Adjust these parameters to control the length and creativity of the AI's responses",
-      "inputPlaceholder": "Enter message..."
+      "inputPlaceholder": "Enter message...",
+      "defaultPromptTitle": "Test",
+      "clearChatTooltip": "Clear chat history",
+      "settingsTooltip": "Settings",
+      "apiKeyLabel": "API Key",
+      "apiKeyTooltip": "Enter your API Key to use custom settings. Compatible with OpenAI format API.",
+      "useDefaultKeyButton": "Use Default Key",
+      "useCustomKeyButton": "Use Custom Key",
+      "modelLabel": "Model",
+      "modelPlaceholder": "Enter model name (e.g., gpt-3.5-turbo)",
+      "baseURLabel": "Base URL",
+      "baseURLPlaceholder": "BaseURL Default: https://open.bigmodel.cn/api/paas/v4",
+      "selectModelLabel": "Select Model",
+      "glm4FlashModelFree": "GLM-4-Flash (Free)",
+      "modelParametersLabel": "Model Parameters",
+      "modelParametersTooltip": "Adjust these parameters to control the length and creativity of AI responses.",
+      "temperatureLabel": "Temperature",
+      "temperatureTooltip": "Controls the randomness and creativity of the output. Higher values make responses more creative but potentially less accurate; lower values make responses more conservative and deterministic.",
+      "maxTokensLabel": "Max Tokens",
+      "maxTokensTooltip": "Limits the maximum length of the model's response. One token is approximately 0.75 Chinese characters or 1.5 English letters.",
+      "topPLabel": "Top P",
+      "topPTooltip": "Controls the diversity of word choice. Higher values broaden the selection range; lower values make the selection more conservative. Works better with Temperature.",
+      "startConversationTitle": "Start a conversation",
+      "startConversationDescription": "Enter your question, and the AI will respond based on the current prompt.",
+      "userLabel": "You",
+      "aiAssistantLabel": "AI Assistant",
+      "editMessageTooltip": "Edit message",
+      "cancelButton": "Cancel",
+      "saveAndResendButton": "Save and Resend",
+      "currentPromptPrefix": "Currently using",
+      "currentPromptSuffix": "prompt for conversation",
+      "defaultInputHint": "Enter message to start conversation",
+      "variablesRequiredError": "Please fill in all required variable fields before testing."
     }
   },
   "tagsPage": {
@@ -410,6 +515,7 @@
     "formVersionLabel": "Version",
     "formTitlePlaceholder": "Enter prompt title",
     "formContentPlaceholder": "Enter prompt content",
+    "variableTip": "💡 Tip: Use {{variableName}} syntax to create dynamic variables",
     "formDescriptionPlaceholder": "Add description",
     "formTagsPlaceholder": "Select or create tags",
     "formVersionPlaceholder": "Enter version number",

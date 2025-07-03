@@ -24,7 +24,8 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark } from 'react-syntax-highlighter/dist/cjs/styles/prism';
 import ChatTest from '@/components/chat/ChatTest';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useToast } from "@/hooks/use-toast"
+import { useToast } from "@/hooks/use-toast";
+import VariableInputs from '@/components/prompt/VariableInputs';
 
 const STORAGE_KEY = 'chat_settings';
 
@@ -141,6 +142,8 @@ export default function PromptDetail({ params }) {
   });
   const [versions, setVersions] = useState([]);
   const [selectedVersion, setSelectedVersion] = useState(null);
+  const [variableValues, setVariableValues] = useState({});
+  const [hasVariables, setHasVariables] = useState(false);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -319,6 +322,11 @@ export default function PromptDetail({ params }) {
     });
   };
 
+  const handleVariablesChange = (values, hasVars) => {
+    setVariableValues(values);
+    setHasVariables(hasVars);
+  };
+
   const handleVersionChange = (version) => {
     const selectedPrompt = versions.find(v => v.version === version);
     if (selectedPrompt) {
@@ -346,16 +354,16 @@ export default function PromptDetail({ params }) {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="h-[calc(100vh-12rem)] flex flex-col">
           <Card className="border-none shadow-lg bg-gradient-to-br from-background to-secondary/10 flex-1 overflow-hidden flex flex-col">
-            <CardContent className="p-6 sm:p-8 flex flex-col h-full">
-              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-6 mb-8">
-                <div className="space-y-4">
-                  <h1 className="text-3xl sm:text-4xl font-bold">
+            <CardContent className="p-4 sm:p-6 flex flex-col h-full">
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 mb-4">
+                <div className="space-y-2">
+                  <h1 className="text-2xl sm:text-3xl font-bold">
                     {prompt.title}
                   </h1>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
+                  <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">
                     {prompt.description}
                   </p>
-                  <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+                  <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
                       <div className="flex items-center gap-1">
                         <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -395,26 +403,34 @@ export default function PromptDetail({ params }) {
                         )}
                       </div>
                     </div>
-                    {prompt.tags?.length > 0 && prompt.tags.map((tag) => (
+                    {prompt.tags?.length > 0 && prompt.tags.slice(0, 3).map((tag) => (
                       <Badge 
                         key={tag} 
                         variant="secondary"
-                        className="bg-primary/5 hover:bg-primary/10 transition-colors duration-200"
+                        className="bg-primary/5 hover:bg-primary/10 transition-colors duration-200 text-xs px-2 py-0"
                       >
                         {tag}
                       </Badge>
                     ))}
+                    {prompt.tags?.length > 3 && (
+                      <Badge 
+                        variant="secondary"
+                        className="bg-primary/5 hover:bg-primary/10 transition-colors duration-200 text-xs px-2 py-0"
+                      >
+                        +{prompt.tags.length - 3}
+                      </Badge>
+                    )}
                   </div>
                 </div>
 
-                <div className="flex gap-3">
+                <div className="flex gap-2 shrink-0">
                   <Button
                     onClick={handleShare}
                     variant={shareSuccess ? "success" : "secondary"}
-                    className="relative overflow-hidden group w-10 h-10 p-0"
+                    className="relative overflow-hidden group w-8 h-8 p-0"
                     title={tp.shareTooltip}
                   >
-                    <svg className={`w-4 h-4 transition-transform duration-300 ${shareSuccess ? "rotate-0" : "rotate-0"}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className={`w-3 h-3 transition-transform duration-300 ${shareSuccess ? "rotate-0" : "rotate-0"}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
                     </svg>
                   </Button>
@@ -431,10 +447,10 @@ export default function PromptDetail({ params }) {
                       });
                     }}
                     variant="default"
-                    className="relative overflow-hidden group w-10 h-10 p-0"
+                    className="relative overflow-hidden group w-8 h-8 p-0"
                     title={tp.editTooltip}
                   >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                     </svg>
                   </Button>
@@ -442,21 +458,32 @@ export default function PromptDetail({ params }) {
                   <Button
                     onClick={() => setShowDeleteConfirm(true)}
                     variant="destructive"
-                    className="relative overflow-hidden group w-10 h-10 p-0"
+                    className="relative overflow-hidden group w-8 h-8 p-0"
                     title={tp.deleteTooltip}
                   >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                     </svg>
                   </Button>
                 </div>
               </div>
 
+              {/* 紧凑的变量输入组件 */}
+              <div className="mb-3">
+                <VariableInputs
+                  content={prompt.content}
+                  onVariablesChange={handleVariablesChange}
+                  showPreview={false}
+                  className=""
+                />
+              </div>
+
+              {/* 主要的提示词内容区域 - 占据大部分空间 */}
               <Card className="flex-1 border border-primary/10 bg-secondary/5 backdrop-blur-sm overflow-hidden flex flex-col">
-                <CardHeader className="flex flex-row items-center justify-between shrink-0">
-                  <CardTitle className="text-xl font-semibold flex items-center">
-                    <span className="bg-primary/10 p-2 rounded-lg mr-3">
-                      <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <CardHeader className="flex flex-row items-center justify-between shrink-0 py-3">
+                  <CardTitle className="text-base font-semibold flex items-center">
+                    <span className="bg-primary/10 p-1.5 rounded-lg mr-2">
+                      <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                       </svg>
                     </span>
@@ -525,17 +552,17 @@ export default function PromptDetail({ params }) {
                   <ScrollArea className="h-full w-full">
                     <div className="rounded-lg bg-secondary/30 p-4 min-h-full">
                       {isEditing ? (
-                        <div className="min-h-[500px]">
+                        <div className="min-h-[600px]">
                           <Textarea
                             value={editedContent}
                             onChange={(e) => setEditedContent(e.target.value)}
-                            className="w-full h-full min-h-[500px] text-base leading-relaxed whitespace-pre-wrap text-primary"
+                            className="w-full h-full min-h-[600px] text-base leading-relaxed whitespace-pre-wrap text-primary"
                             placeholder={tp.editPlaceholder}
                             style={{ resize: 'vertical', overflowY: 'auto' }}
                           />
                         </div>
                       ) : (
-                        <p className="text-base leading-relaxed whitespace-pre-wrap text-primary min-h-[500px]">
+                        <p className="text-base leading-relaxed whitespace-pre-wrap text-primary min-h-[600px]">
                           {prompt.content}
                         </p>
                       )}
@@ -548,7 +575,12 @@ export default function PromptDetail({ params }) {
         </div>
 
         <div className="h-[calc(100vh-12rem)]">
-          <ChatTest prompt={prompt} t={t} />
+          <ChatTest 
+            prompt={prompt} 
+            t={t} 
+            variableValues={variableValues}
+            hasVariables={hasVariables}
+          />
         </div>
       </div>
 

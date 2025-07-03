@@ -25,6 +25,8 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Separator } from "@/components/ui/separator"
 import { useLanguage } from '@/contexts/LanguageContext';
+import { replaceVariables } from '@/lib/promptVariables';
+import { useToast } from '@/hooks/use-toast';
 
 // Message loading animation component
 function MessageLoading() {
@@ -74,8 +76,9 @@ function MessageLoading() {
 
 const STORAGE_KEY = 'chat_settings';
 
-export default function ChatTest({ prompt }) {
+export default function ChatTest({ prompt, variableValues = {}, hasVariables = false }) {
   const { t } = useLanguage();
+  const { toast } = useToast();
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState('');
   const [isSending, setIsSending] = useState(false);
@@ -125,6 +128,21 @@ export default function ChatTest({ prompt }) {
   const handleSendMessage = async () => {
     if (!inputMessage.trim() || (useCustomKey && !apiKey)) return;
     
+    // Check if variables are filled when hasVariables is true
+    if (hasVariables && variableValues) {
+      const requiredVariables = Object.keys(variableValues).filter(key => 
+        !variableValues[key] || variableValues[key].toString().trim() === ''
+      );
+      
+      if (requiredVariables.length > 0) {
+        toast({
+          variant: "destructive",
+          description: t?.promptDetailPage?.chatTest?.variablesRequiredError || "测试前请先填写所有必需的变量字段。",
+        });
+        return;
+      }
+    }
+    
     setIsLoading(true);
     const newMessage = {
       role: 'user',
@@ -156,7 +174,7 @@ export default function ChatTest({ prompt }) {
           apiKey: useCustomKey ? apiKey : undefined,
           model: useCustomKey ? customModel : selectedModel,
           baseURL: useCustomKey ? baseURL : undefined,
-          systemPrompt: prompt.content,
+          systemPrompt: hasVariables ? replaceVariables(prompt.content, variableValues) : prompt.content,
           temperature: temperature,
           max_tokens: maxTokens,
           top_p: topP
@@ -165,7 +183,7 @@ export default function ChatTest({ prompt }) {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || '请求失败，请检查 API Key 是否正确');
+        throw new Error(errorData.message || t?.promptDetailPage?.chatTest?.sendMessageErrorDefault || '请求失败，请检查 API Key 是否正确');
       }
 
       const decoder = new TextDecoder();
@@ -190,11 +208,13 @@ export default function ChatTest({ prompt }) {
       }
     } catch (error) {
       console.error('Error:', error);
+      const errorMessage = t?.promptDetailPage?.chatTest?.sendMessageErrorPrefix?.replace('{errorMessage}', error.message) || 
+                          `错误：${error.message || t?.promptDetailPage?.chatTest?.sendMessageErrorNetwork || '请求失败，请检查 API Key 是否正确以及网络连接是否正常'}`;
       setMessages(prev => {
         const newMessages = [...prev];
         const lastMessage = newMessages[newMessages.length - 1];
         if (lastMessage.role === 'assistant') {
-          lastMessage.content = `错误：${error.message || '请求失败，请检查 API Key 是否正确以及网络连接是否正常'}`;
+          lastMessage.content = errorMessage;
         }
         return newMessages;
       });
@@ -332,11 +352,13 @@ export default function ChatTest({ prompt }) {
       }
     } catch (error) {
       console.error('Error:', error);
+      const errorMessage = t?.promptDetailPage?.chatTest?.sendMessageErrorPrefix?.replace('{errorMessage}', error.message) || 
+                          `错误：${error.message || t?.promptDetailPage?.chatTest?.sendMessageErrorNetwork || '请求失败，请检查 API Key 是否正确以及网络连接是否正常'}`;
       setMessages(prev => {
         const newMessages = [...prev];
         const lastMessage = newMessages[newMessages.length - 1];
         if (lastMessage.role === 'assistant') {
-          lastMessage.content = `错误：${error.message || '请求失败，请检查 API Key 是否正确以及网络连接是否正常'}`;
+          lastMessage.content = errorMessage;
         }
         return newMessages;
       });

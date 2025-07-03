@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/modal"
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from "@/hooks/use-toast";
+import VariableInputs from '@/components/prompt/VariableInputs';
 
 const Select = dynamic(() => import('react-select'), {
   ssr: false
@@ -269,7 +270,15 @@ export default function NewPrompt() {
                 {errors.content && (
                   <span className="text-red-500 text-sm">{errors.content}</span>
                 )}
+                <p className="text-sm text-muted-foreground">{tp.variableTip}</p>
               </motion.div>
+
+              {/* 动态变量输入组件 */}
+              <VariableInputs
+                content={prompt.content}
+                showPreview={false}
+                className="my-4"
+              />
 
               <motion.div 
                 className="space-y-2"
