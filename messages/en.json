@@ -469,6 +469,48 @@
     "searchPlaceholder": "Search by role/category...",
     "noResults": "No prompts found matching your search",
     "clearSearch": "Clear search",
-    "tryOtherKeywords": "Try other keywords or"
+    "tryOtherKeywords": "Try other keywords or",
+    "contributeButton": "Contribute Prompt",
+    "contributeModalTitle": "Contribute a New Prompt",
+    "contributeModalDescription": "Share your creative prompt with the community",
+    "contributeTitleLabel": "Title",
+    "contributeTitlePlaceholder": "Give your prompt a catchy title",
+    "contributeRoleLabel": "Role/Category",
+    "contributeRolePlaceholder": "e.g., Writing Assistant, Code Helper, Creative Writer...",
+    "contributeContentLabel": "Prompt Content",
+    "contributeContentPlaceholder": "Enter your prompt content here. Be specific and clear about the instructions...",
+    "contributeSubmit": "Submit Contribution",
+    "contributeCancel": "Cancel",
+    "contributeSubmitting": "Submitting...",
+    "contributeSuccess": "Thank you for your contribution! Your prompt will be reviewed and added to the collection.",
+    "contributeError": "Failed to submit contribution. Please try again.",
+    "contributeTitleRequired": "Please enter a title",
+    "contributeRoleRequired": "Please enter a role/category",
+    "contributeContentRequired": "Please enter prompt content",
+    "toast": {
+      "validationFailed": "Validation Failed",
+      "submitSuccess": "Submitted Successfully",
+      "submitFailed": "Submission Failed",
+      "reviewSuccess": "Review Completed",
+      "reviewFailed": "Review Failed",
+      "deleteSuccess": "Deleted Successfully",
+      "deleteFailed": "Delete Failed",
+      "networkError": "Network error, please try again"
+    }
+  },
+  "admin": {
+    "contributions": {
+      "title": "Contribution Management",
+      "toast": {
+        "reviewSuccess": "Review Completed",
+        "reviewFailed": "Review Failed",
+        "deleteSuccess": "Deleted Successfully",
+        "deleteFailed": "Delete Failed",
+        "networkError": "Network error, please try again",
+        "approved": "approved",
+        "rejected": "rejected",
+        "andPublished": " and published to public library"
+      }
+    }
   }
 } 

@@ -466,6 +466,48 @@
     "searchPlaceholder": "搜索角色/类别...",
     "noResults": "没有找到匹配的提示词",
     "clearSearch": "清空搜索",
-    "tryOtherKeywords": "试试其他关键词或"
+    "tryOtherKeywords": "试试其他关键词或",
+    "contributeButton": "贡献提示词",
+    "contributeModalTitle": "贡献新提示词",
+    "contributeModalDescription": "与社区分享您的创意提示词",
+    "contributeTitleLabel": "标题",
+    "contributeTitlePlaceholder": "为您的提示词起一个吸引人的标题",
+    "contributeRoleLabel": "角色/类别",
+    "contributeRolePlaceholder": "例如：写作助手、代码帮手、创意作家...",
+    "contributeContentLabel": "提示词内容",
+    "contributeContentPlaceholder": "在这里输入您的提示词内容。请确保指令具体清晰...",
+    "contributeSubmit": "提交贡献",
+    "contributeCancel": "取消",
+    "contributeSubmitting": "提交中...",
+    "contributeSuccess": "感谢您的贡献！您的提示词将会被审核并添加到合集中。",
+    "contributeError": "提交贡献失败，请重试。",
+    "contributeTitleRequired": "请输入标题",
+    "contributeRoleRequired": "请输入角色/类别",
+    "contributeContentRequired": "请输入提示词内容",
+    "toast": {
+      "validationFailed": "验证失败",
+      "submitSuccess": "提交成功",
+      "submitFailed": "提交失败",
+      "reviewSuccess": "审核完成",
+      "reviewFailed": "审核失败",
+      "deleteSuccess": "删除成功",
+      "deleteFailed": "删除失败",
+      "networkError": "网络错误，请重试"
+    }
+  },
+  "admin": {
+    "contributions": {
+      "title": "贡献管理",
+      "toast": {
+        "reviewSuccess": "审核完成",
+        "reviewFailed": "审核失败",
+        "deleteSuccess": "删除成功",
+        "deleteFailed": "删除失败",
+        "networkError": "网络错误，请重试",
+        "approved": "通过",
+        "rejected": "拒绝",
+        "andPublished": "并发布到公共库"
+      }
+    }
   }
 } 

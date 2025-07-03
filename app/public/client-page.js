@@ -4,15 +4,52 @@ import { useState, useEffect, useMemo } from 'react';
 import { PromptCard } from '@/components/prompt/PromptCard';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Input } from '@/components/ui/input';
-import { Search, X } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { Search, X, ChevronUp, Plus } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from '@/components/ui/dialog';
+import { useToast } from '@/hooks/use-toast';
 import Footer from '@/components/layout/Footer';
 
 export default function PublicPromptsClient() {
     const { language, t } = useLanguage();
+    const { toast } = useToast();
     const [prompts, setPrompts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
+    const [showBackToTop, setShowBackToTop] = useState(false);
+    const [isContributeOpen, setIsContributeOpen] = useState(false);
+    const [contributeForm, setContributeForm] = useState({
+        title: '',
+        role: '',
+        content: ''
+    });
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    
+    // 滚动监听器
+    useEffect(() => {
+        const handleScroll = () => {
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            setShowBackToTop(scrollTop > 300); // 滚动超过300px时显示按钮
+        };
+
+        window.addEventListener('scroll', handleScroll);
+        
+        // 确保页面默认在顶部
+        window.scrollTo(0, 0);
+        
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
+
+    // 回到顶部函数
+    const scrollToTop = () => {
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+    };
     
     useEffect(() => {
         const fetchPrompts = async () => {
@@ -54,6 +91,93 @@ export default function PublicPromptsClient() {
     // 清空搜索
     const clearSearch = () => {
         setSearchQuery('');
+    };
+
+    // 处理贡献表单提交
+    const handleContributeSubmit = async (e) => {
+        e.preventDefault();
+        
+        // 表单验证
+        if (!contributeForm.title.trim()) {
+            toast({
+                title: t.publicPage.toast.validationFailed,
+                description: t.publicPage.contributeTitleRequired,
+                variant: "destructive",
+            });
+            return;
+        }
+        if (!contributeForm.role.trim()) {
+            toast({
+                title: t.publicPage.toast.validationFailed,
+                description: t.publicPage.contributeRoleRequired,
+                variant: "destructive",
+            });
+            return;
+        }
+        if (!contributeForm.content.trim()) {
+            toast({
+                title: t.publicPage.toast.validationFailed,
+                description: t.publicPage.contributeContentRequired,
+                variant: "destructive",
+            });
+            return;
+        }
+
+        setIsSubmitting(true);
+        
+        try {
+            const response = await fetch('/api/contributions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    title: contributeForm.title.trim(),
+                    role: contributeForm.role.trim(),
+                    content: contributeForm.content.trim()
+                }),
+            });
+
+            const data = await response.json();
+            
+            if (!response.ok) {
+                throw new Error(data.error || 'Failed to submit contribution');
+            }
+            
+            // 成功提示
+            toast({
+                title: t.publicPage.toast.submitSuccess,
+                description: t.publicPage.contributeSuccess,
+                variant: "default",
+            });
+            
+            // 重置表单
+            setContributeForm({
+                title: '',
+                role: '',
+                content: ''
+            });
+            
+            // 关闭弹窗
+            setIsContributeOpen(false);
+        } catch (error) {
+            console.error('Error submitting contribution:', error);
+            toast({
+                title: t.publicPage.toast.submitFailed,
+                description: t.publicPage.contributeError,
+                variant: "destructive",
+            });
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    // 处理贡献表单输入变化
+    const handleContributeInputChange = (field, value) => {
+        setContributeForm(prev => ({
+            ...prev,
+            [field]: value
+        }));
     };
     
     // Loading state
@@ -131,26 +255,111 @@ export default function PublicPromptsClient() {
                         </div>
                     </div>
 
-                    {/* 搜索框 */}
-                    <div className="mb-12 max-w-2xl mx-auto">
-                        <div className="relative">
-                            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400 h-5 w-5 z-10 pointer-events-none" />
-                            <Input
-                                type="text"
-                                placeholder={t.publicPage.searchPlaceholder}
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                className="pl-12 pr-12 h-12 text-lg bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-gray-200 dark:border-gray-700 focus:border-blue-400 dark:focus:border-blue-500 focus:ring-2 focus:ring-blue-400/20 dark:focus:ring-blue-500/20 shadow-lg transition-all duration-300"
-                            />
-                            {searchQuery && (
-                                <button
-                                    onClick={clearSearch}
-                                    className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors z-10"
-                                    title={t.publicPage.clearSearch}
-                                >
-                                    <X className="h-5 w-5" />
-                                </button>
-                            )}
+                    {/* 搜索框和贡献按钮 */}
+                    <div className="mb-12 max-w-4xl mx-auto">
+                        <div className="flex flex-col sm:flex-row gap-4 items-center">
+                            {/* 搜索框 */}
+                            <div className="relative flex-1 max-w-2xl">
+                                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400 h-5 w-5 z-10 pointer-events-none" />
+                                <Input
+                                    type="text"
+                                    placeholder={t.publicPage.searchPlaceholder}
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    className="pl-12 pr-12 h-12 text-lg bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-gray-200 dark:border-gray-700 focus:border-blue-400 dark:focus:border-blue-500 focus:ring-2 focus:ring-blue-400/20 dark:focus:ring-blue-500/20 shadow-lg transition-all duration-300"
+                                />
+                                {searchQuery && (
+                                    <button
+                                        onClick={clearSearch}
+                                        className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors z-10"
+                                        title={t.publicPage.clearSearch}
+                                    >
+                                        <X className="h-5 w-5" />
+                                    </button>
+                                )}
+                            </div>
+                            
+                            {/* 贡献按钮 */}
+                            <Dialog open={isContributeOpen} onOpenChange={setIsContributeOpen}>
+                                <DialogTrigger asChild>
+                                    <Button 
+                                        className="h-12 px-6 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white shadow-lg hover:shadow-xl whitespace-nowrap"
+                                    >
+                                        <Plus className="w-5 h-5 mr-2" />
+                                        {t.publicPage.contributeButton}
+                                    </Button>
+                                </DialogTrigger>
+                                <DialogContent className="sm:max-w-md">
+                                    <DialogHeader>
+                                        <DialogTitle>{t.publicPage.contributeModalTitle}</DialogTitle>
+                                        <DialogDescription>
+                                            {t.publicPage.contributeModalDescription}
+                                        </DialogDescription>
+                                    </DialogHeader>
+                                    
+                                    <form onSubmit={handleContributeSubmit} className="space-y-4">
+                                        {/* 标题 */}
+                                        <div className="space-y-2">
+                                            <Label htmlFor="contribute-title">{t.publicPage.contributeTitleLabel}</Label>
+                                            <Input
+                                                id="contribute-title"
+                                                value={contributeForm.title}
+                                                onChange={(e) => handleContributeInputChange('title', e.target.value)}
+                                                placeholder={t.publicPage.contributeTitlePlaceholder}
+                                                required
+                                                disabled={isSubmitting}
+                                            />
+                                        </div>
+                                        
+                                        {/* 角色/类别 */}
+                                        <div className="space-y-2">
+                                            <Label htmlFor="contribute-role">{t.publicPage.contributeRoleLabel}</Label>
+                                            <Input
+                                                id="contribute-role"
+                                                value={contributeForm.role}
+                                                onChange={(e) => handleContributeInputChange('role', e.target.value)}
+                                                placeholder={t.publicPage.contributeRolePlaceholder}
+                                                required
+                                                disabled={isSubmitting}
+                                            />
+                                        </div>
+                                        
+                                        {/* 提示词内容 */}
+                                        <div className="space-y-2">
+                                            <Label htmlFor="contribute-content">{t.publicPage.contributeContentLabel}</Label>
+                                            <Textarea
+                                                id="contribute-content"
+                                                value={contributeForm.content}
+                                                onChange={(e) => handleContributeInputChange('content', e.target.value)}
+                                                placeholder={t.publicPage.contributeContentPlaceholder}
+                                                rows={6}
+                                                required
+                                                disabled={isSubmitting}
+                                                className="resize-none"
+                                            />
+                                        </div>
+                                        
+                                        {/* 按钮 */}
+                                        <div className="flex justify-end space-x-2 pt-4">
+                                            <Button 
+                                                type="button" 
+                                                variant="outline" 
+                                                onClick={() => setIsContributeOpen(false)}
+                                                disabled={isSubmitting}
+                                            >
+                                                {t.publicPage.contributeCancel}
+                                            </Button>
+                                            <Button 
+                                                type="submit" 
+                                                disabled={isSubmitting}
+                                                className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700"
+                                            >
+                                                {isSubmitting ? t.publicPage.contributeSubmitting : t.publicPage.contributeSubmit}
+                                            </Button>
+                                        </div>
+                                    </form>
+                                </DialogContent>
+                            </Dialog>
                         </div>
                     </div>
 
@@ -192,6 +401,18 @@ export default function PublicPromptsClient() {
             
             {/* Footer */}
             <Footer t={t.footer} />
+
+            {/* 回到顶部按钮 */}
+            {showBackToTop && (
+                <button
+                    onClick={scrollToTop}
+                    className="fixed bottom-8 right-8 z-50 w-14 h-14 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 dark:from-blue-600 dark:to-purple-700 dark:hover:from-blue-700 dark:hover:to-purple-800 text-white rounded-full shadow-xl hover:shadow-2xl backdrop-blur-sm border border-white/20 focus:outline-none focus:ring-4 focus:ring-blue-400/50 dark:focus:ring-blue-500/50"
+                    title="回到顶部"
+                    aria-label="Back to top"
+                >
+                    <ChevronUp className="w-6 h-6 mx-auto" />
+                </button>
+            )}
         </div>
     );
 } 
