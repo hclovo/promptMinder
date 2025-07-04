@@ -7,7 +7,9 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@clerk/nextjs';
-import { useToast } from "@/hooks/use-toast"
+import { useToast } from "@/hooks/use-toast";
+import { apiClient } from '@/lib/api-client';
+import { useClipboard } from '@/lib/clipboard';
 import {
   Select,
   SelectContent,
@@ -22,18 +24,24 @@ export default function SharePromptDetail({ params }) {
   const { language, t } = useLanguage();
   const { isSignedIn, userId } = useAuth();
   const { toast } = useToast();
+  const { copy } = useClipboard();
   const [prompt, setPrompt] = useState(null);
-  const [copySuccess, setCopySuccess] = useState(false);
   const [copyToWorkspaceLoading, setCopyToWorkspaceLoading] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
-    if (id) {
-      fetch(`/api/share/${id}`)
-        .then((response) => response.json())
-        .then((data) => setPrompt({...data, tags: data.tags ? data.tags.split(',') : []}))
-        .catch((error) => console.error('Error fetching prompt:', error));
-    }
+    const fetchPrompt = async () => {
+      if (id) {
+        try {
+          const data = await apiClient.request(`/api/share/${id}`);
+          setPrompt({...data, tags: data.tags ? data.tags.split(',') : []});
+        } catch (error) {
+          console.error('Error fetching prompt:', error);
+        }
+      }
+    };
+    
+    fetchPrompt();
   }, [id]);
 
   const handleVersionChange = (newId) => {
@@ -47,13 +55,7 @@ export default function SharePromptDetail({ params }) {
   if (!tp) return <div className="flex justify-center items-center h-64"><Spinner /></div>;
 
   const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(prompt.content);
-      setCopySuccess(true);
-      setTimeout(() => setCopySuccess(false), 2000);
-    } catch (err) {
-      console.error('Failed to copy text:', err);
-    }
+    await copy(prompt.content);
   };
 
   const handleCopyToWorkspace = async () => {
@@ -64,38 +66,28 @@ export default function SharePromptDetail({ params }) {
 
     setCopyToWorkspaceLoading(true);
     try {
-      const response = await fetch('/api/prompts/copy', {
+      await apiClient.request('/api/prompts/copy', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ sourceId: id }),
+        body: { sourceId: id },
       });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        if (response.status === 400 && data.error === 'Cannot copy your own prompt') {
-          // 如果是用户自己的提示词，不显示错误，直接跳转到自己的工作台
-          router.push('/prompts');
-          return;
-        }
-        throw new Error(data.error || tp.copyToWorkspaceError);
-      }
 
       toast({
         title: tp.copyToWorkspaceSuccess,
         description: '您可以在工作台中查看和编辑复制的提示词',
       });
 
-      // 可选：跳转到工作台
-      // router.push('/prompts');
-
     } catch (error) {
       console.error('Failed to copy to workspace:', error);
+      
+      // Handle special case for copying own prompt
+      if (error.status === 400 && error.data?.error === 'Cannot copy your own prompt') {
+        router.push('/prompts');
+        return;
+      }
+
       toast({
         title: tp.copyToWorkspaceError,
-        description: error.message,
+        description: error.message || tp.copyToWorkspaceError,
         variant: "destructive",
       });
     } finally {

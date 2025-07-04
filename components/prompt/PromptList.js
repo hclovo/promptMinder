@@ -11,9 +11,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import { apiClient } from '@/lib/api-client';
+import { useClipboard } from '@/lib/clipboard';
 
 export default function PromptList({ prompts, onDelete, onShare }) {
   const { toast } = useToast();
+  const { copy } = useClipboard();
   const [selectedVersions, setSelectedVersions] = useState(null);
 
   // 按标题对提示词进行分组
@@ -26,66 +29,19 @@ export default function PromptList({ prompts, onDelete, onShare }) {
   }, {});
 
   const handleCopy = async (content) => {
-    try {
-      await navigator.clipboard.writeText(content);
-      toast({
-        description: "提示词已复制到剪贴板",
-        duration: 2000,
-      });
-    } catch (err) {
-      console.error('复制失败:', err);
-      toast({
-        variant: "destructive",
-        description: "复制失败",
-        duration: 2000,
-      });
-    }
+    await copy(content);
   };
 
   const handleShare = async (id) => {
     try {
-      const response = await fetch(`/api/prompts/share/${id}`, {
-        method: 'POST',
-      });
-
-      if (!response.ok) {
-        throw new Error('分享失败');
-      }
-
+      await apiClient.sharePrompt(id);
       const shareUrl = `${window.location.origin}/share/${id}`;
-      
-      try {
-        await navigator.clipboard.writeText(shareUrl);
-        toast({
-          description: "分享链接已复制到剪贴板",
-          duration: 2000,
-        });
-      } catch (clipboardErr) {
-        const textarea = document.createElement('textarea');
-        textarea.value = shareUrl;
-        document.body.appendChild(textarea);
-        textarea.select();
-        try {
-          document.execCommand('copy');
-          toast({
-            description: "分享链接已复制到剪贴板",
-            duration: 2000,
-          });
-        } catch (fallbackErr) {
-          toast({
-            variant: "destructive",
-            description: "复制失败，请手动复制链接",
-            duration: 2000,
-          });
-        } finally {
-          document.body.removeChild(textarea);
-        }
-      }
+      await copy(shareUrl);
     } catch (err) {
       console.error('分享失败:', err);
       toast({
         variant: "destructive",
-        description: "分享失败",
+        description: err.message || "分享失败",
         duration: 2000,
       });
     }
@@ -155,12 +111,17 @@ export default function PromptList({ prompts, onDelete, onShare }) {
                   </p>
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <div className="flex flex-wrap gap-2">
-                      {latestPrompt.tags?.map((tag) => (
+                      {(latestPrompt.tags 
+                        ? (Array.isArray(latestPrompt.tags) 
+                            ? latestPrompt.tags 
+                            : latestPrompt.tags.split(',').filter(tag => tag.trim()))
+                        : []
+                      ).map((tag) => (
                         <span 
                           key={tag}
                           className="bg-secondary/80 text-secondary-foreground text-xs px-2.5 py-0.5 rounded-full hover:bg-secondary transition-colors"
                         >
-                          #{tag}
+                          #{tag.trim()}
                         </span>
                       ))}
                     </div>

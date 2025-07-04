@@ -11,6 +11,7 @@ import { Search, X, ChevronUp, Plus } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import Footer from '@/components/layout/Footer';
+import { apiClient } from '@/lib/api-client';
 
 export default function PublicPromptsClient() {
     const { language, t } = useLanguage();
@@ -57,13 +58,7 @@ export default function PublicPromptsClient() {
                 setLoading(true);
                 setError(null);
                 
-                const response = await fetch(`/api/prompts/public?lang=${language}`);
-                
-                if (!response.ok) {
-                    throw new Error(`Failed to fetch prompts: ${response.status}`);
-                }
-                
-                const data = await response.json();
+                const data = await apiClient.request(`/api/prompts/public?lang=${language}`);
                 setPrompts(data.prompts || []);
             } catch (err) {
                 console.error('Error fetching prompts:', err);
@@ -126,23 +121,14 @@ export default function PublicPromptsClient() {
         setIsSubmitting(true);
         
         try {
-            const response = await fetch('/api/contributions', {
+            await apiClient.request('/api/contributions', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
+                body: {
                     title: contributeForm.title.trim(),
                     role: contributeForm.role.trim(),
                     content: contributeForm.content.trim()
-                }),
+                },
             });
-
-            const data = await response.json();
-            
-            if (!response.ok) {
-                throw new Error(data.error || 'Failed to submit contribution');
-            }
             
             // 成功提示
             toast({
@@ -164,7 +150,7 @@ export default function PublicPromptsClient() {
             console.error('Error submitting contribution:', error);
             toast({
                 title: t.publicPage.toast.submitFailed,
-                description: t.publicPage.contributeError,
+                description: error.message || t.publicPage.contributeError,
                 variant: "destructive",
             });
         } finally {

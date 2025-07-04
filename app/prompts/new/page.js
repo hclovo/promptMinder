@@ -19,6 +19,7 @@ import {
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from "@/hooks/use-toast";
 import VariableInputs from '@/components/prompt/VariableInputs';
+import { apiClient } from '@/lib/api-client';
 
 const Select = dynamic(() => import('react-select'), {
   ssr: false
@@ -48,9 +49,9 @@ export default function NewPrompt() {
   const [showOptimizeModal, setShowOptimizeModal] = useState(false);
 
   useEffect(() => {
-    fetch('/api/tags')
-      .then((response) => response.json())
-      .then((data) => {
+    const fetchTags = async () => {
+      try {
+        const data = await apiClient.getTags();
         const mappedTags = data.map(tag => ({ value: tag.name, label: tag.name }));
         setTagOptions(mappedTags);
         if (mappedTags.length > 0 && !prompt.tags) {
@@ -59,8 +60,12 @@ export default function NewPrompt() {
             tags: mappedTags[0].value
           }));
         }
-      })
-      .catch((error) => console.error('Error fetching tags:', error));
+      } catch (error) {
+        console.error('Error fetching tags:', error);
+      }
+    };
+    
+    fetchTags();
   }, [prompt.tags]);
 
   if (!t) return null;
@@ -80,21 +85,27 @@ export default function NewPrompt() {
     setIsSubmitting(true);
 
     try {
-      const res = await fetch('/api/prompts', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(prompt),
+      await apiClient.createPrompt({
+        ...prompt,
+        id: crypto.randomUUID(),
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        is_public: true
       });
 
-      if (!res.ok) {
-        throw new Error('Failed to create prompt');
-      }
-
+      toast({
+        description: '提示词创建成功',
+        duration: 2000,
+      });
+      
       router.push('/prompts');
     } catch (error) {
       console.error('Error creating prompt:', error);
+      toast({
+        variant: "destructive",
+        description: error.message || '创建提示词失败',
+        duration: 2000,
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -115,23 +126,19 @@ export default function NewPrompt() {
     },
     onCreateOption: async (inputValue) => {
       try {
-        const response = await fetch('/api/tags', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ name: inputValue }),
-        });
+        await apiClient.createTag({ name: inputValue });
+        const newOption = { value: inputValue, label: inputValue };
+        setTagOptions([...tagOptions, newOption]);
         
-        if (response.ok) {
-          const newOption = { value: inputValue, label: inputValue };
-          setTagOptions([...tagOptions, newOption]);
-          
-          const newTags = prompt.tags ? `${prompt.tags},${inputValue}` : inputValue;
-          setPrompt({ ...prompt, tags: newTags });
-        }
+        const newTags = prompt.tags ? `${prompt.tags},${inputValue}` : inputValue;
+        setPrompt({ ...prompt, tags: newTags });
       } catch (error) {
         console.error('Error creating new tag:', error);
+        toast({
+          variant: "destructive",
+          description: error.message || '创建标签失败',
+          duration: 2000,
+        });
       }
     }
   };
@@ -143,13 +150,7 @@ export default function NewPrompt() {
     setShowOptimizeModal(true);
     
     try {
-      const response = await fetch('/api/generate', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ text: prompt.content }),
-      });
+      const response = await apiClient.generate(prompt.content);
       
       if (!response.ok) throw new Error(tp.optimizeError);
       

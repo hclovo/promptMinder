@@ -8,6 +8,7 @@ import { Trash2, Pencil, ArrowLeft } from 'lucide-react';
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { useLanguage } from '@/contexts/LanguageContext';
+import { apiClient } from '@/lib/api-client';
 
 const TagsSkeleton = () => {
   const { t } = useLanguage();
@@ -57,15 +58,10 @@ export default function TagsPage() {
 
   const fetchTags = useCallback(async () => {
     try {
-      const response = await fetch('/api/tags');
-      if (!response.ok) {
-        // Make sure tp is accessible or handle differently
-        throw new Error(t?.tagsPage?.fetchError || 'Failed to fetch tags'); 
-      }
-      const data = await response.json();
+      const data = await apiClient.getTags();
       setTags(data);
     } catch (err) {
-      setError(err.message);
+      setError(err.message || t?.tagsPage?.fetchError || 'Failed to fetch tags');
     } finally {
       setLoading(false);
     }
@@ -86,20 +82,11 @@ export default function TagsPage() {
 
   const confirmDelete = async () => {
     try {
-      const response = await fetch(`/api/tags?id=${selectedTagId}`, {
-        method: 'DELETE',
-      });
-
-      const data = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(data.error || tp.deleteError);
-      }
-
+      await apiClient.deleteTag(selectedTagId);
       setDeleteModalOpen(false);
       fetchTags();
     } catch (err) {
-      setError(err.message);
+      setError(err.message || tp.deleteError);
       setTimeout(() => setError(''), 3000);
     }
   };
@@ -111,24 +98,11 @@ export default function TagsPage() {
 
   const confirmEdit = async () => {
     try {
-      const response = await fetch(`/api/tags?id=${editingTag.id}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ name: editingTag.name }),
-      });
-
-      const data = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(data.error || tp.updateError);
-      }
-
+      await apiClient.updateTag(editingTag.id, { name: editingTag.name });
       setEditModalOpen(false);
       fetchTags();
     } catch (err) {
-      setError(err.message);
+      setError(err.message || tp.updateError);
       setTimeout(() => setError(''), 3000);
     }
   };

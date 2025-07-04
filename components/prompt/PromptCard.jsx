@@ -12,6 +12,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { ImportIcon } from "lucide-react";
+import { apiClient } from '@/lib/api-client';
+import { useClipboard } from '@/lib/clipboard';
 
 function CopyIcon(props) {
   return (
@@ -55,38 +57,23 @@ function CheckIcon(props) {
 export function PromptCard({ prompt }) {
   const { toast } = useToast();
   const { t } = useLanguage();
-  const [copied, setCopied] = useState(false);
+  const { copy, copied } = useClipboard(
+    t?.publicPage?.copySuccess || '已复制',
+    t?.publicPage?.copyError || '复制失败'
+  );
   const [isImporting, setIsImporting] = useState(false);
 
   // Handle case where translations are not loaded yet
   if (!t || !t.publicPage) return null;
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(prompt.prompt);
-    setCopied(true);
-    toast({
-      title: t.publicPage.copied,
-      description: t.publicPage.copySuccess,
-    });
-    setTimeout(() => setCopied(false), 2000);
+    copy(prompt.prompt);
   };
 
   const handleImport = async () => {
     setIsImporting(true);
     try {
-      const response = await fetch('/api/prompts/copy', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ promptData: prompt }), // Pass the whole prompt object
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to import prompt');
-      }
-
+      await apiClient.copyPrompt(prompt);
       toast({
         title: t.publicPage.importSuccessTitle,
         description: t.publicPage.importSuccessDescription,
@@ -94,7 +81,7 @@ export function PromptCard({ prompt }) {
     } catch (error) {
       toast({
         title: t.publicPage.importErrorTitle,
-        description: error.message,
+        description: error.message || 'Failed to import prompt',
         variant: 'destructive',
       });
     } finally {

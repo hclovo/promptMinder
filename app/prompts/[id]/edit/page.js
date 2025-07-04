@@ -21,6 +21,7 @@ import {
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from "@/hooks/use-toast";
 import VariableInputs from '@/components/prompt/VariableInputs';
+import { apiClient } from '@/lib/api-client';
 
 export default function EditPrompt({ params }) {
   const router = useRouter();
@@ -44,24 +45,24 @@ export default function EditPrompt({ params }) {
   const [showOptimizeModal, setShowOptimizeModal] = useState(false);
 
   useEffect(() => {
-    if (id && !prompt) {
-      fetch(`/api/prompts/${id}`)
-        .then((response) => response.json())
-        .then((data) => {
+    const fetchData = async () => {
+      try {
+        if (id && !prompt) {
+          const data = await apiClient.request(`/api/prompts/${id}`);
           setPrompt(data);
           setOriginalVersion(data.version);
-        })
-        .catch((error) => console.error('Error fetching prompt:', error));
-    } else if (prompt && originalVersion === null) {
-      setOriginalVersion(prompt.version);
-    }
+        } else if (prompt && originalVersion === null) {
+          setOriginalVersion(prompt.version);
+        }
 
-    fetch('/api/tags')
-      .then((response) => response.json())
-      .then((data) => {
-        setTagOptions(data.map(tag => ({ value: tag.name, label: tag.name })));
-      })
-      .catch((error) => console.error('Error fetching tags:', error));
+        const tagsData = await apiClient.getTags();
+        setTagOptions(tagsData.map(tag => ({ value: tag.name, label: tag.name })));
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
+
+    fetchData();
   }, [id, prompt, originalVersion]);
 
   if (!t) return <div className="flex justify-center items-center min-h-[70vh]"><Spinner className="w-8 h-8" /></div>;
@@ -74,45 +75,38 @@ export default function EditPrompt({ params }) {
 
     try {
       const isNewVersion = originalVersion !== prompt.version;
-      const endpoint = isNewVersion ? '/api/prompts' : `/api/prompts/${id}`;
-      const method = 'POST';
+      let data;
 
       const submitData = {
         ...prompt
       };
+      
       if (isNewVersion) {
+        // Create new version
         delete submitData.id;
         delete submitData.created_at;
         delete submitData.updated_at;
-      }
-
-      const response = await fetch(endpoint, {
-        method: method,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(submitData),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        toast({
-          title: "成功",
-          description: isNewVersion ? tp.createVersionSuccess : tp.updateSuccess,
+        data = await apiClient.createPrompt({
+          ...submitData,
+          id: crypto.randomUUID(),
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          is_public: true
         });
-        router.push(`/prompts/${isNewVersion ? data.id : id}`);
       } else {
-        const errorData = await response.json();
-        toast({
-          title: "错误",
-          description: errorData.error || tp.updateError,
-          variant: "destructive",
-        });
+        // Update existing prompt
+        data = await apiClient.updatePrompt(id, submitData);
       }
+
+      toast({
+        title: "成功",
+        description: isNewVersion ? tp.createVersionSuccess : tp.updateSuccess,
+      });
+      router.push(`/prompts/${isNewVersion ? data.id : id}`);
     } catch (error) {
       toast({
         title: "错误",
-        description: tp.updateError,
+        description: error.message || tp.updateError,
         variant: "destructive",
       });
       console.error('Error updating prompt:', error);
@@ -128,15 +122,7 @@ export default function EditPrompt({ params }) {
     setShowOptimizeModal(true);
     
     try {
-      const response = await fetch('/api/generate', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ text: prompt.content }),
-      });
-      
-      if (!response.ok) throw new Error(tp.optimizeError);
+      const response = await apiClient.generate(prompt.content);
       
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
@@ -169,7 +155,7 @@ export default function EditPrompt({ params }) {
       console.error(tp.optimizeErrorLog, error);
       toast({
         title: "错误",
-        description: tp.optimizeRetry,
+        description: error.message || tp.optimizeRetry,
         variant: "destructive",
       });
     } finally {
@@ -312,23 +298,19 @@ export default function EditPrompt({ params }) {
                     }}
                     onCreateOption={async (inputValue) => {
                       try {
-                        const response = await fetch('/api/tags', {
-                          method: 'POST',
-                          headers: {
-                            'Content-Type': 'application/json',
-                          },
-                          body: JSON.stringify({ name: inputValue }),
-                        });
+                        await apiClient.createTag({ name: inputValue });
+                        const newOption = { value: inputValue, label: inputValue };
+                        setTagOptions([...tagOptions, newOption]);
                         
-                        if (response.ok) {
-                          const newOption = { value: inputValue, label: inputValue };
-                          setTagOptions([...tagOptions, newOption]);
-                          
-                          const newTags = prompt.tags ? `${prompt.tags},${inputValue}` : inputValue;
-                          setPrompt({ ...prompt, tags: newTags });
-                        }
+                        const newTags = prompt.tags ? `${prompt.tags},${inputValue}` : inputValue;
+                        setPrompt({ ...prompt, tags: newTags });
                       } catch (error) {
                         console.error('Error creating new tag:', error);
+                        toast({
+                          title: "错误",
+                          description: error.message || '创建标签失败',
+                          variant: "destructive",
+                        });
                       }
                     }}
                   />

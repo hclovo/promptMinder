@@ -25,6 +25,8 @@ import dynamic from 'next/dynamic'
 import { useLanguage } from '@/contexts/LanguageContext';
 import * as VisuallyHidden from '@radix-ui/react-visually-hidden';
 import { extractVariables } from '@/lib/promptVariables';
+import { apiClient } from '@/lib/api-client';
+import { useClipboard } from '@/lib/clipboard';
 
 const CreatableSelect = dynamic(() => import('react-select/creatable'), {
   ssr: false
@@ -86,31 +88,7 @@ const PromptListSkeleton = () => {
   );
 };
 
-async function getPrompts() {
-  const res = await fetch('/api/prompts',{
-    method:'GET',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  });
-  if (!res.ok) {
-    throw new Error('Failed to fetch prompts');
-  }
-  return res.json();
-}
-
-async function deletePrompt(id) {
-  const res = await fetch(`/api/prompts/${id}`, {
-    method: 'DELETE',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  });
-  if (!res.ok) {
-    throw new Error('Failed to delete prompt');
-  }
-  return res.json();
-}
+// These functions are now replaced by apiClient methods
 
 // Modified NewPromptCard with enhanced styling
 const NewPromptCard = ({ onClick }) => {
@@ -135,6 +113,7 @@ const NewPromptCard = ({ onClick }) => {
 export default function PromptsPage() {
   const { language, t } = useLanguage();
   const { toast } = useToast();
+  const { copy } = useClipboard();
   const [prompts, setPrompts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedTags, setSelectedTags] = useState([]);
@@ -150,7 +129,7 @@ export default function PromptsPage() {
     title: '',
     content: '',
     description: '',
-    tags: 'chatbot',
+    tags: 'Chatbot',
     version: '1.0.0',
     cover_img: '',
   });
@@ -168,7 +147,7 @@ export default function PromptsPage() {
     const fetchPrompts = async () => {
       try {
         setIsLoading(true);
-        const data = await getPrompts();
+        const data = await apiClient.getPrompts();
         setPrompts(data.map(prompt => ({
           ...prompt,
           version: prompt.version || '1.0',
@@ -177,19 +156,23 @@ export default function PromptsPage() {
         })));
       } catch (error) {
         console.error('Error fetching prompts:', error);
+        toast({
+          title: '获取失败',
+          description: error.message || '无法获取提示词列表',
+          variant: 'destructive',
+        });
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchPrompts();
-  }, []);
+  }, [toast]);
 
   useEffect(() => {
     const fetchTags = async () => {
       try {
-        const response = await fetch('/api/tags');
-        const data = await response.json();
+        const data = await apiClient.getTags();
         const mappedTags = data.map(tag => ({ 
           value: tag.name, 
           label: tag.name 
@@ -197,30 +180,22 @@ export default function PromptsPage() {
         setTagOptions(mappedTags);
       } catch (error) {
         console.error('Error fetching tags:', error);
+        toast({
+          title: '获取标签失败',
+          description: error.message || '无法获取标签列表',
+          variant: 'destructive',
+        });
       }
     };
 
     fetchTags();
-  }, []);
+  }, [toast]);
 
   if (!t) return null;
   const tp = t.promptsPage;
 
   const handleCopy = async (content) => {
-    try {
-      await navigator.clipboard.writeText(content);
-      toast({
-        description: tp.copySuccess,
-        duration: 2000,
-      });
-    } catch (err) {
-      console.error('Copy failed:', err);
-      toast({
-        variant: "destructive",
-        description: tp.copyError,
-        duration: 2000,
-      });
-    }
+    await copy(content);
   };
 
   const handleDelete = async (id) => {
@@ -230,7 +205,7 @@ export default function PromptsPage() {
 
   const confirmDelete = async () => {
     try {
-      await deletePrompt(promptToDelete);
+      await apiClient.deletePrompt(promptToDelete);
       setPrompts(prompts.filter(prompt => prompt.id !== promptToDelete));
       setDeleteDialogOpen(false);
       toast({
@@ -241,7 +216,7 @@ export default function PromptsPage() {
       console.error('Error deleting prompt:', error);
       toast({
         variant: "destructive",
-        description: tp.deleteError,
+        description: error.message || tp.deleteError,
         duration: 2000,
       });
     }
@@ -258,33 +233,17 @@ export default function PromptsPage() {
   const allTags = [...new Set(prompts.flatMap(prompt => prompt.tags))];
 
   const handleShare = async (id) => {
-    const shareUrl = `${window.location.origin}/share/${id}`;
     try {
-      await navigator.clipboard.writeText(shareUrl);
+      await apiClient.sharePrompt(id);
+      const shareUrl = `${window.location.origin}/share/${id}`;
+      await copy(shareUrl);
+    } catch (error) {
+      console.error('Error sharing prompt:', error);
       toast({
-        description: tp.shareSuccess,
+        variant: "destructive",
+        description: error.message || tp.shareError,
         duration: 2000,
       });
-    } catch (clipboardErr) {
-      const textarea = document.createElement('textarea');
-      textarea.value = shareUrl;
-      document.body.appendChild(textarea);
-      textarea.select();
-      try {
-        document.execCommand('copy');
-        toast({
-          description: tp.shareSuccess,
-          duration: 2000,
-        });
-      } catch (fallbackErr) {
-        toast({
-          variant: "destructive",
-          description: tp.shareError,
-          duration: 2000,
-        });
-      } finally {
-        document.body.removeChild(textarea);
-      }
     }
   };
 
@@ -313,25 +272,16 @@ export default function PromptsPage() {
 
     setIsSubmitting(true);
     try {
-      const res = await fetch('/api/prompts', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(newPrompt),
+      const newPromptData = await apiClient.createPrompt({
+        ...newPrompt,
+        id: crypto.randomUUID(),
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        is_public: true
       });
 
-      if (!res.ok) {
-        throw new Error('Failed to create prompt');
-      }
-
-      const data = await getPrompts();
-      setPrompts(data.map(prompt => ({
-        ...prompt,
-        version: prompt.version || '1.0',
-        cover_img: prompt.cover_img || '/default-cover.jpg',
-        tags: prompt.tags?.split(',') || []
-      })));
+      // Add new prompt to local state
+      setPrompts(prev => [newPromptData, ...prev]);
 
       setShowNewPromptDialog(false);
       setNewPrompt({
@@ -351,7 +301,7 @@ export default function PromptsPage() {
       console.error('Error creating prompt:', error);
       toast({
         variant: "destructive",
-        description: tp.createError,
+        description: error.message || tp.createError,
         duration: 2000,
       });
     } finally {
@@ -361,21 +311,17 @@ export default function PromptsPage() {
 
   const handleCreateTag = async (inputValue) => {
     try {
-      const response = await fetch('/api/tags', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ name: inputValue }),
-      });
-      
-      if (response.ok) {
-        const newOption = { value: inputValue, label: inputValue };
-        setTagOptions(prev => [...prev, newOption]);
-        return newOption;
-      }
+      await apiClient.createTag({ name: inputValue });
+      const newOption = { value: inputValue, label: inputValue };
+      setTagOptions(prev => [...prev, newOption]);
+      return newOption;
     } catch (error) {
       console.error('Error creating new tag:', error);
+      toast({
+        variant: "destructive",
+        description: error.message || '创建标签失败',
+        duration: 2000,
+      });
     }
     return null;
   };
@@ -387,15 +333,7 @@ export default function PromptsPage() {
     setShowOptimizeModal(true);
     
     try {
-      const response = await fetch('/api/generate', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ text: newPrompt.content }),
-      });
-      
-      if (!response.ok) throw new Error(tp.optimizeError);
+      const response = await apiClient.generate(newPrompt.content);
       
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
@@ -428,7 +366,7 @@ export default function PromptsPage() {
       console.error('Optimization error:', error);
       toast({
         variant: "destructive",
-        description: tp.optimizeRetry,
+        description: error.message || tp.optimizeRetry,
         duration: 2000,
       });
     } finally {
@@ -559,12 +497,17 @@ export default function PromptsPage() {
                       </div>
 
                       <div className="flex flex-wrap gap-2">
-                        {latestPrompt.tags.map((tag) => (
+                        {(latestPrompt.tags 
+                          ? (Array.isArray(latestPrompt.tags) 
+                              ? latestPrompt.tags 
+                              : latestPrompt.tags.split(',').filter(tag => tag.trim()))
+                          : []
+                        ).map((tag) => (
                           <span 
                             key={tag}
                             className="bg-secondary/50 text-secondary-foreground text-xs px-2.5 py-0.5 rounded-full font-medium"
                           >
-                            #{tag}
+                            #{tag.trim()}
                           </span>
                         ))}
                       </div>

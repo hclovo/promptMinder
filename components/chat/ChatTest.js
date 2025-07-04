@@ -27,6 +27,7 @@ import { Separator } from "@/components/ui/separator"
 import { useLanguage } from '@/contexts/LanguageContext';
 import { replaceVariables } from '@/lib/promptVariables';
 import { useToast } from '@/hooks/use-toast';
+import { apiClient } from '@/lib/api-client';
 
 // Message loading animation component
 function MessageLoading() {
@@ -161,16 +162,12 @@ export default function ChatTest({ prompt, variableValues = {}, hasVariables = f
     setMessages(prev => [...prev, aiMessage]);
     
     try {
-      const response = await fetch('/api/chat', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          messages: messages.concat(newMessage).map(msg => ({
-            role: msg.role,
-            content: msg.content
-          })),
+      const response = await apiClient.chat(
+        messages.concat(newMessage).map(msg => ({
+          role: msg.role,
+          content: msg.content
+        })),
+        {
           apiKey: useCustomKey ? apiKey : undefined,
           model: useCustomKey ? customModel : selectedModel,
           baseURL: useCustomKey ? baseURL : undefined,
@@ -178,8 +175,8 @@ export default function ChatTest({ prompt, variableValues = {}, hasVariables = f
           temperature: temperature,
           max_tokens: maxTokens,
           top_p: topP
-        })
-      });
+        }
+      );
 
       if (!response.ok) {
         const errorData = await response.json();
