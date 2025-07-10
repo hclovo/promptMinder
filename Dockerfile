@@ -14,7 +14,7 @@ COPY package.json pnpm-lock.yaml* ./
 # 安装pnpm并构建依赖
 RUN corepack enable && \
     pnpm config set registry ${PNPM_REGISTRY} && \
-    pnpm install --frozen-lockfile
+    pnpm install
 
 # 复制所有源代码
 COPY . .
@@ -31,10 +31,12 @@ WORKDIR /app
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/package.json .
+COPY --from=builder /app/pnpm-lock.yaml .
 
 # 安装生产依赖
 RUN corepack enable && \
-    pnpm install --prod --frozen-lockfile
+    pnpm config set registry https://registry.npmmirror.com && \
+    pnpm install --prod
 
 # 暴露端口
 EXPOSE 3000
