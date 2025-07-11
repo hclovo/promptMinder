@@ -24,7 +24,7 @@ export default function SharePromptDetail({ params }) {
   const { language, t } = useLanguage();
   const { isSignedIn, userId } = useAuth();
   const { toast } = useToast();
-  const { copy } = useClipboard();
+  const { copy, copied } = useClipboard();
   const [prompt, setPrompt] = useState(null);
   const [copyToWorkspaceLoading, setCopyToWorkspaceLoading] = useState(false);
   const router = useRouter();
@@ -175,14 +175,14 @@ export default function SharePromptDetail({ params }) {
                       <div className="flex items-center gap-2">
                         <Button
                           onClick={handleCopy}
-                          variant={copySuccess ? "success" : "secondary"}
+                          variant={copied ? "success" : "secondary"}
                           className="relative px-4 py-2 text-sm font-medium"
                           size="sm"
                         >
                           <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-12a2 2 0 00-2-2h-2M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2" />
                           </svg>
-                          {copySuccess ? tp.copyButtonSuccess : tp.copyButton}
+                          {copied ? tp.copyButtonSuccess : tp.copyButton}
                         </Button>
                         {/* 只有在用户已登录且不是自己的提示词时才显示复制到工作台按钮 */}
                         {isSignedIn && prompt && prompt.user_id !== userId && (
