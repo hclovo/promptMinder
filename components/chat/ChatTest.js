@@ -13,6 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
+import { Slider } from "@/components/ui/slider"
 import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark } from 'react-syntax-highlighter/dist/cjs/styles/prism';
@@ -115,15 +116,58 @@ export default function ChatTest({ prompt, variableValues = {}, hasVariables = f
     }
     return 'https://open.bigmodel.cn/api/paas/v4';
   });
-  const presets = [
-    { label: 'OpenAI GPT-4o-mini', value: 'openai-gpt4omini', baseURL: 'https://api.openai.com/v1', model: 'gpt-4o-mini' },
-    { label: 'OpenAI GPT-4o', value: 'openai-gpt4o', baseURL: 'https://api.openai.com/v1', model: 'gpt-4o' },
-    { label: 'Anthropic Claude 4 Sonnet', value: 'claude-4-sonnet', baseURL: 'https://api.anthropic.com/v1', model: 'claude-4-sonnet' },
-    { label: 'Google Gemini 2.5 Flash', value: 'gemini-2.5-flash', baseURL: 'https://generativelanguage.googleapis.com/v1beta', model: 'models/gemini-2.5-flash' },
-    { label: 'Google Gemini 2.5 Pro', value: 'gemini-2.5-pro', baseURL: 'https://generativelanguage.googleapis.com/v1beta', model: 'models/gemini-2.5-pro' },
-    { label: 'DeepSeek Chat', value: 'deepseek-chat', baseURL: 'https://api.deepseek.com/v1', model: 'deepseek-chat' },
-    { label: 'Custom', value: 'custom', baseURL: '', model: '' },
-  ];
+const presets = [
+  /* ---------- OpenAI ---------- */
+  { label: 'OpenAI GPT-4o-mini',      value: 'openai-gpt4omini',   baseURL: 'https://api.openai.com/v1',               model: 'gpt-4o-mini' },
+  { label: 'OpenAI GPT-4o',           value: 'openai-gpt4o',       baseURL: 'https://api.openai.com/v1',               model: 'gpt-4o' },
+  { label: 'OpenAI GPT-4-turbo',      value: 'openai-gpt4turbo',   baseURL: 'https://api.openai.com/v1',               model: 'gpt-4-turbo' },
+  { label: 'OpenAI GPT-3.5-turbo',    value: 'openai-gpt35turbo',  baseURL: 'https://api.openai.com/v1',               model: 'gpt-3.5-turbo' },
+
+  /* ---------- Anthropic ---------- */
+  { label: 'Anthropic Claude 3.5 Sonnet', value: 'claude-35-sonnet', baseURL: 'https://api.anthropic.com/v1',         model: 'claude-3-5-sonnet-20240620' },
+  { label: 'Anthropic Claude 3 Opus',     value: 'claude-3-opus',    baseURL: 'https://api.anthropic.com/v1',         model: 'claude-3-opus-20240229' },
+  { label: 'Anthropic Claude 3 Haiku',    value: 'claude-3-haiku',   baseURL: 'https://api.anthropic.com/v1',         model: 'claude-3-haiku-20240307' },
+
+  /* ---------- Google Gemini ---------- */
+  { label: 'Google Gemini 1.5 Flash', value: 'gemini-1-5-flash', baseURL: 'https://generativelanguage.googleapis.com/v1beta', model: 'models/gemini-1.5-flash' },
+  { label: 'Google Gemini 1.5 Pro',   value: 'gemini-1-5-pro',   baseURL: 'https://generativelanguage.googleapis.com/v1beta', model: 'models/gemini-1.5-pro' },
+  { label: 'Google Gemini 2.5 Flash', value: 'gemini-2-5-flash', baseURL: 'https://generativelanguage.googleapis.com/v1beta', model: 'models/gemini-2.5-flash' },
+  { label: 'Google Gemini 2.5 Pro',   value: 'gemini-2-5-pro',   baseURL: 'https://generativelanguage.googleapis.com/v1beta', model: 'models/gemini-2.5-pro' },
+
+  /* ---------- Moonshot ---------- */
+  { label: 'Moonshot Kimi 8k',  value: 'moonshot-8k',  baseURL: 'https://api.moonshot.cn/v1', model: 'moonshot-v1-8k' },
+  { label: 'Moonshot Kimi 32k', value: 'moonshot-32k', baseURL: 'https://api.moonshot.cn/v1', model: 'moonshot-v1-32k' },
+  { label: 'Moonshot Kimi 128k',value: 'moonshot-128k',baseURL: 'https://api.moonshot.cn/v1', model: 'moonshot-v1-128k' },
+
+  /* ---------- DeepSeek ---------- */
+  { label: 'DeepSeek Chat',   value: 'deepseek-chat',   baseURL: 'https://api.deepseek.com/v1', model: 'deepseek-chat' },
+  { label: 'DeepSeek Coder',  value: 'deepseek-coder',  baseURL: 'https://api.deepseek.com/v1', model: 'deepseek-coder' },
+
+  /* ---------- 通义千问(Qwen) ---------- */
+  { label: 'Qwen Turbo',   value: 'qwen-turbo',   baseURL: 'https://dashscope.aliyuncs.com/compatible-mode/v1', model: 'qwen-turbo' },
+  { label: 'Qwen Plus',    value: 'qwen-plus',    baseURL: 'https://dashscope.aliyuncs.com/compatible-mode/v1', model: 'qwen-plus' },
+  { label: 'Qwen Max',     value: 'qwen-max',     baseURL: 'https://dashscope.aliyuncs.com/compatible-mode/v1', model: 'qwen-max' },
+
+  /* ---------- 智谱 GLM ---------- */
+  { label: 'GLM-4',      value: 'glm-4',      baseURL: 'https://open.bigmodel.cn/api/paas/v4', model: 'glm-4' },
+  { label: 'GLM-4-Air',  value: 'glm-4-air',  baseURL: 'https://open.bigmodel.cn/api/paas/v4', model: 'glm-4-air' },
+  { label: 'GLM-4-Flash',value: 'glm-4-flash',baseURL: 'https://open.bigmodel.cn/api/paas/v4', model: 'glm-4-flash' },
+
+  /* ---------- Baichuan ---------- */
+  { label: 'Baichuan 4',     value: 'baichuan-4',     baseURL: 'https://api.baichuan-ai.com/v1', model: 'Baichuan4' },
+  { label: 'Baichuan 3-Turbo',value: 'baichuan-3-turbo',baseURL: 'https://api.baichuan-ai.com/v1', model: 'Baichuan3-Turbo' },
+
+  /* ---------- StepFun ---------- */
+  { label: 'StepFun 1v', value: 'step-1v', baseURL: 'https://api.stepfun.com/v1', model: 'step-1v-8k' },
+  { label: 'StepFun 1',  value: 'step-1',  baseURL: 'https://api.stepfun.com/v1', model: 'step-1-8k' },
+
+  /* ---------- 零一万物 01.AI ---------- */
+  { label: 'Yi-Large',       value: 'yi-large',       baseURL: 'https://api.lingyiwanwu.com/v1', model: 'yi-large' },
+  { label: 'Yi-Large-Turbo', value: 'yi-large-turbo', baseURL: 'https://api.lingyiwanwu.com/v1', model: 'yi-large-turbo' },
+
+  /* ---------- Custom ---------- */
+  { label: 'Custom', value: 'custom', baseURL: '', model: '' },
+];
   const [selectedPreset, setSelectedPreset] = useState('');
 
   const scrollToBottom = () => {
@@ -459,7 +503,7 @@ export default function ChatTest({ prompt, variableValues = {}, hasVariables = f
                       <SelectTrigger className="h-8 text-sm">
                         <SelectValue placeholder="Select preset" />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="max-h-60 overflow-y-auto">
                         {presets.map(p => (
                           <SelectItem key={p.value} value={p.value}>
                             {p.label}
@@ -532,77 +576,110 @@ export default function ChatTest({ prompt, variableValues = {}, hasVariables = f
                   </Tooltip>
                 </TooltipProvider>
               </label>
-              <div className="grid grid-cols-3 gap-3">
-                <div>
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <div className="flex items-center gap-1 text-xs text-muted-foreground mb-1 cursor-help">
-                          {t.chatTest.temperatureLabel}
-                          <HelpCircle className="h-3 w-3" />
-                        </div>
-                      </TooltipTrigger>
-                      <TooltipContent side="top" className="max-w-60">
-                        <p>{t.chatTest.temperatureTooltip}</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                  <Input
-                    type="number"
-                    min="0"
-                    max="1"
-                    step="0.1"
-                    value={temperature}
-                    onChange={(e) => setTemperature(Number(e.target.value))}
-                    className="h-8 text-sm"
+              <div className="grid grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="flex items-center gap-1 text-xs text-muted-foreground cursor-help">
+                            {t.chatTest.temperatureLabel}
+                            <HelpCircle className="h-3 w-3" />
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="max-w-60">
+                          <p>{t.chatTest.temperatureTooltip}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                    <Input
+                      type="text"
+                      value={temperature}
+                      onChange={(e) => {
+                        const value = parseFloat(e.target.value);
+                        if (!isNaN(value) && value >= 0 && value <= 1) {
+                          setTemperature(value);
+                        }
+                      }}
+                      className="w-16 h-6 text-xs text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    />
+                  </div>
+                  <Slider
+                    value={[temperature]}
+                    onValueChange={(value) => setTemperature(value[0])}
+                    min={0}
+                    max={1}
+                    step={0.01}
                   />
                 </div>
-                <div>
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <div className="flex items-center gap-1 text-xs text-muted-foreground mb-1 cursor-help">
-                          {t.chatTest.maxTokensLabel}
-                          <HelpCircle className="h-3 w-3" />
-                        </div>
-                      </TooltipTrigger>
-                      <TooltipContent side="top" className="max-w-60">
-                        <p>{t.chatTest.maxTokensTooltip}</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                  <Input
-                    type="number"
-                    min="1"
-                    max="20000"
-                    step="10"
-                    value={maxTokens}
-                    onChange={(e) => setMaxTokens(Number(e.target.value))}
-                    className="h-8 text-sm"
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="flex items-center gap-1 text-xs text-muted-foreground cursor-help">
+                            {t.chatTest.maxTokensLabel}
+                            <HelpCircle className="h-3 w-3" />
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="max-w-60">
+                          <p>{t.chatTest.maxTokensTooltip}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                    <Input
+                      type="text"
+                      value={maxTokens}
+                      onChange={(e) => {
+                        const value = parseInt(e.target.value);
+                        if (!isNaN(value) && value >= 1 && value <= 8192) {
+                          setMaxTokens(value);
+                        }
+                      }}
+                      className="w-16 h-6 text-xs text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    />
+                  </div>
+                  <Slider
+                    value={[maxTokens]}
+                    onValueChange={(value) => setMaxTokens(value[0])}
+                    min={1}
+                    max={8192}
+                    step={1}
                   />
                 </div>
-                <div>
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <div className="flex items-center gap-1 text-xs text-muted-foreground mb-1 cursor-help">
-                          {t.chatTest.topPLabel}
-                          <HelpCircle className="h-3 w-3" />
-                        </div>
-                      </TooltipTrigger>
-                      <TooltipContent side="top" className="max-w-60">
-                        <p>{t.chatTest.topPTooltip}</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                  <Input
-                    type="number"
-                    min="0"
-                    max="1"
-                    step="0.1"
-                    value={topP}
-                    onChange={(e) => setTopP(Number(e.target.value))}
-                    className="h-8 text-sm"
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="flex items-center gap-1 text-xs text-muted-foreground cursor-help">
+                            {t.chatTest.topPLabel}
+                            <HelpCircle className="h-3 w-3" />
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="max-w-60">
+                          <p>{t.chatTest.topPTooltip}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                    <Input
+                      type="text"
+                      value={topP}
+                      onChange={(e) => {
+                        const value = parseFloat(e.target.value);
+                        if (!isNaN(value) && value >= 0 && value <= 1) {
+                          setTopP(value);
+                        }
+                      }}
+                      className="w-16 h-6 text-xs text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    />
+                  </div>
+                  <Slider
+                    value={[topP]}
+                    onValueChange={(value) => setTopP(value[0])}
+                    min={0}
+                    max={1}
+                    step={0.01}
                   />
                 </div>
               </div>
@@ -818,4 +895,4 @@ export default function ChatTest({ prompt, variableValues = {}, hasVariables = f
       </CardContent>
     </Card>
   );
-} 
+}
