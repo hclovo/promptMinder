@@ -115,6 +115,16 @@ export default function ChatTest({ prompt, variableValues = {}, hasVariables = f
     }
     return 'https://open.bigmodel.cn/api/paas/v4';
   });
+  const presets = [
+    { label: 'OpenAI GPT-4o-mini', value: 'openai-gpt4omini', baseURL: 'https://api.openai.com/v1', model: 'gpt-4o-mini' },
+    { label: 'OpenAI GPT-4o', value: 'openai-gpt4o', baseURL: 'https://api.openai.com/v1', model: 'gpt-4o' },
+    { label: 'Anthropic Claude 4 Sonnet', value: 'claude-4-sonnet', baseURL: 'https://api.anthropic.com/v1', model: 'claude-4-sonnet' },
+    { label: 'Google Gemini 2.5 Flash', value: 'gemini-2.5-flash', baseURL: 'https://generativelanguage.googleapis.com/v1beta', model: 'models/gemini-2.5-flash' },
+    { label: 'Google Gemini 2.5 Pro', value: 'gemini-2.5-pro', baseURL: 'https://generativelanguage.googleapis.com/v1beta', model: 'models/gemini-2.5-pro' },
+    { label: 'DeepSeek Chat', value: 'deepseek-chat', baseURL: 'https://api.deepseek.com/v1', model: 'deepseek-chat' },
+    { label: 'Custom', value: 'custom', baseURL: '', model: '' },
+  ];
+  const [selectedPreset, setSelectedPreset] = useState('');
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -302,16 +312,9 @@ export default function ChatTest({ prompt, variableValues = {}, hasVariables = f
     setMessages(prev => [...prev, aiMessage]);
 
     try {
-      const response = await fetch('/api/chat', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          messages: updatedMessages.map(msg => ({
-            role: msg.role,
-            content: msg.content
-          })),
+      const response = await apiClient.chat(
+        updatedMessages.map(msg => ({role: msg.role, content: msg.content})),
+        {
           apiKey: useCustomKey ? apiKey : undefined,
           model: useCustomKey ? customModel : selectedModel,
           baseURL: useCustomKey ? baseURL : undefined,
@@ -319,8 +322,8 @@ export default function ChatTest({ prompt, variableValues = {}, hasVariables = f
           temperature: temperature,
           max_tokens: maxTokens,
           top_p: topP
-        })
-      });
+        }
+      );
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -443,6 +446,28 @@ export default function ChatTest({ prompt, variableValues = {}, hasVariables = f
               </div>
               {useCustomKey && (
                 <div className="space-y-3 rounded-md bg-background p-3 border border-border/30">
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1.5">预制</p>
+                    <Select value={selectedPreset} onValueChange={(value) => {
+                      setSelectedPreset(value);
+                      const preset = presets.find(p => p.value === value);
+                      if (preset) {
+                        setBaseURL(preset.baseURL);
+                        setCustomModel(preset.model);
+                      }
+                    }}>
+                      <SelectTrigger className="h-8 text-sm">
+                        <SelectValue placeholder="Select preset" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {presets.map(p => (
+                          <SelectItem key={p.value} value={p.value}>
+                            {p.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                   <div>
                     <p className="text-xs text-muted-foreground mb-1.5">{t.chatTest.apiKeyLabel}</p>
                     <Input
