@@ -1,100 +1,319 @@
 # PromptMinder
 
-一个专业的提示词的管理平台，让AI提示词管理更简单
+一个专业的提示词管理平台，让 AI 提示词管理更简单、更高效
 
 [![Deployed on Zeabur](https://zeabur.com/deployed-on-zeabur-dark.svg)](https://zeabur.com/referral?referralCode=aircrushin&utm_source=aircrushin&utm_campaign=oss)
 
 ![主页](/public/main-page.png)
 
-## 特性
+## 🌟 特性
 
-- 支持提示词版本管理，版本回溯
-- 完全开源，可以自行部署和修改
-- 提示词标签化、版本化管理
-- 支持自定义标签
-- 移动端适配
-- AI 提示词生成
+### 核心功能
 
-## 技术栈
+- ✅ **提示词版本管理** - 支持版本回溯和历史记录查看
+- ✅ **标签化管理** - 自定义标签，快速分类和检索
+- ✅ **公私有模式** - 支持私有提示词和公共分享
+- ✅ **AI 智能生成** - 集成 AI 模型，智能生成优质提示词
+- ✅ **团队协作** - 支持团队创建和成员管理（开发中）
+- ✅ **提示词贡献** - 社区贡献功能，审核发布流程
 
-- Next.js 15
-- Tailwind CSS
-- Shadcn UI
-- OpenAI
-- 数据库：Supabase + PostgreSQL
-- 用户认证：Clerk
-- 部署：Vercel/Zeabur
-- 用户反馈：Canny
+### 用户体验
 
-## 部署流程
+- 📱 **移动端适配** - 响应式设计，完美支持移动设备
+- 🌍 **国际化支持** - 支持中文和英文双语
+- 🎨 **现代化界面** - 基于 Shadcn UI 的精美设计
+- 🔍 **智能搜索** - 快速搜索和过滤功能
+- 📋 **一键复制** - 方便的复制和分享功能
 
-### vercel
+### 技术特性
 
-1. fork本项目
-2. 注册并登录vercel
-3. 点击`New Project`
-4. 选择`Import Git Repository`
-5. 输入项目名称，选择`GitHub`作为代码来源
-6. 点击`Deploy`
+- ⚡ **高性能** - Next.js 15 + React 18，极速加载
+- 🔐 **安全认证** - Clerk 提供企业级用户认证
+- 💾 **可靠存储** - Supabase + PostgreSQL 数据库
+- 🚀 **易部署** - 支持 Vercel、Zeabur 一键部署
 
-#### 环境变量说明
+## 🚀 快速开始
 
-- `SUPABASE_URL`：Supabase 项目 URL
-- `SUPABASE_ANON_KEY`：Supabase 匿名密钥
-- `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`：Clerk 公钥，用于客户端认证
-- `CLERK_SECRET_KEY`：Clerk 私钥，用于服务端认证
-- `NEXT_PUBLIC_CLERK_SIGN_IN_URL`：Clerk 登录页面 URL
-- `NEXT_PUBLIC_CLERK_SIGN_UP_URL`：Clerk 注册页面 URL
-- `AUTH_SECRET`：用于 NextAuth.js 的加密密钥
-- `ZHIPU_API_KEY`：智谱AI API 密钥，用于提示词生成 (任何 OpenAI 兼容类模型都可以)
-- `GITHUB_ID`：GitHub OAuth 应用的客户端 ID（可选，用于 GitHub 登录）
-- `GITHUB_SECRET`：GitHub OAuth 应用的客户端密钥（可选，用于 GitHub 登录）
+### 环境要求
 
-### supabase
+- Node.js 18.0 或更高版本
+- npm 或 pnpm 包管理器
+- Git
 
-1. 注册supabase账号并创建项目
-2. 进入项目设置，点击`Service Role`，点击`Generate new key`，复制key
-3. 将key填入vercel的环境变量中
-4. 进入项目设置，点击`Database`，点击`Create new database`，创建数据库
-5. 创建数据表
+### 本地开发
 
-    ```sql
-    -- 创建 prompts 表
-    CREATE TABLE prompts (
-        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-        title TEXT NOT NULL,
-        content TEXT NOT NULL,
-        description TEXT,
-        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-        updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-        is_public BOOLEAN DEFAULT false,
-        user_id TEXT,
-        version TEXT,
-        tags TEXT,
-        cover_img TEXT
-    );
+1. **克隆项目**
 
-    -- 创建 tags 表
-    CREATE TABLE tags (
-        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-        name TEXT NOT NULL,
-        user_id TEXT,  -- 使用TEXT类型来匹配Clerk的user_id
-        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-        UNIQUE(name, user_id)
-    );
-    ```
+```bash
+git clone https://github.com/your-username/prompt-manage.git
+cd prompt-manage
+```
 
-### clerk
+2. **安装依赖**
 
-clerk 是一个用户认证平台，可以用来管理用户认证和权限。
-配置参考官方文档
-https://clerk.com/docs
+```bash
+npm install
+# 或者使用 pnpm
+pnpm install
+```
 
-### canny
+3. **配置环境变量**
+   创建 `.env.local` 文件并配置以下变量：
 
-Canny 是一个用户反馈平台，可以用来收集用户反馈和建议。
+```env
+# Supabase 配置
+SUPABASE_URL=your_supabase_project_url
+SUPABASE_ANON_KEY=your_supabase_anon_key
+
+# Clerk 认证配置
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=your_clerk_publishable_key
+CLERK_SECRET_KEY=your_clerk_secret_key
+NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
+NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
+
+# NextAuth 配置
+AUTH_SECRET=your_auth_secret
+
+# AI API 配置
+ZHIPU_API_KEY=your_zhipu_api_key
+
+# GitHub OAuth (可选)
+GITHUB_ID=your_github_app_id
+GITHUB_SECRET=your_github_app_secret
+
+# 基础 URL
+NEXT_PUBLIC_BASE_URL=http://localhost:3000
+```
+
+4. **启动开发服务器**
+
+```bash
+npm run dev
+# 或者使用 pnpm
+pnpm dev
+```
+
+访问 [http://localhost:3000](http://localhost:3000) 查看应用。
+
+## 📦 部署指南
+
+### Vercel 部署
+
+1. **准备工作**
+
+   - Fork 本项目到你的 GitHub 账户
+   - 注册并登录 [Vercel](https://vercel.com)
+2. **部署步骤**
+
+   - 在 Vercel 中点击 `New Project`
+   - 选择 `Import Git Repository`
+   - 选择你 fork 的项目
+   - 配置环境变量（见上方环境变量说明）
+   - 点击 `Deploy`
+3. **自动部署**
+
+   - 部署完成后，每次推送到主分支都会自动重新部署
+
+### Zeabur 部署
+
+1. 访问 [Zeabur](https://zeabur.com) 并登录
+2. 创建新项目并连接 GitHub 仓库
+3. 配置环境变量
+4. 部署并获取访问地址
+
+## 🗃 数据库配置
+
+### Supabase 设置
+
+1. **创建项目**
+
+   - 注册 [Supabase](https://supabase.com) 账户
+   - 创建新项目
+   - 获取项目 URL 和匿名密钥
+2. **创建数据表**
+   执行以下 SQL 语句创建所需的数据表：
+
+```sql
+-- 创建 prompts 表
+CREATE TABLE prompts (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    title TEXT NOT NULL,
+    content TEXT NOT NULL,
+    description TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    is_public BOOLEAN DEFAULT false,
+    user_id TEXT,
+    version TEXT,
+    tags TEXT,
+    cover_img TEXT,
+    team_id UUID REFERENCES teams(id) ON DELETE CASCADE
+);
+
+-- 创建 tags 表
+CREATE TABLE tags (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name TEXT NOT NULL,
+    user_id TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    team_id UUID REFERENCES teams(id) ON DELETE CASCADE,
+    UNIQUE(name, user_id)
+);
+
+-- 创建 teams 表
+CREATE TABLE teams (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name TEXT NOT NULL,
+    description TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    created_by TEXT NOT NULL,
+    avatar_url TEXT,
+    is_personal BOOLEAN DEFAULT false
+);
+
+-- 创建团队成员关系表
+CREATE TABLE team_user_relation (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    team_id UUID NOT NULL,
+    user_id TEXT NOT NULL,
+    role TEXT NOT NULL CHECK (role IN ('owner', 'admin', 'member')),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    created_by TEXT,
+    UNIQUE(team_id, user_id)
+);
+
+-- 创建贡献表
+CREATE TABLE prompt_contributions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    title TEXT NOT NULL,
+    role_category TEXT NOT NULL,
+    content TEXT NOT NULL,
+    contributor_email TEXT,
+    contributor_name TEXT,
+    status TEXT NOT NULL DEFAULT 'pending',
+    admin_notes TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    reviewed_at TIMESTAMPTZ,
+    reviewed_by TEXT,
+    published_prompt_id UUID,
+    CONSTRAINT valid_status CHECK (status IN ('pending', 'approved', 'rejected'))
+);
+```
+
+更多 SQL 文件可以在 `/sql` 目录中找到。
+
+## 🔐 认证配置
+
+### Clerk 设置
+
+1. **创建 Clerk 应用**
+
+   - 访问 [Clerk](https://clerk.com)
+   - 创建新应用
+   - 选择认证方式（邮箱、社交登录等）
+2. **配置 OAuth 提供商**
+
+   - 在 Clerk 控制台中启用 GitHub、Google 等登录方式
+   - 配置回调 URL
+3. **获取密钥**
+
+   - 复制 Publishable Key 和 Secret Key
+   - 添加到环境变量中
+
+详细配置请参考 [Clerk 官方文档](https://clerk.com/docs)
+
+## 🌍 国际化
+
+项目支持多语言，目前支持：
+
+- 🇨🇳 简体中文
+- 🇺🇸 English
+
+语言文件位于 `/messages` 目录：
+
+- `zh.json` - 中文翻译
+- `en.json` - 英文翻译
+
+### 添加新语言
+
+1. 在 `/messages` 目录创建新的语言文件
+2. 复制现有翻译文件的结构
+3. 在 `LanguageContext` 中添加新语言支持
+
+## 🛠 开发指南
+
+### 项目结构
+
+```
+prompt-manage/
+├── app/                    # Next.js App Router
+│   ├── api/               # API 路由
+│   ├── prompts/           # 提示词相关页面
+│   ├── tags/              # 标签管理页面
+│   └── ...
+├── components/            # React 组件
+│   ├── ui/                # 基础 UI 组件
+│   ├── prompt/            # 提示词相关组件
+│   └── ...
+├── contexts/              # React Context
+├── hooks/                 # 自定义 Hooks
+├── lib/                   # 工具库和配置
+├── messages/              # 国际化文件
+├── public/                # 静态资源
+└── sql/                   # 数据库脚本
+```
+
+### 代码规范
+
+- 使用 ESLint 进行代码检查
+- 遵循 React Hooks 最佳实践
+- 组件使用 TypeScript (推荐)
+- CSS 使用 Tailwind CSS
+
+### 贡献指南
+
+1. Fork 本项目
+2. 创建特性分支 (`git checkout -b feature/amazing-feature`)
+3. 提交变更 (`git commit -m 'Add some amazing feature'`)
+4. 推送到分支 (`git push origin feature/amazing-feature`)
+5. 创建 Pull Request
+
+## 🤝 社区
+
+### 用户反馈
+
+使用 [Canny](https://canny.io) 收集用户反馈和功能请求。
 
 1. 注册 Canny 账号并创建项目
-2. 将 Canny URL 填入 footer 页面中
+2. 获取 Canny URL
+3. 在应用的 Footer 组件中配置链接
 
-<a href="https://www.buymeacoffee.com/aircrushin" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
+### 技术支持
+
+- 📖 查看 [文档](https://github.com/your-username/prompt-manage/wiki)
+- 🐛 报告 [问题](https://github.com/your-username/prompt-manage/issues)
+- 💬 加入 [讨论](https://github.com/your-username/prompt-manage/discussions)
+
+## 📄 许可证
+
+本项目采用 [MIT 许可证](LICENSE)。
+
+## 💖 支持项目
+
+如果这个项目对你有帮助，欢迎：
+
+- ⭐ 给项目点个星
+- 🍴 Fork 并改进
+- 🐛 提交 Bug 报告
+- 💡 提出新功能建议
+
+<a href="https://www.buymeacoffee.com/aircrushin" target="_blank">
+  <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" >
+</a>
+
+---
+
+**PromptMinder** - 让 AI 提示词管理更简单 ✨
