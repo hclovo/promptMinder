@@ -2,8 +2,6 @@
 
 一个专业的提示词管理平台，让 AI 提示词管理更简单、更高效
 
-[![Deployed on Zeabur](https://zeabur.com/deployed-on-zeabur-dark.svg)](https://zeabur.com/referral?referralCode=aircrushin&utm_source=aircrushin&utm_campaign=oss)
-
 ![主页](/public/main-page.png)
 
 ## 🌟 特性
@@ -120,6 +118,8 @@ pnpm dev
 2. 创建新项目并连接 GitHub 仓库
 3. 配置环境变量
 4. 部署并获取访问地址
+
+   [![Deployed on Zeabur](https://zeabur.com/deployed-on-zeabur-dark.svg)](https://zeabur.com/referral?referralCode=aircrushin&utm_source=aircrushin&utm_campaign=oss)
 
 ## 🗃 数据库配置
 

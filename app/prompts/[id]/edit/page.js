@@ -253,11 +253,10 @@ export default function EditPrompt({ params }) {
                 </div>
 
                 {/* 动态变量输入组件 */}
-                <VariableInputs
-                  content={prompt.content}
-                  showPreview={false}
-                  className="my-4"
-                />
+                            <VariableInputs
+              content={prompt.content}
+              className="my-4"
+            />
 
                 <div className="space-y-2">
                   <Label htmlFor="description" className="text-lg font-medium">{tp.formDescriptionLabel}</Label>

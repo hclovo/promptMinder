@@ -14,11 +14,7 @@ import {
 } from '@/lib/promptVariables';
 import { 
   Variable, 
-  Eye, 
-  EyeOff, 
   Sparkles, 
-  Copy,
-  Check,
   AlertCircle 
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -28,7 +24,6 @@ import { useLanguage } from '@/contexts/LanguageContext';
 export default function VariableInputs({ 
   content, 
   onVariablesChange, 
-  showPreview = true,
   className = ""
 }) {
   const { toast } = useToast();
@@ -36,8 +31,6 @@ export default function VariableInputs({
   const [variableData, setVariableData] = useState(null);
   const [variableValues, setVariableValues] = useState({});
   const [validationErrors, setValidationErrors] = useState({});
-  const [showPreviewPanel, setShowPreviewPanel] = useState(false);
-  const [copiedPreview, setCopiedPreview] = useState(false);
 
   // Analyze content for variables
   useEffect(() => {
@@ -101,27 +94,6 @@ export default function VariableInputs({
       description: t?.variableInputs?.exampleFilled || "示例数据已填充。",
       duration: 2000,
     });
-  };
-
-  const copyPreview = async () => {
-    if (!variableData) return;
-
-    const previewText = variableData.preview(variableValues);
-    try {
-      await navigator.clipboard.writeText(previewText);
-      setCopiedPreview(true);
-      setTimeout(() => setCopiedPreview(false), 2000);
-      toast({
-        description: t?.variableInputs?.previewCopied || "预览内容已复制到剪贴板。",
-        duration: 2000,
-      });
-    } catch (error) {
-      toast({
-        variant: "destructive",
-        description: t?.variableInputs?.copyFailed || "复制失败。",
-        duration: 2000,
-      });
-    }
   };
 
   const renderVariableInput = (variable) => {
@@ -189,11 +161,9 @@ export default function VariableInputs({
   }
 
   const hasRequiredErrors = Object.keys(validationErrors).length > 0;
-  const previewText = variableData.preview(variableValues);
 
   return (
     <div className={`space-y-3 ${className}`}>
-      {/* 简化的变量输入区域 */}
       <div className="space-y-3">
         <div className="flex items-center gap-2">
           <Variable className="w-4 h-4 text-primary" />

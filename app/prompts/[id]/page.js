@@ -146,7 +146,6 @@ export default function PromptDetail({ params }) {
   const [selectedVersion, setSelectedVersion] = useState(null);
   const [variableValues, setVariableValues] = useState({});
   const [hasVariables, setHasVariables] = useState(false);
-  const [renderedContent, setRenderedContent] = useState('');
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -155,14 +154,6 @@ export default function PromptDetail({ params }) {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
-
-  // 实时更新渲染的提示词内容
-  useEffect(() => {
-    if (prompt?.content) {
-      const rendered = replaceVariables(prompt.content, variableValues);
-      setRenderedContent(rendered);
-    }
-  }, [prompt?.content, variableValues]);
 
   useEffect(() => {
     if (id) {
@@ -481,7 +472,6 @@ export default function PromptDetail({ params }) {
                 <VariableInputs
                   content={prompt.content}
                   onVariablesChange={handleVariablesChange}
-                  showPreview={false}
                   className=""
                 />
               </div>
@@ -560,7 +550,7 @@ export default function PromptDetail({ params }) {
                   <ScrollArea className="h-full w-full">
                     <div className="rounded-lg bg-secondary/30 p-4 min-h-full">
                       {isEditing ? (
-                        <div className="min-h-[600px] space-y-3">
+                        <div className="min-h-[600px]">
                           <Textarea
                             value={editedContent}
                             onChange={(e) => setEditedContent(e.target.value)}
@@ -568,71 +558,10 @@ export default function PromptDetail({ params }) {
                             placeholder={tp.editPlaceholder}
                             style={{ resize: 'vertical', overflowY: 'auto' }}
                           />
-                          {/* 编辑时也显示预览 */}
-                          <div className="bg-blue-50 p-3 rounded border">
-                            <div className="text-xs text-blue-600 font-medium mb-2">实时预览:</div>
-                                                        <div className="text-sm text-blue-800">
-                               {editedContent.split(/(\{\{[^}]+\}\})/g).map((part, index) => {
-                                 if (part.startsWith('{{') && part.endsWith('}}')) {
-                                   const variableName = part.slice(2, -2).trim();
-                                   const value = variableValues[variableName];
-                                   
-                                   if (value && value.trim()) {
-                                     return (
-                                       <span key={index} className="bg-blue-200 text-blue-900 px-2 py-1 rounded-md font-medium">
-                                         {value}
-                                       </span>
-                                     );
-                                   } else {
-                                     return (
-                                       <span key={index} className="bg-orange-100 text-orange-700 px-2 py-1 rounded-md border border-orange-300 border-dashed font-medium italic">
-                                         {variableName}
-                                       </span>
-                                     );
-                                   }
-                                 }
-                                 return part;
-                               })}
-                            </div>
-                          </div>
                         </div>
                       ) : (
                         <div className="text-base leading-relaxed whitespace-pre-wrap text-primary min-h-[600px]">
-                          {hasVariables ? (
-                            <div className="space-y-1">
-                              {/* 说明文字 */}
-
-                              {/* 显示渲染后的内容，变量值高亮显示 */}
-                              <div className="rendered-content">
-                                {prompt.content.split(/(\{\{[^}]+\}\})/g).map((part, index) => {
-                                  if (part.startsWith('{{') && part.endsWith('}}')) {
-                                    const variableName = part.slice(2, -2).trim();
-                                    const value = variableValues[variableName];
-                                    
-                                    if (value && value.trim()) {
-                                      // 已填写的变量 - 蓝色高亮
-                                      return (
-                                        <span key={index} className="bg-blue-100 text-blue-800 px-2 py-1 rounded-md border-l-4 border-blue-500 font-medium shadow-sm">
-                                          {value}
-                                        </span>
-                                      );
-                                    } else {
-                                      // 未填写的变量 - 显示变量名，橙色样式
-                                      return (
-                                        <span key={index} className="bg-orange-50 text-orange-600 px-2 py-1 rounded-md border border-orange-300 border-dashed font-medium shadow-sm italic">
-                                          {variableName}
-                                        </span>
-                                      );
-                                    }
-                                  }
-                                  return part;
-                                })}
-                              </div>
-
-                            </div>
-                          ) : (
-                            prompt.content
-                          )}
+                          {prompt.content}
                         </div>
                       )}
                     </div>

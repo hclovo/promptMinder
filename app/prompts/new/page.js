@@ -277,7 +277,6 @@ export default function NewPrompt() {
               {/* 动态变量输入组件 */}
               <VariableInputs
                 content={prompt.content}
-                showPreview={false}
                 className="my-4"
               />
 
