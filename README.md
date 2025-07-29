@@ -1,3 +1,11 @@
+<div align="center">
+  <h1>PromptMinder</h1>
+  <p>
+    <a href="README.md">中文</a> | 
+    <a href="README_EN.md">English</a>
+  </p>
+</div>
+
 # PromptMinder
 
 一个专业的提示词管理平台，让 AI 提示词管理更简单、更高效
