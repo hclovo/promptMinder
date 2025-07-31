@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: promptminder-db
+    environment:
+      POSTGRES_DB: promptMinder
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: your_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./sql:/docker-entrypoint-initdb.d
+    ports:
+      - "5432:5432"
+    networks:
+      - promptminder-network
+
+  app:
+    build: .
+    container_name: promptminder-app
+    environment:
+      POSTGRES_URL: postgres://postgres:your_password@postgres:5432/promptMinder
+      NODE_ENV: production
+      API_PORT: 3000
+      ENABLE_ANALYTICS: false
+    ports:
+      - "3000:3000"
+    depends_on:
+      - postgres
+    networks:
+      - promptminder-network
+    command: npm run start
+
+volumes:
+  postgres_data:
+
+networks:
+  promptminder-network:
+    driver: bridge
