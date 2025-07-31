@@ -14,14 +14,7 @@ const nextConfig = {
     return config;
   },
   images: {
-    domains: ['api.dicebear.com', 'source.unsplash.com', 'emqozkcwoekqiibyempf.supabase.co'],
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: '*.supabase.co',
-        pathname: '/storage/v1/object/public/**',
-      },
-    ],
+    domains: ['api.dicebear.com', 'source.unsplash.com'],
     dangerouslyAllowSVG: true,
     contentDispositionType: 'attachment',
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
