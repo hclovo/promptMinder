@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, memo } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
@@ -11,7 +11,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { ImportIcon } from "lucide-react";
+import { Import as ImportIcon } from "lucide-react";
 import { apiClient } from '@/lib/api-client';
 import { useClipboard } from '@/lib/clipboard';
 
@@ -54,7 +54,7 @@ function CheckIcon(props) {
       );
 }
 
-export function PromptCard({ prompt }) {
+function PromptCardComponent({ prompt }) {
   const { toast } = useToast();
   const { t } = useLanguage();
   const { copy, copied } = useClipboard(
@@ -174,4 +174,23 @@ export function PromptCard({ prompt }) {
       </Card>
     </div>
   );
-} 
+}
+
+// Custom comparison function for PromptCard memoization
+const arePropsEqual = (prevProps, nextProps) => {
+  // Compare prompt object properties that affect rendering
+  const prevPrompt = prevProps.prompt;
+  const nextPrompt = nextProps.prompt;
+  
+  if (!prevPrompt && !nextPrompt) return true;
+  if (!prevPrompt || !nextPrompt) return false;
+  
+  return (
+    prevPrompt.id === nextPrompt.id &&
+    prevPrompt.role === nextPrompt.role &&
+    prevPrompt.prompt === nextPrompt.prompt &&
+    prevPrompt.category === nextPrompt.category
+  );
+};
+
+export const PromptCard = memo(PromptCardComponent, arePropsEqual);

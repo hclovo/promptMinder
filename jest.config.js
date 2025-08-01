@@ -16,6 +16,7 @@ const customJestConfig = {
     '^@/lib/(.*)$': '<rootDir>/lib/$1',
     '^@/hooks/(.*)$': '<rootDir>/hooks/$1',
     '^@/contexts/(.*)$': '<rootDir>/contexts/$1',
+    '^lucide-react$': '<rootDir>/__mocks__/lucide-react.js',
   },
   collectCoverageFrom: [
     'components/**/*.{js,jsx}',
@@ -54,6 +55,9 @@ const customJestConfig = {
   testMatch: [
     '**/__tests__/**/*.(js|jsx|ts|tsx)',
     '**/*.(test|spec).(js|jsx|ts|tsx)'
+  ],
+  transformIgnorePatterns: [
+    'node_modules/(?!(lucide-react)/)'
   ],
 }
 

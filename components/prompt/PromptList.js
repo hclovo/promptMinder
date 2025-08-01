@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { useState } from 'react';
+import { useState, memo } from 'react';
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Copy, Share2, Trash2, ChevronDown } from "lucide-react"
@@ -14,7 +14,7 @@ import {
 import { apiClient } from '@/lib/api-client';
 import { useClipboard } from '@/lib/clipboard';
 
-export default function PromptList({ prompts, onDelete, onShare }) {
+function PromptList({ prompts, onDelete, onShare }) {
   const { toast } = useToast();
   const { copy } = useClipboard();
   const [selectedVersions, setSelectedVersions] = useState(null);
@@ -205,4 +205,39 @@ export default function PromptList({ prompts, onDelete, onShare }) {
       </Dialog>
     </>
   );
-} 
+}
+
+// Custom comparison function for PromptList memoization
+const arePropsEqual = (prevProps, nextProps) => {
+  // Compare prompts array
+  if (prevProps.prompts?.length !== nextProps.prompts?.length) {
+    return false;
+  }
+  
+  // Deep compare prompts array for relevant properties
+  if (prevProps.prompts && nextProps.prompts) {
+    for (let i = 0; i < prevProps.prompts.length; i++) {
+      const prevPrompt = prevProps.prompts[i];
+      const nextPrompt = nextProps.prompts[i];
+      
+      if (
+        prevPrompt.id !== nextPrompt.id ||
+        prevPrompt.title !== nextPrompt.title ||
+        prevPrompt.content !== nextPrompt.content ||
+        prevPrompt.version !== nextPrompt.version ||
+        prevPrompt.created_at !== nextPrompt.created_at ||
+        JSON.stringify(prevPrompt.tags) !== JSON.stringify(nextPrompt.tags)
+      ) {
+        return false;
+      }
+    }
+  }
+  
+  // Compare function references (they should be stable with useCallback)
+  return (
+    prevProps.onDelete === nextProps.onDelete &&
+    prevProps.onShare === nextProps.onShare
+  );
+};
+
+export default memo(PromptList, arePropsEqual);

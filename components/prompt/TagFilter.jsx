@@ -1,6 +1,7 @@
+import { memo } from 'react';
 import { Badge } from "@/components/ui/badge"
 
-export default function TagFilter({ allTags, selectedTags, onTagSelect }) {
+function TagFilter({ allTags, selectedTags, onTagSelect }) {
   const toggleTag = (tag) => {
     if (selectedTags.includes(tag)) {
       onTagSelect(selectedTags.filter(t => t !== tag));
@@ -26,3 +27,37 @@ export default function TagFilter({ allTags, selectedTags, onTagSelect }) {
     </div>
   );
 }
+
+// Custom comparison function for TagFilter memoization
+const arePropsEqual = (prevProps, nextProps) => {
+  // Compare allTags array
+  if (prevProps.allTags?.length !== nextProps.allTags?.length) {
+    return false;
+  }
+  
+  if (prevProps.allTags && nextProps.allTags) {
+    for (let i = 0; i < prevProps.allTags.length; i++) {
+      if (prevProps.allTags[i] !== nextProps.allTags[i]) {
+        return false;
+      }
+    }
+  }
+  
+  // Compare selectedTags array
+  if (prevProps.selectedTags?.length !== nextProps.selectedTags?.length) {
+    return false;
+  }
+  
+  if (prevProps.selectedTags && nextProps.selectedTags) {
+    for (let i = 0; i < prevProps.selectedTags.length; i++) {
+      if (prevProps.selectedTags[i] !== nextProps.selectedTags[i]) {
+        return false;
+      }
+    }
+  }
+  
+  // Compare function reference (should be stable with useCallback)
+  return prevProps.onTagSelect === nextProps.onTagSelect;
+};
+
+export default memo(TagFilter, arePropsEqual);

@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useCallback, Suspense } from "react";
+import { useState, useEffect, useCallback, useMemo, Suspense } from "react";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/Spinner";
 import { Button } from "@/components/ui/button";
@@ -179,12 +179,210 @@ export default function PromptsPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [tagOptions, setTagOptions] = useState([]);
 
-  const debouncedSearch = useCallback((value) => {
-    const timeoutId = setTimeout(() => {
+  // Optimize debounced search with proper cleanup
+  const debouncedSearch = useMemo(
+    () => debounce((value) => {
       setSearchQuery(value);
-    }, 300);
-    return () => clearTimeout(timeoutId);
+    }, 300),
+    []
+  );
+
+  // Memoize event handlers to prevent unnecessary re-renders
+  const handleCopy = useCallback(async (content) => {
+    await copy(content);
+  }, [copy]);
+
+  const handleDelete = useCallback(async (id) => {
+    setPromptToDelete(id);
+    setDeleteDialogOpen(true);
   }, []);
+
+  const confirmDelete = useCallback(async () => {
+    if (!t?.promptsPage) return;
+    
+    try {
+      await apiClient.deletePrompt(promptToDelete);
+      setPrompts(prompts.filter((prompt) => prompt.id !== promptToDelete));
+      setDeleteDialogOpen(false);
+      toast({
+        description: t.promptsPage.deleteSuccess,
+        duration: 2000,
+      });
+    } catch (error) {
+      console.error("Error deleting prompt:", error);
+      toast({
+        variant: "destructive",
+        description: error.message || t.promptsPage.deleteError,
+        duration: 2000,
+      });
+    }
+  }, [promptToDelete, prompts, toast, t?.promptsPage]);
+
+  // Memoize expensive filtering operations
+  const filteredPrompts = useMemo(() => {
+    return prompts.filter((prompt) => {
+      const matchesTags =
+        selectedTags.length === 0 ||
+        selectedTags.every((tag) => prompt.tags.includes(tag));
+      const matchesSearch =
+        prompt.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        prompt.description.toLowerCase().includes(searchQuery.toLowerCase());
+      return matchesTags && matchesSearch;
+    });
+  }, [prompts, selectedTags, searchQuery]);
+
+  // Memoize tag extraction to avoid recalculating on every render
+  const allTags = useMemo(() => {
+    return [...new Set(prompts.flatMap((prompt) => prompt.tags))];
+  }, [prompts]);
+
+  const handleShare = useCallback(async (id) => {
+    if (!t?.promptsPage) return;
+    
+    try {
+      await apiClient.sharePrompt(id);
+      const shareUrl = `${window.location.origin}/share/${id}`;
+      await copy(shareUrl);
+    } catch (error) {
+      console.error("Error sharing prompt:", error);
+      toast({
+        variant: "destructive",
+        description: error.message || t.promptsPage.shareError,
+        duration: 2000,
+      });
+    }
+  }, [copy, toast, t?.promptsPage]);
+
+  // Memoize prompt grouping to avoid recalculating on every render
+  const groupedPrompts = useMemo(() => {
+    return filteredPrompts.reduce((acc, prompt) => {
+      if (!acc[prompt.title]) {
+        acc[prompt.title] = [];
+      }
+      acc[prompt.title].push(prompt);
+      return acc;
+    }, {});
+  }, [filteredPrompts]);
+
+  const showVersions = useCallback((e, versions) => {
+    e.preventDefault();
+    setSelectedVersions(versions);
+  }, []);
+
+  const handleCreatePrompt = useCallback(async () => {
+    if (!t?.promptsPage) return;
+    
+    if (!newPrompt.title.trim() || !newPrompt.content.trim()) {
+      toast({
+        variant: "destructive",
+        description: t.promptsPage.createValidation,
+        duration: 2000,
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const newPromptData = await apiClient.createPrompt({
+        ...newPrompt,
+        id: crypto.randomUUID(),
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        is_public: true,
+      });
+
+      // Add new prompt to local state
+      setPrompts((prev) => [newPromptData, ...prev]);
+
+      setShowNewPromptDialog(false);
+      setNewPrompt({
+        title: "",
+        content: "",
+        description: "",
+        tags: "Chatbot",
+        version: "1.0.0",
+        cover_img: "",
+      });
+
+      toast({
+        description: t.promptsPage.createSuccess,
+        duration: 2000,
+      });
+    } catch (error) {
+      console.error("Error creating prompt:", error);
+      toast({
+        variant: "destructive",
+        description: error.message || t.promptsPage.createError,
+        duration: 2000,
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [newPrompt, toast, t?.promptsPage]);
+
+  const handleCreateTag = useCallback(async (inputValue) => {
+    try {
+      await apiClient.createTag({ name: inputValue });
+      const newOption = { value: inputValue, label: inputValue };
+      setTagOptions((prev) => [...prev, newOption]);
+      return newOption;
+    } catch (error) {
+      console.error("Error creating new tag:", error);
+      toast({
+        variant: "destructive",
+        description: error.message || "创建标签失败",
+        duration: 2000,
+      });
+    }
+    return null;
+  }, [toast]);
+
+  const handleOptimize = useCallback(async () => {
+    if (!newPrompt.content.trim() || !t?.promptsPage) return;
+    setIsOptimizing(true);
+    setOptimizedContent("");
+    setShowOptimizeModal(true);
+
+    try {
+      const response = await apiClient.generate(newPrompt.content);
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let tempContent = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value);
+        const lines = chunk.split("\n").filter((line) => line.trim());
+
+        for (const line of lines) {
+          try {
+            const jsonStr = line.replace(/^data: /, "").trim();
+            if (!jsonStr || jsonStr === "[DONE]") continue;
+
+            const data = JSON.parse(jsonStr);
+            if (data.choices?.[0]?.delta?.content) {
+              tempContent += data.choices[0].delta.content;
+              setOptimizedContent(tempContent);
+            }
+          } catch (e) {
+            console.error(t.promptsPage.optimizeParsingError, e);
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Optimization error:", error);
+      toast({
+        variant: "destructive",
+        description: error.message || t.promptsPage.optimizeRetry,
+        duration: 2000,
+      });
+    } finally {
+      setIsOptimizing(false);
+    }
+  }, [newPrompt.content, t?.promptsPage, toast]);
 
   useEffect(() => {
     const fetchPrompts = async () => {
@@ -239,186 +437,7 @@ export default function PromptsPage() {
   if (!t) return null;
   const tp = t.promptsPage;
 
-  const handleCopy = async (content) => {
-    await copy(content);
-  };
 
-  const handleDelete = async (id) => {
-    setPromptToDelete(id);
-    setDeleteDialogOpen(true);
-  };
-
-  const confirmDelete = async () => {
-    try {
-      await apiClient.deletePrompt(promptToDelete);
-      setPrompts(prompts.filter((prompt) => prompt.id !== promptToDelete));
-      setDeleteDialogOpen(false);
-      toast({
-        description: tp.deleteSuccess,
-        duration: 2000,
-      });
-    } catch (error) {
-      console.error("Error deleting prompt:", error);
-      toast({
-        variant: "destructive",
-        description: error.message || tp.deleteError,
-        duration: 2000,
-      });
-    }
-  };
-
-  const filteredPrompts = prompts.filter((prompt) => {
-    const matchesTags =
-      selectedTags.length === 0 ||
-      selectedTags.every((tag) => prompt.tags.includes(tag));
-    const matchesSearch =
-      prompt.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      prompt.description.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesTags && matchesSearch;
-  });
-
-  const allTags = [...new Set(prompts.flatMap((prompt) => prompt.tags))];
-
-  const handleShare = async (id) => {
-    try {
-      await apiClient.sharePrompt(id);
-      const shareUrl = `${window.location.origin}/share/${id}`;
-      await copy(shareUrl);
-    } catch (error) {
-      console.error("Error sharing prompt:", error);
-      toast({
-        variant: "destructive",
-        description: error.message || tp.shareError,
-        duration: 2000,
-      });
-    }
-  };
-
-  const groupedPrompts = filteredPrompts.reduce((acc, prompt) => {
-    if (!acc[prompt.title]) {
-      acc[prompt.title] = [];
-    }
-    acc[prompt.title].push(prompt);
-    return acc;
-  }, {});
-
-  const showVersions = (e, versions) => {
-    e.preventDefault();
-    setSelectedVersions(versions);
-  };
-
-  const handleCreatePrompt = async () => {
-    if (!newPrompt.title.trim() || !newPrompt.content.trim()) {
-      toast({
-        variant: "destructive",
-        description: tp.createValidation,
-        duration: 2000,
-      });
-      return;
-    }
-
-    setIsSubmitting(true);
-    try {
-      const newPromptData = await apiClient.createPrompt({
-        ...newPrompt,
-        id: crypto.randomUUID(),
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        is_public: true,
-      });
-
-      // Add new prompt to local state
-      setPrompts((prev) => [newPromptData, ...prev]);
-
-      setShowNewPromptDialog(false);
-      setNewPrompt({
-        title: "",
-        content: "",
-        description: "",
-        tags: "Chatbot",
-        version: "1.0.0",
-        cover_img: "",
-      });
-
-      toast({
-        description: tp.createSuccess,
-        duration: 2000,
-      });
-    } catch (error) {
-      console.error("Error creating prompt:", error);
-      toast({
-        variant: "destructive",
-        description: error.message || tp.createError,
-        duration: 2000,
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleCreateTag = async (inputValue) => {
-    try {
-      await apiClient.createTag({ name: inputValue });
-      const newOption = { value: inputValue, label: inputValue };
-      setTagOptions((prev) => [...prev, newOption]);
-      return newOption;
-    } catch (error) {
-      console.error("Error creating new tag:", error);
-      toast({
-        variant: "destructive",
-        description: error.message || "创建标签失败",
-        duration: 2000,
-      });
-    }
-    return null;
-  };
-
-  const handleOptimize = async () => {
-    if (!newPrompt.content.trim()) return;
-    setIsOptimizing(true);
-    setOptimizedContent("");
-    setShowOptimizeModal(true);
-
-    try {
-      const response = await apiClient.generate(newPrompt.content);
-
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let tempContent = "";
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        const chunk = decoder.decode(value);
-        const lines = chunk.split("\n").filter((line) => line.trim());
-
-        for (const line of lines) {
-          try {
-            const jsonStr = line.replace(/^data: /, "").trim();
-            if (!jsonStr || jsonStr === "[DONE]") continue;
-
-            const data = JSON.parse(jsonStr);
-            if (data.choices?.[0]?.delta?.content) {
-              tempContent += data.choices[0].delta.content;
-              setOptimizedContent(tempContent);
-            }
-          } catch (e) {
-            console.error(tp.optimizeParsingError, e);
-          }
-        }
-      }
-    } catch (error) {
-      console.error("Optimization error:", error);
-      toast({
-        variant: "destructive",
-        description: error.message || tp.optimizeRetry,
-        duration: 2000,
-      });
-    } finally {
-      setIsOptimizing(false);
-    }
-  };
 
   return (
     <div className="min-h-[80vh] bg-gradient-to-b from-background to-background/80">
