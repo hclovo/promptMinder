@@ -1,15 +1,15 @@
 'use client';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useState, use } from 'react';
+import { useEffect, useState, use, Suspense } from 'react';
 import { Spinner } from '@/components/ui/Spinner';
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent } from "@/components/ui/card"
+import { Skeleton } from "@/components/ui/skeleton"
 import Image from 'next/image';
-import CreatableSelect from 'react-select/creatable';
-import { motion } from "framer-motion";
+import dynamic from 'next/dynamic';
 import { Loader2, Wand2 } from "lucide-react";
 import {
   Modal,
@@ -20,8 +20,23 @@ import {
 } from "@/components/ui/modal"
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from "@/hooks/use-toast";
-import VariableInputs from '@/components/prompt/VariableInputs';
 import { apiClient } from '@/lib/api-client';
+
+// Dynamic imports for heavy components
+const CreatableSelect = dynamic(() => import('react-select/creatable'), {
+  loading: () => <Skeleton className="h-10 w-full" />,
+  ssr: false
+});
+
+const MotionDiv = dynamic(() => import('framer-motion').then(mod => mod.motion.div), {
+  loading: () => <div className="animate-pulse" />,
+  ssr: false
+});
+
+const VariableInputs = dynamic(() => import('@/components/prompt/VariableInputs'), {
+  loading: () => <Skeleton className="h-16 w-full" />,
+  ssr: false
+});
 
 export default function EditPrompt({ params }) {
   const router = useRouter();
@@ -185,11 +200,12 @@ export default function EditPrompt({ params }) {
 
   return (
     <>
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="container max-w-3xl mx-auto p-6"
-      >
+      <Suspense fallback={<div className="container max-w-3xl mx-auto p-6 animate-pulse"><Skeleton className="h-8 w-48 mb-8" /><Card><CardContent className="p-6"><Skeleton className="h-96 w-full" /></CardContent></Card></div>}>
+        <MotionDiv 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="container max-w-3xl mx-auto p-6"
+        >
         <div className="flex items-center gap-4 mb-8">
           <button 
             onClick={() => router.back()}
@@ -205,7 +221,7 @@ export default function EditPrompt({ params }) {
         <Card className="shadow-lg">
           <CardContent className="p-6">
             <form onSubmit={handleSubmit} className="space-y-8">
-              <motion.div 
+              <MotionDiv 
                 className="space-y-6"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -253,10 +269,12 @@ export default function EditPrompt({ params }) {
                 </div>
 
                 {/* 动态变量输入组件 */}
-                            <VariableInputs
-              content={prompt.content}
-              className="my-4"
-            />
+                <Suspense fallback={<Skeleton className="h-16 w-full" />}>
+                  <VariableInputs
+                    content={prompt.content}
+                    className="my-4"
+                  />
+                </Suspense>
 
                 <div className="space-y-2">
                   <Label htmlFor="description" className="text-lg font-medium">{tp.formDescriptionLabel}</Label>
@@ -325,7 +343,7 @@ export default function EditPrompt({ params }) {
                     placeholder={tp.formVersionPlaceholder}
                   />
                 </div>
-              </motion.div>
+              </MotionDiv>
 
               <div className="flex gap-4 pt-4">
                 <Button 
@@ -352,7 +370,8 @@ export default function EditPrompt({ params }) {
             </form>
           </CardContent>
         </Card>
-      </motion.div>
+      </MotionDiv>
+      </Suspense>
 
       <Modal isOpen={showOptimizeModal} onClose={() => setShowOptimizeModal(false)}>
         <ModalContent className="max-w-3xl max-h-[80vh]">

@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { Input } from "@/components/ui/input"
@@ -7,8 +7,8 @@ import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent } from "@/components/ui/card"
-import { motion } from "framer-motion";
 import { Loader2, Wand2 } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Modal,
   ModalContent,
@@ -18,14 +18,26 @@ import {
 } from "@/components/ui/modal"
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from "@/hooks/use-toast";
-import VariableInputs from '@/components/prompt/VariableInputs';
 import { apiClient } from '@/lib/api-client';
 
+// Dynamic imports for heavy components
+const MotionDiv = dynamic(() => import('framer-motion').then(mod => mod.motion.div), {
+  loading: () => <div className="animate-pulse" />,
+  ssr: false
+});
+
+const VariableInputs = dynamic(() => import('@/components/prompt/VariableInputs'), {
+  loading: () => <Skeleton className="h-16 w-full" />,
+  ssr: false
+});
+
 const Select = dynamic(() => import('react-select'), {
+  loading: () => <Skeleton className="h-10 w-full" />,
   ssr: false
 });
 
 const CreatableSelect = dynamic(() => import('react-select/creatable'), {
+  loading: () => <Skeleton className="h-10 w-full" />,
   ssr: false
 });
 
@@ -203,17 +215,18 @@ export default function NewPrompt() {
 
   return (
     <>
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="container mx-auto p-6 max-w-7xl"
-      >
+      <Suspense fallback={<div className="container mx-auto p-6 max-w-7xl animate-pulse"><Skeleton className="h-8 w-48 mb-6" /><Card><CardContent className="pt-6"><Skeleton className="h-96 w-full" /></CardContent></Card></div>}>
+        <MotionDiv 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="container mx-auto p-6 max-w-7xl"
+        >
         <h1 className="text-3xl font-bold mb-6">{tp.title}</h1>
         <Card>
           <CardContent className="pt-6">
             <form onSubmit={handleSubmit} className="space-y-6">
-              <motion.div 
+              <MotionDiv 
                 className="space-y-2"
                 whileHover={{ scale: 1.01 }}
                 transition={{ duration: 0.2 }}
@@ -233,9 +246,9 @@ export default function NewPrompt() {
                 {errors.title && (
                   <span className="text-red-500 text-sm">{errors.title}</span>
                 )}
-              </motion.div>
+              </MotionDiv>
 
-              <motion.div 
+              <MotionDiv 
                 className="space-y-2"
                 whileHover={{ scale: 1.01 }}
                 transition={{ duration: 0.2 }}
@@ -272,15 +285,17 @@ export default function NewPrompt() {
                   <span className="text-red-500 text-sm">{errors.content}</span>
                 )}
                 <p className="text-sm text-muted-foreground">{tp.variableTip}</p>
-              </motion.div>
+              </MotionDiv>
 
               {/* 动态变量输入组件 */}
-              <VariableInputs
-                content={prompt.content}
-                className="my-4"
-              />
+              <Suspense fallback={<Skeleton className="h-16 w-full" />}>
+                <VariableInputs
+                  content={prompt.content}
+                  className="my-4"
+                />
+              </Suspense>
 
-              <motion.div 
+              <MotionDiv 
                 className="space-y-2"
                 whileHover={{ scale: 1.01 }}
                 transition={{ duration: 0.2 }}
@@ -293,7 +308,7 @@ export default function NewPrompt() {
                   placeholder={tp.formDescriptionPlaceholder}
                   className="min-h-[80px]"
                 />
-              </motion.div>
+              </MotionDiv>
 
               <div 
                 className="space-y-2"
@@ -317,7 +332,7 @@ export default function NewPrompt() {
                 />
               </div>
 
-              <motion.div 
+              <MotionDiv 
                 className="space-y-2"
                 whileHover={{ scale: 1.01 }}
                 transition={{ duration: 0.2 }}
@@ -330,9 +345,9 @@ export default function NewPrompt() {
                   placeholder={tp.formVersionPlaceholder}
                 />
                 <p className="text-sm text-muted-foreground">{tp.versionSuggestion}</p>
-              </motion.div>
+              </MotionDiv>
 
-              <motion.div 
+              <MotionDiv 
                 className="flex gap-4"
                 whileHover={{ scale: 1.01 }}
                 transition={{ duration: 0.2 }}
@@ -356,11 +371,12 @@ export default function NewPrompt() {
                 >
                   {tp.cancel}
                 </Button>
-              </motion.div>
+              </MotionDiv>
             </form>
           </CardContent>
         </Card>
-      </motion.div>
+      </MotionDiv>
+      </Suspense>
 
       <Modal isOpen={showOptimizeModal} onClose={() => setShowOptimizeModal(false)}>
         <ModalContent className="max-w-3xl max-h-[80vh]">

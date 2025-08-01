@@ -17,7 +17,18 @@ import {
   Sparkles, 
   AlertCircle 
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import dynamic from 'next/dynamic';
+
+// Dynamic import for framer-motion
+const MotionDiv = dynamic(() => import('framer-motion').then(mod => mod.motion.div), {
+  loading: () => <div />,
+  ssr: false
+});
+
+const AnimatePresence = dynamic(() => import('framer-motion').then(mod => mod.AnimatePresence), {
+  loading: () => ({ children }) => <>{children}</>,
+  ssr: false
+});
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from '@/contexts/LanguageContext';
 
@@ -109,7 +120,7 @@ export default function VariableInputs({
     };
 
     return (
-      <motion.div
+      <MotionDiv
         key={variable.name}
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -142,7 +153,7 @@ export default function VariableInputs({
         )}
         
         {hasError && (
-          <motion.div
+          <MotionDiv
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             className="flex items-center gap-1 text-red-500 text-sm"
@@ -150,9 +161,9 @@ export default function VariableInputs({
           >
             <AlertCircle className="w-4 h-4" />
             {hasError}
-          </motion.div>
+          </MotionDiv>
         )}
-      </motion.div>
+      </MotionDiv>
     );
   };
 
@@ -177,7 +188,7 @@ export default function VariableInputs({
         </div>
         
         {hasRequiredErrors && (
-          <motion.div
+          <MotionDiv
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             className="bg-red-50 border border-red-200 rounded-lg p-3 text-red-700 text-sm"
@@ -186,7 +197,7 @@ export default function VariableInputs({
               <AlertCircle className="w-4 h-4" />
               请填写所有必需的变量字段
             </div>
-          </motion.div>
+          </MotionDiv>
         )}
       </div>
     </div>

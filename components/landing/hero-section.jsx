@@ -1,6 +1,21 @@
 "use client";
 
-import { motion } from "framer-motion";
+import dynamic from 'next/dynamic';
+
+const MotionDiv = dynamic(() => import('framer-motion').then(mod => mod.motion.div), {
+  loading: () => <div />,
+  ssr: false
+});
+
+const MotionH1 = dynamic(() => import('framer-motion').then(mod => mod.motion.h1), {
+  loading: () => <h1 />,
+  ssr: false
+});
+
+const MotionP = dynamic(() => import('framer-motion').then(mod => mod.motion.p), {
+  loading: () => <p />,
+  ssr: false
+});
 import Link from "next/link";
 import { useAuth } from "@clerk/nextjs";
 import { TypeAnimation } from 'react-type-animation';
@@ -37,7 +52,7 @@ export function HeroSection({ t }) {
 
 
       <div className="relative container mx-auto px-4">
-        <motion.div
+        <MotionDiv
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
@@ -74,7 +89,7 @@ export function HeroSection({ t }) {
               查看价格方案
             </Link> */}
           </div>
-        </motion.div>
+        </MotionDiv>
       </div>
     </section>
   );

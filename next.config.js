@@ -29,6 +29,61 @@ const nextConfig = {
       );
     }
 
+    // Optimize chunk splitting
+    if (!isServer) {
+      config.optimization = {
+        ...config.optimization,
+        splitChunks: {
+          chunks: 'all',
+          cacheGroups: {
+            default: false,
+            vendors: false,
+            // Vendor chunk for common libraries
+            vendor: {
+              name: 'vendor',
+              chunks: 'all',
+              test: /[\\/]node_modules[\\/]/,
+              priority: 20,
+              enforce: true,
+            },
+            // React and Next.js specific chunk
+            framework: {
+              name: 'framework',
+              chunks: 'all',
+              test: /[\\/]node_modules[\\/](react|react-dom|next)[\\/]/,
+              priority: 40,
+              enforce: true,
+            },
+            // UI components chunk
+            ui: {
+              name: 'ui',
+              chunks: 'all',
+              test: /[\\/](components[\\/]ui|@radix-ui|lucide-react)[\\/]/,
+              priority: 30,
+              enforce: true,
+            },
+            // Common utilities chunk
+            lib: {
+              name: 'lib',
+              chunks: 'all',
+              test: /[\\/](lib|hooks|contexts)[\\/]/,
+              priority: 25,
+              minChunks: 2,
+              enforce: true,
+            },
+            // Large libraries chunk
+            heavy: {
+              name: 'heavy',
+              chunks: 'all',
+              test: /[\\/]node_modules[\\/](react-select|framer-motion|@clerk)[\\/]/,
+              priority: 35,
+              enforce: true,
+            },
+          },
+        },
+      };
+    }
+
     return config;
   },
   images: {
@@ -47,9 +102,33 @@ const nextConfig = {
   // Performance optimizations
   experimental: {
     optimizePackageImports: ['lucide-react', '@radix-ui/react-icons'],
+    // Enable modern bundling features
+    turbo: {
+      rules: {
+        '*.svg': {
+          loaders: ['@svgr/webpack'],
+          as: '*.js',
+        },
+      },
+    },
   },
   // Enable gzip compression
   compress: true,
+  // Optimize production builds
+  swcMinify: true,
+  // Enable static optimization
+  output: 'standalone',
+  // CSS optimization
+  optimizeFonts: true,
+  // Enable CSS modules optimization
+  modularizeImports: {
+    'lucide-react': {
+      transform: 'lucide-react/dist/esm/icons/{{member}}',
+    },
+    '@radix-ui/react-icons': {
+      transform: '@radix-ui/react-icons/dist/{{member}}.js',
+    },
+  },
 };
 
 module.exports = withBundleAnalyzer(nextConfig);

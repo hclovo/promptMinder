@@ -5,7 +5,28 @@ module.exports = {
     "./pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
+    "./hooks/**/*.{js,ts,jsx,tsx}",
+    "./contexts/**/*.{js,ts,jsx,tsx}",
+    "./lib/**/*.{js,ts,jsx,tsx}",
   ],
+  // Enable JIT mode for better performance
+  mode: 'jit',
+  // Optimize for production builds
+  corePlugins: {
+    // Disable unused core plugins to reduce bundle size
+    preflight: true,
+    container: false, // We don't use container classes
+    accessibility: false, // We handle accessibility manually
+    backdropOpacity: false,
+    backdropSaturate: false,
+    backdropSepia: false,
+    backgroundOpacity: false,
+    borderOpacity: false,
+    divideOpacity: false,
+    placeholderOpacity: false,
+    ringOpacity: false,
+    textOpacity: false,
+  },
   theme: {
   	extend: {
   		colors: {

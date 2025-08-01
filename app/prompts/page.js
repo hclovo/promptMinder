@@ -1,12 +1,21 @@
-'use client';
-import { useState, useEffect, useCallback } from 'react';
-import PromptList from '@/components/prompt/PromptList';
-import { Input } from "@/components/ui/input"
-import { Spinner } from '@/components/ui/Spinner';
-import TagFilter from '@/components/prompt/TagFilter';
-import { Button } from "@/components/ui/button"
-import { Search, PlusCircle, ChevronDown, Copy, Share2, Trash2, Clock, Tags, Wand2, Loader2 } from "lucide-react"
-import { Skeleton } from "@/components/ui/skeleton"
+"use client";
+import { useState, useEffect, useCallback, Suspense } from "react";
+import { Input } from "@/components/ui/input";
+import { Spinner } from "@/components/ui/Spinner";
+import { Button } from "@/components/ui/button";
+import {
+  Search,
+  PlusCircle,
+  ChevronDown,
+  Copy,
+  Share2,
+  Trash2,
+  Clock,
+  Tags,
+  Wand2,
+  Loader2,
+} from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Dialog,
   DialogContent,
@@ -14,22 +23,54 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
-import { useToast } from "@/hooks/use-toast"
-import { Card } from "@/components/ui/card"
-import Image from 'next/image';
-import Link from 'next/link';
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import dynamic from 'next/dynamic'
-import { useLanguage } from '@/contexts/LanguageContext';
-import * as VisuallyHidden from '@radix-ui/react-visually-hidden';
-import { extractVariables } from '@/lib/promptVariables';
-import { apiClient } from '@/lib/api-client';
-import { useClipboard } from '@/lib/clipboard';
+} from "@/components/ui/dialog";
+import { useToast } from "@/hooks/use-toast";
+import { Card } from "@/components/ui/card";
+import Image from "next/image";
+import Link from "next/link";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import dynamic from "next/dynamic";
+import { useLanguage } from "@/contexts/LanguageContext";
+import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
+import { extractVariables } from "@/lib/promptVariables";
+import { apiClient } from "@/lib/api-client";
+import { useClipboard } from "@/lib/clipboard";
 
-const CreatableSelect = dynamic(() => import('react-select/creatable'), {
-  ssr: false
+// Dynamic imports for heavy components
+const PromptList = dynamic(() => import("@/components/prompt/PromptList"), {
+  loading: () => (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+      {[...Array(6)].map((_, i) => (
+        <Card key={i} className="p-5 animate-pulse">
+          <div className="space-y-4">
+            <div className="flex justify-between items-start">
+              <div className="space-y-2">
+                <Skeleton className="h-6 w-[180px]" />
+                <Skeleton className="h-4 w-[240px]" />
+              </div>
+              <Skeleton className="h-8 w-24 rounded-lg" />
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Skeleton className="h-5 w-16 rounded-full" />
+              <Skeleton className="h-5 w-20 rounded-full" />
+            </div>
+          </div>
+        </Card>
+      ))}
+    </div>
+  ),
+  ssr: false,
+});
+
+const TagFilter = dynamic(() => import("@/components/prompt/TagFilter"), {
+  loading: () => <Skeleton className="h-10 w-32" />,
+  ssr: false,
+});
+
+const CreatableSelect = dynamic(() => import("react-select/creatable"), {
+  loading: () => <Skeleton className="h-10 w-full" />,
+  ssr: false,
 });
 
 // Custom debounce function
@@ -95,7 +136,7 @@ const NewPromptCard = ({ onClick }) => {
   const { t } = useLanguage();
   if (!t) return null;
   return (
-    <Card 
+    <Card
       onClick={onClick}
       className="group relative border p-5 hover:shadow-xl transition-all duration-300 ease-in-out bg-card cursor-pointer border-dashed h-[180px] flex items-center justify-center overflow-hidden"
     >
@@ -103,7 +144,9 @@ const NewPromptCard = ({ onClick }) => {
         <div className="bg-primary/10 p-3 rounded-full">
           <PlusCircle className="h-8 w-8 text-primary" />
         </div>
-        <span className="text-sm font-medium">{t.promptsPage.newPromptCard}</span>
+        <span className="text-sm font-medium">
+          {t.promptsPage.newPromptCard}
+        </span>
       </div>
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
     </Card>
@@ -117,21 +160,21 @@ export default function PromptsPage() {
   const [prompts, setPrompts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedTags, setSelectedTags] = useState([]);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [promptToDelete, setPromptToDelete] = useState(null);
   const [selectedVersions, setSelectedVersions] = useState(null);
   const [showNewPromptDialog, setShowNewPromptDialog] = useState(false);
   const [showOptimizeModal, setShowOptimizeModal] = useState(false);
-  const [optimizedContent, setOptimizedContent] = useState('');
+  const [optimizedContent, setOptimizedContent] = useState("");
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [newPrompt, setNewPrompt] = useState({
-    title: '',
-    content: '',
-    description: '',
-    tags: 'Chatbot',
-    version: '1.0.0',
-    cover_img: '',
+    title: "",
+    content: "",
+    description: "",
+    tags: "Chatbot",
+    version: "1.0.0",
+    cover_img: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [tagOptions, setTagOptions] = useState([]);
@@ -148,18 +191,20 @@ export default function PromptsPage() {
       try {
         setIsLoading(true);
         const data = await apiClient.getPrompts();
-        setPrompts(data.map(prompt => ({
-          ...prompt,
-          version: prompt.version || '1.0',
-          cover_img: prompt.cover_img || '/default-cover.jpg',
-          tags: prompt.tags?.split(',') || []
-        })));
+        setPrompts(
+          data.map((prompt) => ({
+            ...prompt,
+            version: prompt.version || "1.0",
+            cover_img: prompt.cover_img || "/default-cover.jpg",
+            tags: prompt.tags?.split(",") || [],
+          }))
+        );
       } catch (error) {
-        console.error('Error fetching prompts:', error);
+        console.error("Error fetching prompts:", error);
         toast({
-          title: '获取失败',
-          description: error.message || '无法获取提示词列表',
-          variant: 'destructive',
+          title: "获取失败",
+          description: error.message || "无法获取提示词列表",
+          variant: "destructive",
         });
       } finally {
         setIsLoading(false);
@@ -173,17 +218,17 @@ export default function PromptsPage() {
     const fetchTags = async () => {
       try {
         const data = await apiClient.getTags();
-        const mappedTags = data.map(tag => ({ 
-          value: tag.name, 
-          label: tag.name 
+        const mappedTags = data.map((tag) => ({
+          value: tag.name,
+          label: tag.name,
         }));
         setTagOptions(mappedTags);
       } catch (error) {
-        console.error('Error fetching tags:', error);
+        console.error("Error fetching tags:", error);
         toast({
-          title: '获取标签失败',
-          description: error.message || '无法获取标签列表',
-          variant: 'destructive',
+          title: "获取标签失败",
+          description: error.message || "无法获取标签列表",
+          variant: "destructive",
         });
       }
     };
@@ -206,14 +251,14 @@ export default function PromptsPage() {
   const confirmDelete = async () => {
     try {
       await apiClient.deletePrompt(promptToDelete);
-      setPrompts(prompts.filter(prompt => prompt.id !== promptToDelete));
+      setPrompts(prompts.filter((prompt) => prompt.id !== promptToDelete));
       setDeleteDialogOpen(false);
       toast({
         description: tp.deleteSuccess,
         duration: 2000,
       });
     } catch (error) {
-      console.error('Error deleting prompt:', error);
+      console.error("Error deleting prompt:", error);
       toast({
         variant: "destructive",
         description: error.message || tp.deleteError,
@@ -222,15 +267,17 @@ export default function PromptsPage() {
     }
   };
 
-  const filteredPrompts = prompts.filter(prompt => {
-    const matchesTags = selectedTags.length === 0 || 
-      selectedTags.every(tag => prompt.tags.includes(tag));
-    const matchesSearch = prompt.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+  const filteredPrompts = prompts.filter((prompt) => {
+    const matchesTags =
+      selectedTags.length === 0 ||
+      selectedTags.every((tag) => prompt.tags.includes(tag));
+    const matchesSearch =
+      prompt.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       prompt.description.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesTags && matchesSearch;
   });
 
-  const allTags = [...new Set(prompts.flatMap(prompt => prompt.tags))];
+  const allTags = [...new Set(prompts.flatMap((prompt) => prompt.tags))];
 
   const handleShare = async (id) => {
     try {
@@ -238,7 +285,7 @@ export default function PromptsPage() {
       const shareUrl = `${window.location.origin}/share/${id}`;
       await copy(shareUrl);
     } catch (error) {
-      console.error('Error sharing prompt:', error);
+      console.error("Error sharing prompt:", error);
       toast({
         variant: "destructive",
         description: error.message || tp.shareError,
@@ -277,20 +324,20 @@ export default function PromptsPage() {
         id: crypto.randomUUID(),
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
-        is_public: true
+        is_public: true,
       });
 
       // Add new prompt to local state
-      setPrompts(prev => [newPromptData, ...prev]);
+      setPrompts((prev) => [newPromptData, ...prev]);
 
       setShowNewPromptDialog(false);
       setNewPrompt({
-        title: '',
-        content: '',
-        description: '',
-        tags: 'Chatbot',
-        version: '1.0.0',
-        cover_img: '',
+        title: "",
+        content: "",
+        description: "",
+        tags: "Chatbot",
+        version: "1.0.0",
+        cover_img: "",
       });
 
       toast({
@@ -298,7 +345,7 @@ export default function PromptsPage() {
         duration: 2000,
       });
     } catch (error) {
-      console.error('Error creating prompt:', error);
+      console.error("Error creating prompt:", error);
       toast({
         variant: "destructive",
         description: error.message || tp.createError,
@@ -313,13 +360,13 @@ export default function PromptsPage() {
     try {
       await apiClient.createTag({ name: inputValue });
       const newOption = { value: inputValue, label: inputValue };
-      setTagOptions(prev => [...prev, newOption]);
+      setTagOptions((prev) => [...prev, newOption]);
       return newOption;
     } catch (error) {
-      console.error('Error creating new tag:', error);
+      console.error("Error creating new tag:", error);
       toast({
         variant: "destructive",
-        description: error.message || '创建标签失败',
+        description: error.message || "创建标签失败",
         duration: 2000,
       });
     }
@@ -329,28 +376,28 @@ export default function PromptsPage() {
   const handleOptimize = async () => {
     if (!newPrompt.content.trim()) return;
     setIsOptimizing(true);
-    setOptimizedContent('');
+    setOptimizedContent("");
     setShowOptimizeModal(true);
-    
+
     try {
       const response = await apiClient.generate(newPrompt.content);
-      
+
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
-      let tempContent = '';
+      let tempContent = "";
 
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
-        
+
         const chunk = decoder.decode(value);
-        const lines = chunk.split('\n').filter(line => line.trim());
-        
+        const lines = chunk.split("\n").filter((line) => line.trim());
+
         for (const line of lines) {
           try {
-            const jsonStr = line.replace(/^data: /, '').trim();
-            if (!jsonStr || jsonStr === '[DONE]') continue;
-            
+            const jsonStr = line.replace(/^data: /, "").trim();
+            if (!jsonStr || jsonStr === "[DONE]") continue;
+
             const data = JSON.parse(jsonStr);
             if (data.choices?.[0]?.delta?.content) {
               tempContent += data.choices[0].delta.content;
@@ -361,9 +408,8 @@ export default function PromptsPage() {
           }
         }
       }
-
     } catch (error) {
-      console.error('Optimization error:', error);
+      console.error("Optimization error:", error);
       toast({
         variant: "destructive",
         description: error.message || tp.optimizeRetry,
@@ -383,11 +429,14 @@ export default function PromptsPage() {
               <h1 className="text-3xl font-bold tracking-tight">{tp.title}</h1>
               <div className="flex items-center gap-2 px-4 py-2 bg-secondary/30 rounded-lg">
                 <span className="text-sm font-medium text-secondary-foreground">
-                  {tp.totalPrompts.replace('{count}', prompts.length.toString())}
+                  {tp.totalPrompts.replace(
+                    "{count}",
+                    prompts.length.toString()
+                  )}
                 </span>
               </div>
             </div>
-            
+
             <div className="flex flex-col md:flex-row gap-4 items-center">
               <div className="relative w-full md:w-[320px]">
                 <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground">
@@ -402,7 +451,7 @@ export default function PromptsPage() {
               </div>
               {!isLoading && (
                 <>
-                  <TagFilter 
+                  <TagFilter
                     allTags={allTags}
                     selectedTags={selectedTags}
                     onTagSelect={setSelectedTags}
@@ -412,7 +461,9 @@ export default function PromptsPage() {
                   <Link href="/tags" className="w-full md:w-auto">
                     <Button variant="outline" className="w-full group">
                       <Tags className="mr-2 h-4 w-4 group-hover:text-primary transition-colors" />
-                      <span className="group-hover:text-primary transition-colors">{tp.manageTags}</span>
+                      <span className="group-hover:text-primary transition-colors">
+                        {tp.manageTags}
+                      </span>
                     </Button>
                   </Link>
                 </>
@@ -430,7 +481,7 @@ export default function PromptsPage() {
               {Object.entries(groupedPrompts).map(([title, versions]) => {
                 const latestPrompt = versions[0];
                 return (
-                  <Card 
+                  <Card
                     key={title}
                     className="group relative rounded-lg border p-5 hover:shadow-lg transition-all duration-300 ease-in-out bg-card cursor-pointer overflow-hidden"
                     onClick={(e) => {
@@ -443,7 +494,7 @@ export default function PromptsPage() {
                     }}
                   >
                     <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                    
+
                     <div className="space-y-4 relative z-10">
                       <div className="flex justify-between items-start">
                         <div>
@@ -497,13 +548,15 @@ export default function PromptsPage() {
                       </div>
 
                       <div className="flex flex-wrap gap-2">
-                        {(latestPrompt.tags 
-                          ? (Array.isArray(latestPrompt.tags) 
-                              ? latestPrompt.tags 
-                              : latestPrompt.tags.split(',').filter(tag => tag.trim()))
+                        {(latestPrompt.tags
+                          ? Array.isArray(latestPrompt.tags)
+                            ? latestPrompt.tags
+                            : latestPrompt.tags
+                                .split(",")
+                                .filter((tag) => tag.trim())
                           : []
                         ).map((tag) => (
-                          <span 
+                          <span
                             key={tag}
                             className="bg-secondary/50 text-secondary-foreground text-xs px-2.5 py-0.5 rounded-full font-medium"
                           >
@@ -518,19 +571,43 @@ export default function PromptsPage() {
                           {new Date(latestPrompt.updated_at).toLocaleString()}
                         </div>
                         {(() => {
-                          const variables = extractVariables(latestPrompt.content);
-                          return variables.length > 0 && (
-                            <div className="flex items-center gap-1 ml-2 bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">
-                              <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h4" />
-                              </svg>
-                              <span>{t?.variableInputs?.variableCount?.replace('{count}', variables.length.toString()) || `${variables.length} 变量`}</span>
-                            </div>
+                          const variables = extractVariables(
+                            latestPrompt.content
+                          );
+                          return (
+                            variables.length > 0 && (
+                              <div className="flex items-center gap-1 ml-2 bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">
+                                <svg
+                                  className="h-3 w-3"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth="2"
+                                    d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h4"
+                                  />
+                                </svg>
+                                <span>
+                                  {t?.variableInputs?.variableCount?.replace(
+                                    "{count}",
+                                    variables.length.toString()
+                                  ) || `${variables.length} 变量`}
+                                </span>
+                              </div>
+                            )
                           );
                         })()}
                         {versions.length > 1 && (
                           <div className="flex items-center gap-1 ml-2 bg-primary/10 text-primary px-2 py-0.5 rounded-full">
-                            <span>{tp.versionsCount.replace('{count}', versions.length.toString())}</span>
+                            <span>
+                              {tp.versionsCount.replace(
+                                "{count}",
+                                versions.length.toString()
+                              )}
+                            </span>
                           </div>
                         )}
                       </div>
@@ -543,23 +620,32 @@ export default function PromptsPage() {
         </div>
       </div>
 
-      <Dialog open={!!selectedVersions} onOpenChange={() => setSelectedVersions(null)}>
+      <Dialog
+        open={!!selectedVersions}
+        onOpenChange={() => setSelectedVersions(null)}
+      >
         <DialogContent className="sm:max-w-md">
-          <VisuallyHidden.Root><DialogTitle>Dialog</DialogTitle></VisuallyHidden.Root>
+          <VisuallyHidden.Root>
+            <DialogTitle>Dialog</DialogTitle>
+          </VisuallyHidden.Root>
           <DialogHeader>
-            <DialogTitle className="text-xl">{tp.versionHistoryTitle}</DialogTitle>
+            <DialogTitle className="text-xl">
+              {tp.versionHistoryTitle}
+            </DialogTitle>
           </DialogHeader>
           <div className="space-y-3 mt-4 max-h-[60vh] overflow-y-auto pr-1">
             {selectedVersions?.map((version) => (
-              <Link 
-                key={version.id} 
+              <Link
+                key={version.id}
                 href={`/prompts/${version.id}`}
                 className="block"
               >
                 <Card className="p-4 hover:bg-accent/50 cursor-pointer transition-colors border border-border/50 hover:border-primary/30">
                   <div className="flex justify-between items-center">
                     <div>
-                      <div className="font-medium text-primary">v{version.version}</div>
+                      <div className="font-medium text-primary">
+                        v{version.version}
+                      </div>
                       <div className="text-sm text-muted-foreground">
                         {new Date(version.created_at).toLocaleString()}
                       </div>
@@ -575,12 +661,14 @@ export default function PromptsPage() {
 
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent className="sm:max-w-md">
-          <VisuallyHidden.Root><DialogTitle>Dialog</DialogTitle></VisuallyHidden.Root>
+          <VisuallyHidden.Root>
+            <DialogTitle>Dialog</DialogTitle>
+          </VisuallyHidden.Root>
           <DialogHeader>
-            <DialogTitle className="text-xl text-destructive">{tp.deleteConfirmTitle}</DialogTitle>
-            <DialogDescription>
-              {tp.deleteConfirmDescription}
-            </DialogDescription>
+            <DialogTitle className="text-xl text-destructive">
+              {tp.deleteConfirmTitle}
+            </DialogTitle>
+            <DialogDescription>{tp.deleteConfirmDescription}</DialogDescription>
           </DialogHeader>
           <DialogFooter className="mt-4 gap-2">
             <Button
@@ -589,10 +677,7 @@ export default function PromptsPage() {
             >
               {tp.cancel}
             </Button>
-            <Button
-              variant="destructive"
-              onClick={confirmDelete}
-            >
+            <Button variant="destructive" onClick={confirmDelete}>
               {tp.delete}
             </Button>
           </DialogFooter>
@@ -601,7 +686,9 @@ export default function PromptsPage() {
 
       <Dialog open={showNewPromptDialog} onOpenChange={setShowNewPromptDialog}>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto scrollbar-thumb-muted/50 scrollbar-track-background">
-          <VisuallyHidden.Root><DialogTitle>Dialog</DialogTitle></VisuallyHidden.Root>
+          <VisuallyHidden.Root>
+            <DialogTitle>Dialog</DialogTitle>
+          </VisuallyHidden.Root>
           <DialogHeader>
             <DialogTitle className="text-xl">{tp.newPromptTitle}</DialogTitle>
           </DialogHeader>
@@ -614,7 +701,9 @@ export default function PromptsPage() {
               <Input
                 id="title"
                 value={newPrompt.title}
-                onChange={(e) => setNewPrompt({ ...newPrompt, title: e.target.value })}
+                onChange={(e) =>
+                  setNewPrompt({ ...newPrompt, title: e.target.value })
+                }
                 placeholder={tp.formTitlePlaceholder}
                 className="focus-visible:ring-primary/30"
               />
@@ -628,7 +717,9 @@ export default function PromptsPage() {
                 <Textarea
                   id="content"
                   value={newPrompt.content}
-                  onChange={(e) => setNewPrompt({ ...newPrompt, content: e.target.value })}
+                  onChange={(e) =>
+                    setNewPrompt({ ...newPrompt, content: e.target.value })
+                  }
                   placeholder={tp.formContentPlaceholder}
                   className="min-h-[200px] pr-10 focus-visible:ring-primary/30"
                 />
@@ -650,30 +741,44 @@ export default function PromptsPage() {
               <p className="text-sm text-muted-foreground">{tp.variableTip}</p>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="description" className="text-sm font-medium">{tp.formDescriptionLabel}</Label>
+              <Label htmlFor="description" className="text-sm font-medium">
+                {tp.formDescriptionLabel}
+              </Label>
               <Textarea
                 id="description"
                 value={newPrompt.description}
-                onChange={(e) => setNewPrompt({ ...newPrompt, description: e.target.value })}
+                onChange={(e) =>
+                  setNewPrompt({ ...newPrompt, description: e.target.value })
+                }
                 placeholder={tp.formDescriptionPlaceholder}
                 className="focus-visible:ring-primary/30"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="tags" className="text-sm font-medium">{tp.formTagsLabel}</Label>
+              <Label htmlFor="tags" className="text-sm font-medium">
+                {tp.formTagsLabel}
+              </Label>
               <CreatableSelect
                 isMulti
-                value={newPrompt.tags ? newPrompt.tags.split(',').map(tag => ({ value: tag, label: tag })) : []}
+                value={
+                  newPrompt.tags
+                    ? newPrompt.tags
+                        .split(",")
+                        .map((tag) => ({ value: tag, label: tag }))
+                    : []
+                }
                 onChange={(selected) => {
-                  const tags = selected ? selected.map(option => option.value).join(',') : '';
+                  const tags = selected
+                    ? selected.map((option) => option.value).join(",")
+                    : "";
                   setNewPrompt({ ...newPrompt, tags });
                 }}
                 options={tagOptions}
                 onCreateOption={async (inputValue) => {
                   const newOption = await handleCreateTag(inputValue);
                   if (newOption) {
-                    const newTags = newPrompt.tags 
-                      ? `${newPrompt.tags},${inputValue}` 
+                    const newTags = newPrompt.tags
+                      ? `${newPrompt.tags},${inputValue}`
                       : inputValue;
                     setNewPrompt({ ...newPrompt, tags: newTags });
                   }
@@ -683,81 +788,89 @@ export default function PromptsPage() {
                 styles={{
                   control: (baseStyles, state) => ({
                     ...baseStyles,
-                    backgroundColor: 'hsl(var(--background))',
-                    borderColor: state.isFocused ? 'hsl(var(--primary))' : 'hsl(var(--border))',
-                    borderRadius: 'calc(var(--radius) - 2px)',
-                    boxShadow: state.isFocused ? '0 0 0 2px hsl(var(--primary)/30%)' : 'none',
-                    '&:hover': {
-                      borderColor: 'hsl(var(--primary))',
+                    backgroundColor: "hsl(var(--background))",
+                    borderColor: state.isFocused
+                      ? "hsl(var(--primary))"
+                      : "hsl(var(--border))",
+                    borderRadius: "calc(var(--radius) - 2px)",
+                    boxShadow: state.isFocused
+                      ? "0 0 0 2px hsl(var(--primary)/30%)"
+                      : "none",
+                    "&:hover": {
+                      borderColor: "hsl(var(--primary))",
                     },
                   }),
                   menu: (baseStyles) => ({
                     ...baseStyles,
-                    backgroundColor: 'hsl(var(--background))',
-                    border: '1px solid hsl(var(--border))',
-                    borderRadius: 'calc(var(--radius) - 2px)',
-                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
+                    backgroundColor: "hsl(var(--background))",
+                    border: "1px solid hsl(var(--border))",
+                    borderRadius: "calc(var(--radius) - 2px)",
+                    boxShadow: "0 2px 8px rgba(0, 0, 0, 0.15)",
                     zIndex: 100,
                   }),
                   option: (baseStyles, { isFocused, isSelected }) => ({
                     ...baseStyles,
-                    backgroundColor: isSelected 
-                      ? 'hsl(var(--primary))' 
-                      : isFocused 
-                        ? 'hsl(var(--accent))' 
-                        : 'transparent',
-                    color: isSelected 
-                      ? 'hsl(var(--primary-foreground))' 
-                      : 'inherit',
-                    cursor: 'pointer',
-                    '&:active': {
-                      backgroundColor: 'hsl(var(--accent))',
+                    backgroundColor: isSelected
+                      ? "hsl(var(--primary))"
+                      : isFocused
+                      ? "hsl(var(--accent))"
+                      : "transparent",
+                    color: isSelected
+                      ? "hsl(var(--primary-foreground))"
+                      : "inherit",
+                    cursor: "pointer",
+                    "&:active": {
+                      backgroundColor: "hsl(var(--accent))",
                     },
                   }),
                   multiValue: (baseStyles) => ({
                     ...baseStyles,
-                    backgroundColor: 'hsl(var(--secondary)/50%)',
-                    borderRadius: 'calc(var(--radius) - 2px)',
+                    backgroundColor: "hsl(var(--secondary)/50%)",
+                    borderRadius: "calc(var(--radius) - 2px)",
                   }),
                   multiValueLabel: (baseStyles) => ({
                     ...baseStyles,
-                    color: 'hsl(var(--secondary-foreground))',
+                    color: "hsl(var(--secondary-foreground))",
                   }),
                   multiValueRemove: (baseStyles) => ({
                     ...baseStyles,
-                    color: 'hsl(var(--secondary-foreground))',
-                    '&:hover': {
-                      backgroundColor: 'hsl(var(--destructive))',
-                      color: 'hsl(var(--destructive-foreground))',
+                    color: "hsl(var(--secondary-foreground))",
+                    "&:hover": {
+                      backgroundColor: "hsl(var(--destructive))",
+                      color: "hsl(var(--destructive-foreground))",
                     },
                   }),
                   input: (baseStyles) => ({
                     ...baseStyles,
-                    color: 'hsl(var(--foreground))',
+                    color: "hsl(var(--foreground))",
                   }),
                 }}
                 theme={(theme) => ({
                   ...theme,
                   colors: {
                     ...theme.colors,
-                    primary: 'hsl(var(--primary))',
-                    primary75: 'hsl(var(--primary)/.75)',
-                    primary50: 'hsl(var(--primary)/.5)',
-                    primary25: 'hsl(var(--primary)/.25)',
-                    danger: 'hsl(var(--destructive))',
-                    dangerLight: 'hsl(var(--destructive)/.25)',
+                    primary: "hsl(var(--primary))",
+                    primary75: "hsl(var(--primary)/.75)",
+                    primary50: "hsl(var(--primary)/.5)",
+                    primary25: "hsl(var(--primary)/.25)",
+                    danger: "hsl(var(--destructive))",
+                    dangerLight: "hsl(var(--destructive)/.25)",
                   },
                 })}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="version" className="text-sm font-medium">{tp.formVersionLabel}</Label>
+              <Label htmlFor="version" className="text-sm font-medium">
+                {tp.formVersionLabel}
+              </Label>
               <div className="flex items-center gap-2">
                 <span className="text-sm text-muted-foreground">v</span>
                 <Input
                   id="version"
                   value={newPrompt.version}
-                  onChange={(e) => setNewPrompt({ ...newPrompt, version: e.target.value })}
+                  onChange={(e) =>
+                    setNewPrompt({ ...newPrompt, version: e.target.value })
+                  }
                   placeholder={tp.formVersionPlaceholder}
                   className="w-32 focus-visible:ring-primary/30"
                 />
@@ -797,7 +910,9 @@ export default function PromptsPage() {
 
       <Dialog open={showOptimizeModal} onOpenChange={setShowOptimizeModal}>
         <DialogContent className="max-w-3xl max-h-[90vh]">
-          <VisuallyHidden.Root><DialogTitle>Dialog</DialogTitle></VisuallyHidden.Root>
+          <VisuallyHidden.Root>
+            <DialogTitle>Dialog</DialogTitle>
+          </VisuallyHidden.Root>
           <DialogHeader>
             <DialogTitle className="text-xl flex items-center gap-2">
               <Wand2 className="h-5 w-5 text-primary" />
@@ -809,7 +924,9 @@ export default function PromptsPage() {
               <div className="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm z-10">
                 <div className="flex flex-col items-center gap-3">
                   <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                  <p className="text-sm text-muted-foreground">{tp.optimizePlaceholder}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {tp.optimizePlaceholder}
+                  </p>
                 </div>
               </div>
             )}
@@ -817,7 +934,7 @@ export default function PromptsPage() {
               value={optimizedContent}
               onChange={(e) => setOptimizedContent(e.target.value)}
               className="min-h-[200px] w-full border-0 focus-visible:ring-0 resize-none"
-              placeholder={isOptimizing ? '' : tp.optimizePlaceholder}
+              placeholder={isOptimizing ? "" : tp.optimizePlaceholder}
             />
           </div>
           <DialogFooter className="gap-2 mt-4">
@@ -843,4 +960,4 @@ export default function PromptsPage() {
       </Dialog>
     </div>
   );
-} 
+}

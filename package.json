@@ -15,7 +15,10 @@
     "analyze:server": "BUNDLE_ANALYZE=server next build",
     "analyze:browser": "BUNDLE_ANALYZE=browser next build",
     "build:analyze": "npm run build && npm run analyze",
-    "performance:test": "node scripts/performance-test.js"
+    "performance:test": "node scripts/performance-test.js",
+    "css:analyze": "node scripts/css-optimization.js",
+    "css:optimize": "npm run css:analyze && tailwindcss -i ./app/globals.css -o ./app/globals.optimized.css --minify",
+    "build:optimized": "npm run css:optimize && next build"
   },
   "dependencies": {
     "@clerk/localizations": "^3.9.5",

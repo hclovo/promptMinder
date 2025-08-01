@@ -4,7 +4,7 @@ import { useState, use } from 'react';
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { ArrowLeft } from "lucide-react"
-import ChatTest from '@/components/chat/ChatTest';
+import ChatTestWrapper from '@/components/chat/ChatTestWrapper';
 import { useLanguage } from '@/contexts/LanguageContext';
 import VariableInputs from '@/components/prompt/VariableInputs';
 import { replaceVariables } from '@/lib/promptVariables';
@@ -95,7 +95,7 @@ export default function PromptDetail({ params }) {
         </div>
 
         <div className="h-[calc(100vh-12rem)]">
-          <ChatTest 
+          <ChatTestWrapper 
             prompt={prompt} 
             t={t} 
             variableValues={variableValues}
