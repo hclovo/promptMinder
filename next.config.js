@@ -1,8 +1,11 @@
 /** @type {import('next').NextConfig} */
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const withBundleAnalyzer = require('@next/bundle-analyzer')({
+  enabled: process.env.ANALYZE === 'true',
+});
 
 const nextConfig = {
-  webpack: (config, { isServer }) => {
+  webpack: (config, { isServer, dev }) => {
     if (!isServer) {
       config.plugins.push(
         new MiniCssExtractPlugin({
@@ -11,6 +14,21 @@ const nextConfig = {
         })
       );
     }
+
+    // Bundle analysis configuration
+    if (process.env.BUNDLE_ANALYZE) {
+      const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
+      config.plugins.push(
+        new BundleAnalyzerPlugin({
+          analyzerMode: 'static',
+          reportFilename: isServer
+            ? '../analyze/server.html'
+            : './analyze/client.html',
+          openAnalyzer: false,
+        })
+      );
+    }
+
     return config;
   },
   images: {
@@ -26,6 +44,12 @@ const nextConfig = {
     contentDispositionType: 'attachment',
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
+  // Performance optimizations
+  experimental: {
+    optimizePackageImports: ['lucide-react', '@radix-ui/react-icons'],
+  },
+  // Enable gzip compression
+  compress: true,
 };
 
-module.exports = nextConfig;
+module.exports = withBundleAnalyzer(nextConfig);

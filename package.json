@@ -10,7 +10,12 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "test:ci": "jest --ci --coverage --watchAll=false"
+    "test:ci": "jest --ci --coverage --watchAll=false",
+    "analyze": "ANALYZE=true next build",
+    "analyze:server": "BUNDLE_ANALYZE=server next build",
+    "analyze:browser": "BUNDLE_ANALYZE=browser next build",
+    "build:analyze": "npm run build && npm run analyze",
+    "performance:test": "node scripts/performance-test.js"
   },
   "dependencies": {
     "@clerk/localizations": "^3.9.5",
@@ -55,6 +60,7 @@
     "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
+    "@next/bundle-analyzer": "^15.4.5",
     "@tailwindcss/typography": "^0.5.15",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.6.4",
@@ -68,6 +74,7 @@
     "msw": "^2.10.4",
     "postcss": "^8",
     "supertest": "^7.1.4",
-    "tailwindcss": "^3.4.1"
+    "tailwindcss": "^3.4.1",
+    "webpack-bundle-analyzer": "^4.10.2"
   }
 }
