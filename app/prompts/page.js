@@ -26,7 +26,7 @@ import {
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { Card } from "@/components/ui/card";
-import Image from "next/image";
+import { OptimizedImage } from "@/components/ui/optimized-image";
 import Link from "next/link";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -37,7 +37,7 @@ import { extractVariables } from "@/lib/promptVariables";
 import { apiClient } from "@/lib/api-client";
 import { useClipboard } from "@/lib/clipboard";
 
-// Dynamic imports for heavy components
+// Dynamic imports for heavy components with lazy loading
 const PromptList = dynamic(() => import("@/components/prompt/PromptList"), {
   loading: () => (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">

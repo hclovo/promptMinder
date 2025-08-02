@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from 'next/navigation';
 import { Menu, FolderPlus, Library, LogOut, Languages, LayoutGrid } from "lucide-react"
-import Image from "next/image";
+import { OptimizedImage } from "@/components/ui/optimized-image";
 import { SignInButton, SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 import {
     NavigationMenu,
@@ -26,7 +26,14 @@ export function Header() {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center">
-            <Image src="/logo2.png" alt="PromptMinder" width={60} height={60} />
+            <OptimizedImage 
+              src="/logo2.png" 
+              alt="PromptMinder" 
+              width={60} 
+              height={60} 
+              priority
+              className="rounded-lg"
+            />
             <span className="hidden sm:block text-xl font-bold [-webkit-background-clip:text] [background-clip:text] text-transparent bg-gradient-to-r from-gray-900 to-gray-600">
               PromptMinder
             </span>

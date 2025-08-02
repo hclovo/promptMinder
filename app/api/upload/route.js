@@ -20,20 +20,51 @@ export async function POST(request) {
     // 将 File 对象转换为 Buffer
     const buffer = Buffer.from(await file.arrayBuffer());
     
-    // 使用 sharp 压缩图片
+    // 使用 sharp 压缩图片，支持多种格式和尺寸
+    const sharpInstance = sharp(buffer);
+    const metadata = await sharpInstance.metadata();
+    
+    // Generate multiple sizes for responsive images
+    const sizes = [
+      { width: 400, suffix: '-sm' },
+      { width: 800, suffix: '-md' },
+      { width: 1200, suffix: '-lg' }
+    ];
+    
+    const uploadPromises = [];
+    const baseFileName = `${Date.now()}`;
+    
+    // Generate WebP versions for better compression
+    for (const size of sizes) {
+      const webpBuffer = await sharp(buffer)
+        .resize(size.width, null, {
+          withoutEnlargement: true,
+          fit: 'inside'
+        })
+        .webp({ quality: 80 })
+        .toBuffer();
+        
+      const webpFileName = `${baseFileName}${size.suffix}.webp`;
+      uploadPromises.push(
+        supabase.storage
+          .from('cover')
+          .upload(webpFileName, webpBuffer, {
+            contentType: 'image/webp'
+          })
+      );
+    }
+    
+    // Also generate a fallback JPEG
     const compressedImageBuffer = await sharp(buffer)
-      .resize(600, null, { // 设置最大宽度为1200px，高度自适应
-        withoutEnlargement: true, // 如果原图小于这个尺寸，则不放大
+      .resize(800, null, {
+        withoutEnlargement: true,
         fit: 'inside'
       })
-      .jpeg()
+      .jpeg({ quality: 85, progressive: true })
       .toBuffer();
 
-    // 获取文件扩展名
-    const fileExtension = 'jpg'; // 统一转换为jpg格式
-    const fileName = `${Date.now()}.${fileExtension}`;
-    
-    // 上传压缩后的图片到 Supabase Storage
+    // Upload the fallback JPEG
+    const fileName = `${baseFileName}.jpg`;
     const { data, error } = await supabase.storage
       .from('cover')
       .upload(fileName, compressedImageBuffer, {
@@ -44,12 +75,32 @@ export async function POST(request) {
       throw error;
     }
 
+    // Wait for all WebP uploads to complete
+    await Promise.all(uploadPromises);
+
     // 获取文件的公共URL
     const { data: { publicUrl } } = supabase.storage
       .from('cover')
       .getPublicUrl(fileName);
     
-    return NextResponse.json({ url: publicUrl });
+    // Return URLs for all formats
+    const webpUrls = sizes.reduce((acc, size) => {
+      const webpUrl = supabase.storage
+        .from('cover')
+        .getPublicUrl(`${baseFileName}${size.suffix}.webp`).data.publicUrl;
+      acc[size.suffix.replace('-', '')] = webpUrl;
+      return acc;
+    }, {});
+    
+    return NextResponse.json({ 
+      url: publicUrl,
+      webp: webpUrls,
+      metadata: {
+        width: metadata.width,
+        height: metadata.height,
+        format: metadata.format
+      }
+    });
   } catch (error) {
     console.error('Error uploading file:', error);
     return NextResponse.json({ error: 'Failed to upload file' }, { status: 500 });

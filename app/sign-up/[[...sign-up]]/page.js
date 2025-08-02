@@ -1,17 +1,18 @@
 import { SignUp } from "@clerk/nextjs";
-import Image from "next/image";
+import { OptimizedImage } from "@/components/ui/optimized-image";
 
 export default function Page() {
   return (
     <div className="flex h-screen">
       {/* 左侧背景图片 */}
       <div className="relative hidden lg:block lg:w-1/2">
-        <Image
+        <OptimizedImage
           src="/login-bg.jpg"
           alt="PromptMinder background"
           fill
           className="object-cover"
           priority
+          sizes="50vw"
         />
       </div>
       

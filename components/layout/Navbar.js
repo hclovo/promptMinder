@@ -1,6 +1,6 @@
 'use client';
 import Link from 'next/link';
-import Image from 'next/image';
+import { OptimizedImage } from '@/components/ui/optimized-image';
 import { usePathname } from 'next/navigation';
 import { useEffect } from 'react';
 import { Button } from "@/components/ui/button";
@@ -37,7 +37,14 @@ export default function Navbar() {
       <div className="mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <Link href="/" className="flex items-center group">
-            <Image src="/logo2.png" alt="PromptMinder" width={60} height={60} />
+            <OptimizedImage 
+              src="/logo2.png" 
+              alt="PromptMinder" 
+              width={60} 
+              height={60} 
+              priority
+              className="rounded-lg"
+            />
             <span className="hidden sm:block text-xl font-bold bg-gradient-to-r from-primary/90 to-primary [-webkit-background-clip:text] [background-clip:text] text-transparent hover:from-primary hover:to-primary/90 transition-all duration-300">
               PromptMinder
             </span>
