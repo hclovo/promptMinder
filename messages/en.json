@@ -648,5 +648,12 @@
         "andPublished": " and published to public library"
       }
     }
+  },
+  "pagination": {
+    "total": "Total {total} items",
+    "itemsPerPage": "Items per page",
+    "items": "items",
+    "goTo": "Go to",
+    "page": "page"
   }
 } 

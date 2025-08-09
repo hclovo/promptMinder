@@ -36,6 +36,7 @@ import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
 import { extractVariables } from "@/lib/promptVariables";
 import { apiClient } from "@/lib/api-client";
 import { useClipboard } from "@/lib/clipboard";
+import { Pagination } from "@/components/ui/pagination";
 
 // Dynamic imports for heavy components with lazy loading
 const PromptList = dynamic(() => import("@/components/prompt/PromptList"), {
@@ -129,8 +130,6 @@ const PromptListSkeleton = () => {
   );
 };
 
-// These functions are now replaced by apiClient methods
-
 // Modified NewPromptCard with enhanced styling
 const NewPromptCard = ({ onClick }) => {
   const { t } = useLanguage();
@@ -178,14 +177,72 @@ export default function PromptsPage() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [tagOptions, setTagOptions] = useState([]);
+  
+  // 分页相关状态
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 10,
+    total: 0,
+    totalPages: 0
+  });
 
   // Optimize debounced search with proper cleanup
   const debouncedSearch = useMemo(
     () => debounce((value) => {
       setSearchQuery(value);
+      setCurrentPage(1);
     }, 300),
     []
   );
+
+  // 获取prompts数据的函数
+  const fetchPrompts = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const params = {
+        page: currentPage,
+        limit: pageSize,
+      };
+      
+      if (selectedTags.length > 0) {
+        params.tag = selectedTags[0];
+      }
+      
+      const data = await apiClient.getPrompts(params);
+      
+      if (data.prompts) {
+        setPrompts(
+          data.prompts.map((prompt) => ({
+            ...prompt,
+            version: prompt.version || "1.0",
+            cover_img: prompt.cover_img || "/default-cover.jpg",
+            tags: prompt.tags?.split(",") || [],
+          }))
+        );
+        setPagination(data.pagination);
+      } else {
+        setPrompts(
+          data.map((prompt) => ({
+            ...prompt,
+            version: prompt.version || "1.0",
+            cover_img: prompt.cover_img || "/default-cover.jpg",
+            tags: prompt.tags?.split(",") || [],
+          }))
+        );
+      }
+    } catch (error) {
+      console.error("Error fetching prompts:", error);
+      toast({
+        title: "获取失败",
+        description: error.message || "无法获取提示词列表",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  }, [currentPage, pageSize, selectedTags, toast]);
 
   // Memoize event handlers to prevent unnecessary re-renders
   const handleCopy = useCallback(async (content) => {
@@ -202,7 +259,7 @@ export default function PromptsPage() {
     
     try {
       await apiClient.deletePrompt(promptToDelete);
-      setPrompts(prompts.filter((prompt) => prompt.id !== promptToDelete));
+      fetchPrompts();
       setDeleteDialogOpen(false);
       toast({
         description: t.promptsPage.deleteSuccess,
@@ -216,20 +273,29 @@ export default function PromptsPage() {
         duration: 2000,
       });
     }
-  }, [promptToDelete, prompts, toast, t?.promptsPage]);
+  }, [promptToDelete, toast, t?.promptsPage, fetchPrompts]);
 
-  // Memoize expensive filtering operations
+  // 分页处理函数
+  const handlePageChange = useCallback((page) => {
+    setCurrentPage(page);
+  }, []);
+
+  const handlePageSizeChange = useCallback((size) => {
+    setPageSize(size);
+    setCurrentPage(1);
+  }, []);
+
+  // Memoize expensive filtering operations for local filtering (if needed)
   const filteredPrompts = useMemo(() => {
+    if (!searchQuery) return prompts;
+    
     return prompts.filter((prompt) => {
-      const matchesTags =
-        selectedTags.length === 0 ||
-        selectedTags.every((tag) => prompt.tags.includes(tag));
       const matchesSearch =
         prompt.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         prompt.description.toLowerCase().includes(searchQuery.toLowerCase());
-      return matchesTags && matchesSearch;
+      return matchesSearch;
     });
-  }, [prompts, selectedTags, searchQuery]);
+  }, [prompts, searchQuery]);
 
   // Memoize tag extraction to avoid recalculating on every render
   const allTags = useMemo(() => {
@@ -291,8 +357,7 @@ export default function PromptsPage() {
         is_public: true,
       });
 
-      // Add new prompt to local state
-      setPrompts((prev) => [newPromptData, ...prev]);
+      fetchPrompts();
 
       setShowNewPromptDialog(false);
       setNewPrompt({
@@ -318,7 +383,7 @@ export default function PromptsPage() {
     } finally {
       setIsSubmitting(false);
     }
-  }, [newPrompt, toast, t?.promptsPage]);
+  }, [newPrompt, toast, t?.promptsPage, fetchPrompts]);
 
   const handleCreateTag = useCallback(async (inputValue) => {
     try {
@@ -385,32 +450,13 @@ export default function PromptsPage() {
   }, [newPrompt.content, t?.promptsPage, toast]);
 
   useEffect(() => {
-    const fetchPrompts = async () => {
-      try {
-        setIsLoading(true);
-        const data = await apiClient.getPrompts();
-        setPrompts(
-          data.map((prompt) => ({
-            ...prompt,
-            version: prompt.version || "1.0",
-            cover_img: prompt.cover_img || "/default-cover.jpg",
-            tags: prompt.tags?.split(",") || [],
-          }))
-        );
-      } catch (error) {
-        console.error("Error fetching prompts:", error);
-        toast({
-          title: "获取失败",
-          description: error.message || "无法获取提示词列表",
-          variant: "destructive",
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     fetchPrompts();
-  }, [toast]);
+  }, [fetchPrompts]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+    fetchPrompts();
+  }, [selectedTags]);
 
   useEffect(() => {
     const fetchTags = async () => {
@@ -437,8 +483,6 @@ export default function PromptsPage() {
   if (!t) return null;
   const tp = t.promptsPage;
 
-
-
   return (
     <div className="min-h-[80vh] bg-gradient-to-b from-background to-background/80">
       <div className="container px-4 py-8 sm:py-16 mx-auto max-w-7xl">
@@ -450,7 +494,7 @@ export default function PromptsPage() {
                 <span className="text-sm font-medium text-secondary-foreground">
                   {tp.totalPrompts.replace(
                     "{count}",
-                    prompts.length.toString()
+                    pagination.total.toString()
                   )}
                 </span>
               </div>
@@ -495,146 +539,166 @@ export default function PromptsPage() {
               <PromptListSkeleton />
             </div>
           ) : (
-            <div className="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-              <NewPromptCard onClick={() => setShowNewPromptDialog(true)} />
-              {Object.entries(groupedPrompts).map(([title, versions]) => {
-                const latestPrompt = versions[0];
-                return (
-                  <Card
-                    key={title}
-                    className="group relative rounded-lg border p-5 hover:shadow-lg transition-all duration-300 ease-in-out bg-card cursor-pointer overflow-hidden"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      if (versions.length > 1) {
-                        showVersions(e, versions);
-                      } else {
-                        window.location.href = `/prompts/${latestPrompt.id}`;
-                      }
-                    }}
-                  >
-                    <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            <>
+              <div className="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                <NewPromptCard onClick={() => setShowNewPromptDialog(true)} />
+                {Object.entries(groupedPrompts).map(([title, versions]) => {
+                  const latestPrompt = versions[0];
+                  return (
+                    <Card
+                      key={title}
+                      className="group relative rounded-lg border p-5 hover:shadow-lg transition-all duration-300 ease-in-out bg-card cursor-pointer overflow-hidden"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        if (versions.length > 1) {
+                          showVersions(e, versions);
+                        } else {
+                          window.location.href = `/prompts/${latestPrompt.id}`;
+                        }
+                      }}
+                    >
+                      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
-                    <div className="space-y-4 relative z-10">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <h3 className="text-lg font-semibold line-clamp-1 mb-2 group-hover:text-primary transition-colors">
-                            {title}
-                          </h3>
-                          {latestPrompt.description && (
-                            <p className="text-sm text-muted-foreground line-clamp-2">
-                              {latestPrompt.description}
-                            </p>
+                      <div className="space-y-4 relative z-10">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <h3 className="text-lg font-semibold line-clamp-1 mb-2 group-hover:text-primary transition-colors">
+                              {title}
+                            </h3>
+                            {latestPrompt.description && (
+                              <p className="text-sm text-muted-foreground line-clamp-2">
+                                {latestPrompt.description}
+                              </p>
+                            )}
+                          </div>
+
+                          <div className="opacity-0 group-hover:opacity-100 transition-all duration-200 bg-background/90 backdrop-blur-sm rounded-lg p-1 shadow-sm">
+                            <div className="flex items-center gap-1">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleCopy(latestPrompt.content);
+                                }}
+                                className="h-8 w-8 hover:bg-accent hover:text-primary"
+                              >
+                                <Copy className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleShare(latestPrompt.id);
+                                }}
+                                className="h-8 w-8 hover:bg-accent hover:text-primary"
+                              >
+                                <Share2 className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDelete(latestPrompt.id);
+                                }}
+                                className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex flex-wrap gap-2">
+                          {(latestPrompt.tags
+                            ? Array.isArray(latestPrompt.tags)
+                              ? latestPrompt.tags
+                              : latestPrompt.tags
+                                  .split(",")
+                                  .filter((tag) => tag.trim())
+                            : []
+                          ).map((tag) => (
+                            <span
+                              key={tag}
+                              className="bg-secondary/50 text-secondary-foreground text-xs px-2.5 py-0.5 rounded-full font-medium"
+                            >
+                              #{tag.trim()}
+                            </span>
+                          ))}
+                        </div>
+
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground pt-1">
+                          <div className="flex items-center gap-1">
+                            <Clock className="h-3 w-3" />
+                            {new Date(latestPrompt.updated_at).toLocaleString()}
+                          </div>
+                          {(() => {
+                            const variables = extractVariables(
+                              latestPrompt.content
+                            );
+                            return (
+                              variables.length > 0 && (
+                                <div className="flex items-center gap-1 ml-2 bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">
+                                  <svg
+                                    className="h-3 w-3"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth="2"
+                                      d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h4"
+                                    />
+                                  </svg>
+                                  <span>
+                                    {t?.variableInputs?.variableCount?.replace(
+                                      "{count}",
+                                      variables.length.toString()
+                                    ) || `${variables.length} 变量`}
+                                  </span>
+                                </div>
+                              )
+                            );
+                          })()}
+                          {versions.length > 1 && (
+                            <div className="flex items-center gap-1 ml-2 bg-primary/10 text-primary px-2 py-0.5 rounded-full">
+                              <span>
+                                {tp.versionsCount.replace(
+                                  "{count}",
+                                  versions.length.toString()
+                                )}
+                              </span>
+                            </div>
                           )}
                         </div>
-
-                        <div className="opacity-0 group-hover:opacity-100 transition-all duration-200 bg-background/90 backdrop-blur-sm rounded-lg p-1 shadow-sm">
-                          <div className="flex items-center gap-1">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleCopy(latestPrompt.content);
-                              }}
-                              className="h-8 w-8 hover:bg-accent hover:text-primary"
-                            >
-                              <Copy className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleShare(latestPrompt.id);
-                              }}
-                              className="h-8 w-8 hover:bg-accent hover:text-primary"
-                            >
-                              <Share2 className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDelete(latestPrompt.id);
-                              }}
-                              className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </div>
                       </div>
-
-                      <div className="flex flex-wrap gap-2">
-                        {(latestPrompt.tags
-                          ? Array.isArray(latestPrompt.tags)
-                            ? latestPrompt.tags
-                            : latestPrompt.tags
-                                .split(",")
-                                .filter((tag) => tag.trim())
-                          : []
-                        ).map((tag) => (
-                          <span
-                            key={tag}
-                            className="bg-secondary/50 text-secondary-foreground text-xs px-2.5 py-0.5 rounded-full font-medium"
-                          >
-                            #{tag.trim()}
-                          </span>
-                        ))}
-                      </div>
-
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground pt-1">
-                        <div className="flex items-center gap-1">
-                          <Clock className="h-3 w-3" />
-                          {new Date(latestPrompt.updated_at).toLocaleString()}
-                        </div>
-                        {(() => {
-                          const variables = extractVariables(
-                            latestPrompt.content
-                          );
-                          return (
-                            variables.length > 0 && (
-                              <div className="flex items-center gap-1 ml-2 bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">
-                                <svg
-                                  className="h-3 w-3"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  viewBox="0 0 24 24"
-                                >
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth="2"
-                                    d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h4"
-                                  />
-                                </svg>
-                                <span>
-                                  {t?.variableInputs?.variableCount?.replace(
-                                    "{count}",
-                                    variables.length.toString()
-                                  ) || `${variables.length} 变量`}
-                                </span>
-                              </div>
-                            )
-                          );
-                        })()}
-                        {versions.length > 1 && (
-                          <div className="flex items-center gap-1 ml-2 bg-primary/10 text-primary px-2 py-0.5 rounded-full">
-                            <span>
-                              {tp.versionsCount.replace(
-                                "{count}",
-                                versions.length.toString()
-                              )}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </Card>
-                );
-              })}
-            </div>
+                    </Card>
+                  );
+                })}
+              </div>
+              
+              {/* 分页组件 */}
+              {pagination.totalPages > 1 && (
+                <div className="mt-8 flex justify-center">
+                  <Pagination
+                    currentPage={pagination.page}
+                    totalPages={pagination.totalPages}
+                    total={pagination.total}
+                    pageSize={pagination.limit}
+                    onPageChange={handlePageChange}
+                    onPageSizeChange={handlePageSizeChange}
+                    showSizeChanger={true}
+                    pageSizeOptions={[10, 20, 50]}
+                    className="w-full"
+                    t={t}
+                  />
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>
@@ -979,4 +1043,4 @@ export default function PromptsPage() {
       </Dialog>
     </div>
   );
-}
+} 

@@ -674,5 +674,12 @@
         "andPublished": "并发布到公共库"
       }
     }
+  },
+  "pagination": {
+    "total": "共 {total} 条",
+    "itemsPerPage": "每页",
+    "items": "条",
+    "goTo": "跳至",
+    "page": "页"
   }
 } 
