@@ -33,7 +33,7 @@ export function HeroSection({ t }) {
   };
 
   return (
-    <section className="relative overflow-hidden bg-white pt-28 pb-32">
+    <section className="relative overflow-hidden bg-white pt-16 pb-20 sm:pt-28 sm:pb-32">
       {/* 背景装饰 */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px]">
         <div className="absolute inset-0 bg-gradient-radial from-blue-100 via-purple-50 to-transparent blur-[100px] opacity-50" />

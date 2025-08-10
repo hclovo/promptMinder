@@ -1,24 +1,15 @@
 import { SignUp } from "@clerk/nextjs";
-import { OptimizedImage } from "@/components/ui/optimized-image";
+import Link from "next/link";
 
 export default function Page() {
   return (
-    <div className="flex h-screen">
-      {/* 左侧背景图片 */}
-      <div className="relative hidden lg:block lg:w-1/2">
-        <OptimizedImage
-          src="/login-bg.jpg"
-          alt="PromptMinder background"
-          fill
-          className="object-cover"
-          priority
-          sizes="50vw"
-        />
-      </div>
-      
-      {/* 右侧登录表单 */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center">
-        <SignUp />
+    <div className="relative min-h-screen flex items-center justify-center px-4 py-10 bg-gradient-to-br from-sky-50 via-white to-emerald-50 dark:from-zinc-900 dark:via-black dark:to-zinc-900">
+      <div className="w-full max-w-md">
+
+        {/* 表单容器 */}
+        <div className="backdrop-blur p-4 sm:p-6 shadow">
+          <SignUp />
+        </div>
       </div>
     </div>
   );
