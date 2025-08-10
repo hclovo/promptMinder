@@ -1,7 +1,6 @@
 "use client";
 import { useState, useEffect, useCallback, useMemo, Suspense } from "react";
 import { Input } from "@/components/ui/input";
-import { Spinner } from "@/components/ui/Spinner";
 import { Button } from "@/components/ui/button";
 import {
   Search,
@@ -180,10 +179,10 @@ export default function PromptsPage() {
   
   // 分页相关状态
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const [pageSize, setPageSize] = useState(20);
   const [pagination, setPagination] = useState({
     page: 1,
-    limit: 10,
+    limit: 20,
     total: 0,
     totalPages: 0
   });

@@ -1,38 +1,43 @@
 // app/sitemap.js
-const URL = 'https://prompt-minder.com'; // Consider using process.env.NEXT_PUBLIC_BASE_URL
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://prompt-minder.com';
 
 export default async function sitemap() {
-  // Add other static routes here if needed, e.g., /terms, /privacy
+  const now = new Date().toISOString();
+
   const staticRoutes = [
     '/',
-    // '/terms',
-    // '/privacy',
-    // '/services',
-    // '/sign-in',
-    // '/sign-up',
+    '/prompts',
+    '/public',
+    '/tags',
+    '/privacy',
+    '/terms',
+    '/sign-in',
+    '/sign-up',
   ].map((route) => ({
-    url: `${URL}${route}`,
-    lastModified: new Date().toISOString(),
+    url: `${BASE_URL}${route}`,
+    lastModified: now,
   }));
 
-  // Example for dynamic routes (e.g., /prompts/[id]):
-  // const prompts = await fetchAllPrompts(); // Your function to get all prompt data
-  // const promptRoutes = prompts.map((prompt) => ({
-  //   url: `${URL}/prompts/${prompt.id}`,
-  //   lastModified: new Date(prompt.updatedAt).toISOString(),
-  // }));
+  // Optional dynamic routes
+  const dynamicRoutes = [];
+  try {
+    // Public prompts (ids)
+    const res = await fetch(`${BASE_URL}/api/prompts/public`, { next: { revalidate: 60 } });
+    if (res.ok) {
+      const data = await res.json();
+      const prompts = data?.prompts || [];
+      for (const p of prompts) {
+        if (p?.id) {
+          dynamicRoutes.push({
+            url: `${BASE_URL}/share/${p.id}`,
+            lastModified: p.updated_at || now,
+          });
+        }
+      }
+    }
+  } catch (e) {
+    // Swallow errors to avoid breaking sitemap
+  }
 
-  // Example for dynamic routes (e.g., /tags/[slug]):
-  // const tags = await fetchAllTags(); // Your function to get all tag data
-  // const tagRoutes = tags.map((tag) => ({
-  //   url: `${URL}/tags/${tag.slug}`,
-  //   lastModified: new Date(tag.updatedAt).toISOString(), // Assuming tags have an update timestamp
-  // }));
-
-
-  return [
-    ...staticRoutes,
-    // ...promptRoutes,
-    // ...tagRoutes,
-  ];
-} 
+  return [...staticRoutes, ...dynamicRoutes];
+}

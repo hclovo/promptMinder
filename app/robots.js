@@ -4,6 +4,7 @@ export default function robots() {
       userAgent: '*',
       allow: '/',
     },
-    sitemap: `${process.env.NEXT_PUBLIC_BASE_URL}/sitemap.xml`,
+    host: process.env.NEXT_PUBLIC_BASE_URL || 'https://prompt-minder.com',
+    sitemap: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://prompt-minder.com'}/sitemap.xml`,
   };
 } 
