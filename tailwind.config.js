@@ -91,9 +91,14 @@ module.exports = {
   				'0%': { transform: 'translateY(0)' },
   				'100%': { transform: 'translateY(-100%)' },
   			},
+  			shine: {
+  				'0%': { 'background-position': '100%' },
+  				'100%': { 'background-position': '-100%' },
+  			},
   		},
   		animation: {
   			'grid': 'grid 20s linear infinite',
+  			'shine': 'shine 5s linear infinite',
   		},
   		backgroundImage: {
   			'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',

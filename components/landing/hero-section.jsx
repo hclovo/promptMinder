@@ -19,6 +19,7 @@ const MotionP = dynamic(() => import('framer-motion').then(mod => mod.motion.p),
 import Link from "next/link";
 import { useAuth } from "@clerk/nextjs";
 import { TypeAnimation } from 'react-type-animation';
+import ShinyText from '../texts/ShinyText';
 
 export function HeroSection({ t }) {
   const { isSignedIn } = useAuth();
@@ -58,8 +59,13 @@ export function HeroSection({ t }) {
           transition={{ duration: 0.8 }}
           className="text-center max-w-5xl mx-auto" // Increased max-width for a wider feel
         >
-          <h1 className="text-5xl md:text-7xl font-extrabold mb-8 [-webkit-background-clip:text] [background-clip:text] text-transparent bg-gradient-to-r from-gray-900 via-slate-700 to-slate-600 leading-tight">
-            {translations.mainTitle}
+          <h1 className="text-5xl md:text-7xl font-extrabold mb-8 leading-tight">
+            <ShinyText 
+              text={translations.mainTitle}
+              speed={4}
+              className="text-transparent bg-gradient-to-r from-gray-900 via-slate-700 to-slate-600 [-webkit-background-clip:text] [background-clip:text]"
+
+            />
           </h1>
           <p className="text-xl md:text-2xl text-gray-700 mb-4">
             {translations.subtitleStart}
