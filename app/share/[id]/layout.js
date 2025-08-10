@@ -39,3 +39,4 @@ export async function generateMetadata({ params }) {
 export default function ShareLayout({ children }) {
   return children;
 }
+
