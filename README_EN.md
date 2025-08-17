@@ -51,8 +51,8 @@ A professional prompt management platform that makes AI prompt management simple
 1. **Clone the project**
 
 ```bash
-git clone https://github.com/your-username/prompt-manage.git
-cd prompt-manage
+git clone https://github.com/your-username/promptMinder.git
+cd promptMinder
 ```
 
 2. **Install dependencies**
@@ -256,7 +256,7 @@ Language files are located in the `/messages` directory:
 ### Project Structure
 
 ```
-prompt-manage/
+promptMinder/
 ├── app/                    # Next.js App Router
 │   ├── api/               # API routes
 │   ├── prompts/           # Prompt-related pages
@@ -301,9 +301,9 @@ Use [Canny](https://canny.io) to collect user feedback and feature requests.
 
 ### Technical Support
 
-- 📖 View [Documentation](https://github.com/your-username/prompt-manage/wiki)
-- 🐛 Report [Issues](https://github.com/your-username/prompt-manage/issues)
-- 💬 Join [Discussions](https://github.com/your-username/prompt-manage/discussions)
+- 📖 View [Documentation](https://github.com/your-username/promptMinder/wiki)
+- 🐛 Report [Issues](https://github.com/your-username/promptMinder/issues)
+- 💬 Join [Discussions](https://github.com/your-username/promptMinder/discussions)
 
 ## 📄 License
 
