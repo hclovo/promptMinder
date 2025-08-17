@@ -84,10 +84,16 @@ describe('RequestCache', () => {
     
     const key1 = cache.generateKey(endpoint, options);
     const key2 = cache.generateKey(endpoint, options);
-    
+
     expect(key1).toBe(key2);
     expect(typeof key1).toBe('string');
     expect(key1.length).toBeGreaterThan(0);
+
+    const parsed = JSON.parse(Buffer.from(key1, 'base64').toString('utf8'));
+    expect(parsed).toMatchObject({
+      endpoint,
+      method: 'GET'
+    });
   });
 
   test('should store and retrieve data correctly', () => {

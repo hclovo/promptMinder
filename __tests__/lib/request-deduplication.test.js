@@ -123,10 +123,16 @@ describe('RequestDeduplicationService', () => {
     
     const key1 = service.generateKey(url, options);
     const key2 = service.generateKey(url, options);
-    
+
     expect(key1).toBe(key2);
     expect(typeof key1).toBe('string');
     expect(key1.length).toBeGreaterThan(0);
+
+    const parsed = JSON.parse(Buffer.from(key1, 'base64').toString('utf8'));
+    expect(parsed).toMatchObject({
+      url,
+      method: 'GET'
+    });
   });
 
   test('should deduplicate identical requests', async () => {
