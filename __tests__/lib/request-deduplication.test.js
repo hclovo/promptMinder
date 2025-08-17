@@ -174,7 +174,33 @@ describe('RequestDeduplicationService', () => {
     
     // Abort the request
     abortController.abort();
-    
+
+    await expect(promise).rejects.toThrow('Request aborted');
+  });
+
+  test('should forward abort signal to request function and reject promise', async () => {
+    const mockRequestFn = jest.fn().mockImplementation((signal) => {
+      return new Promise((resolve, reject) => {
+        signal.addEventListener('abort', () => {
+          reject(new Error('Request aborted'));
+        });
+        setTimeout(() => resolve('result'), 1000);
+      });
+    });
+
+    const controller = new AbortController();
+    const key = 'abort-key';
+
+    const promise = service.dedupe(key, mockRequestFn, controller.signal);
+
+    // Abort the request using the external controller
+    controller.abort();
+
+    expect(mockRequestFn).toHaveBeenCalledTimes(1);
+    const receivedSignal = mockRequestFn.mock.calls[0][0];
+    expect(receivedSignal).toBeInstanceOf(AbortSignal);
+    expect(receivedSignal.aborted).toBe(true);
+
     await expect(promise).rejects.toThrow('Request aborted');
   });
 
