@@ -51,8 +51,8 @@
 1. **克隆项目**
 
 ```bash
-git clone https://github.com/your-username/prompt-manage.git
-cd prompt-manage
+git clone https://github.com/your-username/promptMinder.git
+cd promptMinder
 ```
 
 2. **安装依赖**
@@ -256,7 +256,7 @@ CREATE TABLE prompt_contributions (
 ### 项目结构
 
 ```
-prompt-manage/
+promptMinder/
 ├── app/                    # Next.js App Router
 │   ├── api/               # API 路由
 │   ├── prompts/           # 提示词相关页面
@@ -301,9 +301,9 @@ prompt-manage/
 
 ### 技术支持
 
-- 📖 查看 [文档](https://github.com/your-username/prompt-manage/wiki)
-- 🐛 报告 [问题](https://github.com/your-username/prompt-manage/issues)
-- 💬 加入 [讨论](https://github.com/your-username/prompt-manage/discussions)
+- 📖 查看 [文档](https://github.com/your-username/promptMinder/wiki)
+- 🐛 报告 [问题](https://github.com/your-username/promptMinder/issues)
+- 💬 加入 [讨论](https://github.com/your-username/promptMinder/discussions)
 
 ## 📄 许可证
 
