@@ -20,7 +20,7 @@ export async function GET(request) {
     
   // 如果存在 tag 参数，添加过滤条件
   if (tag) {
-    query = query.contains('tags', [tag]);
+    query = query.ilike('tags', `%${tag}%`);
   }
 
   // 分页查询
@@ -41,7 +41,7 @@ export async function GET(request) {
     .eq('user_id', userId);
     
   if (tag) {
-    countQuery = countQuery.contains('tags', [tag]);
+    countQuery = countQuery.ilike('tags', `%${tag}%`);
   }
 
   const { count, error: countError } = await countQuery;

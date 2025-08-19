@@ -28,6 +28,7 @@ describe('/api/prompts', () => {
       select: jest.fn().mockReturnThis(),
       eq: jest.fn().mockReturnThis(),
       contains: jest.fn().mockReturnThis(),
+      ilike: jest.fn().mockReturnThis(),
       order: jest.fn().mockReturnThis(),
       insert: jest.fn().mockReturnThis(),
     }
@@ -102,7 +103,7 @@ describe('/api/prompts', () => {
 
       expect(response.status).toBe(200)
       expect(data).toEqual(mockPrompts)
-      expect(mockSupabase.contains).toHaveBeenCalledWith('tags', ['测试'])
+      expect(mockSupabase.ilike).toHaveBeenCalledWith('tags', '%测试%')
     })
 
     it('应该处理数据库错误', async () => {
